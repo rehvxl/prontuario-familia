@@ -17,6 +17,7 @@
 | 9 | **TanStack Query** para estado do servidor; **React Context** para o container de dependências; sem Redux | Cache, loading/erro e invalidação prontos; pouco estado global de verdade. | Redux/Zustand para tudo. |
 | 10 | **Sessão em armazenamento seguro** (`expo-secure-store` com chave AES; dados cifrados no AsyncStorage) | Tokens nunca em texto puro; SecureStore tem limite de tamanho por item. | AsyncStorage puro. |
 | 11 | **PDF**: iOS em `react-native-webview` (renderização nativa); Android baixa para o cache do app e abre com o leitor do sistema (`expo-intent-launcher`). **Imagens**: `expo-image` com URL assinada. | Sem enviar o documento a visualizadores de terceiros. | Google Docs Viewer (vaza o dado). |
+| 12 | **UI nativa por plataforma**: `@expo/ui` (SwiftUI/Jetpack Compose), `expo-glass-effect` (Liquid Glass), `expo-symbols` + `@expo/material-symbols`, `NativeTabs` e `Stack.Toolbar`/`Stack.SearchBar` do expo-router, sheets nativas (`formSheet`). iOS 26 = Liquid Glass; Android = Material 3. Tudo encapsulado em `src/shared/ui` (telas não importam a biblioteca direto). Decidido em 11/11/2026 após revisão visual do Douglas. | Visual atual do sistema (vidro real, título grande, tab bar flutuante) sem imitação, acessibilidade e Dynamic Type nativos, e menos código de UI próprio. | Kits JS (Tamagui, gluestack, HeroUI Native): desenham uma imitação e não acompanham o iOS. |
 
 ## 2. Camadas (FSD) e segmentos (Clean)
 
