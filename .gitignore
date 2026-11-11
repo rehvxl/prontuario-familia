@@ -39,3 +39,12 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# briefs internos do time (não versionar)
+.team/
+
+# Backend (Supabase): segredos locais nunca vao para o repositorio
+.env
+.env.local
+supabase/.env
+supabase/.env.local
