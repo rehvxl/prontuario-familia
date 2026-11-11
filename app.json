@@ -45,7 +45,8 @@
           "cameraPermission": "O Prontuário da Família usa a câmera para fotografar exames, laudos e receitas.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "scheme": "prontuariofamilia",
     "experiments": {
