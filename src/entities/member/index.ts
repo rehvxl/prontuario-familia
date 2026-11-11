@@ -1,2 +1,8 @@
 export { RELATIONSHIPS, SEXES } from './domain/member';
 export type { Member, MemberChanges, MemberRepository, NewMember, Relationship, Sex } from './domain/member';
+export { calculateAge, formatAge } from './domain/age';
+export { RELATIONSHIP_LABELS, SEX_LABELS, relationshipLabel, sexLabel } from './domain/labels';
+export { createLocalMemberRepository } from './data/local-member-repository';
+export { memberKeys, useMember, useMembers } from './model/queries';
+export { useMemberRepository } from './model/dependencies';
+export { createSupabaseMemberRepository } from './data/supabase-member-repository';
