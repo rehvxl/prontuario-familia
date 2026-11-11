@@ -138,7 +138,7 @@ Todos aceitam `style` e `testID`. Props marcadas como v1 continuam funcionando.
 ### Base
 | Componente | Props principais | Notas |
 |---|---|---|
-| `Screen` | `scroll`, `padded`, `footer`, `keyboard`, `presentation: 'screen'\|'sheet'` | Usa `nativeScrollProps`. Em rota `formSheet` use `presentation="sheet"` (ver §9.1). Expõe `useScreenHorizontalInset()` para filhos que sangram até a borda |
+| `Screen` | `scroll`, `padded`, `footer`, `keyboard`, `presentation: 'screen'\|'sheet'` | Usa `nativeScrollProps`. Em rota `formSheet` use `presentation="sheet"` (ver §9.1/§9.2). O `testID` vai na raiz, exceto em folha e no iOS com `scroll` sem `footer`, em que vai no `ScrollView` (ver §9.2). Expõe `useScreenHorizontalInset()` para filhos que sangram até a borda |
 | `Text` | `variant`, `color` (`primary\|secondary\|tertiary\|danger\|disabled\|inverse\|…`), `tabular`, `align`, `numberOfLines` | — |
 | `Icon` | `name: SemanticIconName` (ou Ionicons v1), `size=22`, `color`, `weight`, `filled`, `accessibilityLabel` | Sem rótulo, fica decorativo e oculto do leitor de tela. Mapa em `ICON_MAP`; `resolveIcon`, `nativeIcon` |
 | `GlassSurface` **novo** | `shape: 'capsule'\|'container'\|'card'\|'circle'`, `interactive`, `tint`, `accessible`, `accessibilityLabel` | Ver §4 |
@@ -169,7 +169,7 @@ Todos aceitam `style` e `testID`. Props marcadas como v1 continuam funcionando.
 | Componente | Props | Notas |
 |---|---|---|
 | `ListSection` **novo** | `header`, `footer`, `separatorInset: 'text'\|'none'\|number`, `children` | Lista agrupada inset (raio 26). `ListItem` dentro dela vira célula |
-| `ListItem` | `title`, `subtitle`, `meta`, `leading`, `trailing`, `onPress`, `chevron`, `destructive`, `disabled` | Chevron só no iOS. Com fonte de acessibilidade (≥1,35×), `meta` desce para baixo do título |
+| `ListItem` | `title`, `subtitle`, `meta`, `leading`, `trailing`, `onPress`, `chevron`, `destructive`, `disabled` | Chevron só no iOS. Com fonte de acessibilidade (≥1,35×), `meta` desce para baixo do título. Com `trailing`, o controle da direita é um elemento de acessibilidade separado (ver §9.2) |
 | `Card` | `accent?: CategoricalIndex` (v1 `tab`), `onPress`, `elevation=0`, `padded`, `accessibilityLabel` | Raio 20. O acento é uma pílula 28×4 no topo; não use acento e Badge da mesma cor juntos |
 | `Avatar`, `Badge`, `Chip`/`FilterChip`/`ChipGroup`, `Divider`, `Spinner`, `Skeleton*` | v1 | Dentro de um `Screen`, o `ChipGroup` sangra até a borda sozinho: o 1º chip fica na margem e a rolagem vai até a borda. Não aplique margem negativa na tela |
 | `Banner` | v1 + `appearance: 'inline'\|'floating'` | `floating` = pílula de vidro sobre o conteúdo (ex.: offline, modo demo) |
@@ -244,6 +244,7 @@ Nada foi removido: **todo código v1 compila**. Os nomes antigos estão marcados
 | `ChipGroup` com `flexGrow: 0` ou margem negativa na tela | `ChipGroup` sozinho (v0.1.7): `flexGrow: 0` embutido; dentro de `Screen` sangra até a borda, fora (ex.: `ListHeaderComponent` de `FlatList`) usa a margem `screenGutter` | Margem negativa manual dentro de `Screen` dobraria o recuo | Remover `flexGrow: 0` manual (redundante) e qualquer margem negativa |
 | `Select` (iOS) encolhia até o texto | Ocupa a largura (v0.1.7) | Visual | Nenhuma |
 | — | `Screen presentation="sheet"`, `useScreenHorizontalInset`, `headerTitleColors(theme)` (v0.1.7) | Novos, opcionais | Ver §9.1 |
+| `<Stack.Title large>` do expo-router dentro da tela | `<LargeTitle>` / `<ScreenTitle>` de `@/shared/ui/navigation` (v0.1.8) | `Stack.Title` apagava a cor do título | FamilyHome, Search, MemberTimeline |
 | — | `FloatingActionButton`, `ContextMenu`, `GlassSurface`, `useInListSection`, `nativeIcon`, `resolveIcon`, `ICON_MAP`, `theme.glass`, `theme.native`, `theme.motion.spring`, `headerOptions(theme, config)`, `nativeScrollProps` | Novos exports | — |
 
 ### 9.1 Correções da v0.1.7 (verificadas no iOS 26.5)
@@ -272,6 +273,29 @@ Nada foi removido: **todo código v1 compila**. Os nomes antigos estão marcados
 **Blur do cabeçalho.** O `headerOptions(theme, { transparent: true })` só aplica `systemChromeMaterial` quando o Liquid Glass não está disponível (iOS < 26). No 26, o vidro do sistema já faz o papel, e o blur junto gera o aviso de efeitos sobrepostos do RNScreens.
 
 Capturas: `docs/screenshots/v2/sheet-formsheet-bug-light.png` (antes), `sheet-formsheet-light.png` (montagem), `sheet-formsheet-detent-full-light.png` e `…-dark.png` (troca de detent), `header-title-tint-bug-light.png` (antes) e `chipgroup-select-title-light.png` (depois).
+
+### 9.2 Correções da v0.1.8
+
+**Folha em branco na rota real (`record/new`).** Mesmo sem fundo na raiz, a folha ficava em branco quando o `Screen` recebia `testID`. Teste A/B no iOS 26.5 (Expo Go reiniciado a cada caso, mesmo conteúdo): com `testID` na raiz, branco; sem, pinta. O layout medido estava certo (ScrollView com 476 pt), então é falha de pintura nativa, não de tamanho. A hipótese é que a raiz da rota `formSheet` precisa ser achatável pelo Fabric, e `testID` ou fundo opaco a transformam numa UIView real. Por isso, em `presentation="sheet"`, o `Screen` não põe nada na raiz:
+
+- o `testID` vai no `ScrollView`, ou na `View` do conteúdo se `scrollViewProps.testID` já existir, ou no corpo com `scroll={false}`;
+- os testes E2E continuam achando o mesmo `testID`.
+
+Status: corrigido em código e coberto por teste. A validação no simulador está pendente; até lá, `record/new` segue como `modal`. Evidência: `.team/probes/formsheet/` (fora do repositório).
+
+**`Stack.Title` apaga a cor do título.** O `<Stack.Title>` do expo-router reescreve `headerTitleStyle`/`headerLargeTitleStyle`, e o título volta a herdar o tint azul. Use os wrappers, que já aplicam `headerTitleColors` (o `style`/`largeStyle` passado vence):
+
+```tsx
+import { LargeTitle, ScreenTitle } from '@/shared/ui/navigation';
+<LargeTitle>{family.name}</LargeTitle>
+<ScreenTitle>Buscar</ScreenTitle>
+```
+
+Eles ficam em `@/shared/ui/navigation`, fora do índice principal, para o resto do DS não carregar o expo-router (no Jest, isso quebraria os testes de domínio). O helper puro `screenTitleProps(theme, props)` está no índice principal.
+
+**Conteúdo descendo ao voltar para a tela (título grande + cabeçalho transparente).** Quando havia uma `View` com fundo entre a tela e o `ScrollView`, o iOS recalculava o inset automático ao voltar o foco, e o conteúdo descia. Agora, no iOS com `scroll` e sem `footer`, o `ScrollView` é a própria raiz (com o fundo e o `testID`), igual à `FlatList` da home. Com `footer`, ou no Android, a estrutura não muda. Validação no simulador pendente.
+
+**`ListItem` com `onPress` e `trailing` interativo.** Antes a linha inteira era um único botão de acessibilidade, e o VoiceOver/TalkBack não chegava ao controle da direita (`Switch`, `IconButton`). Agora, com `trailing`, a área principal (título, subtítulo, meta, leading) é o botão com rótulo e `testID`, e o `trailing` é um irmão, focável à parte. O destaque de toque continua na linha toda. A API não muda.
 
 ---
 

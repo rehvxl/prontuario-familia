@@ -28,9 +28,11 @@ export interface ScreenProps {
   scrollViewProps?: Omit<ScrollViewProps, 'contentContainerStyle' | 'children'>;
   /**
    * Padrão 'screen'. Use 'sheet' em telas apresentadas como `formSheet` nativo (iOS 26):
-   * a raiz do Screen fica sem cor de fundo e a cor vai no ScrollView, na área fixa e no corpo.
-   * Uma cor opaca na view raiz da folha deixa o conteúdo sem pintar na montagem e na troca de
-   * detent (verificado no iOS 26.5 com react-native-screens 4.30). Visualmente igual a 'screen'.
+   * a raiz do Screen fica "achatável" pelo Fabric — sem cor de fundo e sem `testID` — e a cor vai
+   * no ScrollView, na área fixa e no corpo. Uma view raiz que vira UIView de verdade (cor opaca,
+   * `testID`) deixa o corpo da folha sem pintar (iOS 26.5, react-native-screens 4.30, Expo Go).
+   * Em 'sheet', o `testID` do Screen vai para o corpo (ScrollView, ou o conteúdo se
+   * `scrollViewProps.testID` existir). Visualmente igual a 'screen'.
    */
   presentation?: 'screen' | 'sheet';
   testID?: string;
@@ -64,6 +66,12 @@ export function Screen({
   // Recuo à esquerda (margem + safe area) que um filho precisa desfazer para sangrar até a borda.
   const contentInset = inner.paddingLeft as number;
   const contentBottom = footer ? theme.space[4] : bottomInset + theme.space[6];
+  // Quem recebe o testID: na folha, nunca a raiz (ver `presentation`); sem wrapper, o próprio ScrollView.
+  const needsAvoider = keyboardAvoiding && (Platform.OS !== 'ios' || !scroll || !!footer);
+  const scrollIsRoot = scroll && !needsAvoider && !footer;
+  const rootTestID = sheet || scrollIsRoot ? undefined : testID;
+  const scrollTestID = scrollViewProps?.testID ?? (sheet || scrollIsRoot ? testID : undefined);
+  const contentTestID = scrollViewProps?.testID && (sheet || scrollIsRoot) ? testID : undefined;
   const centered: ViewStyle = { width: '100%', maxWidth: theme.layout.maxContentWidth, alignSelf: 'center' };
 
   const body = scroll ? (
@@ -73,15 +81,16 @@ export function Screen({
       contentInsetAdjustmentBehavior="automatic"
       automaticallyAdjustKeyboardInsets={!footer}
       {...scrollViewProps}
+      testID={scrollTestID}
       style={{ flex: 1, backgroundColor: bg }}
       contentContainerStyle={[inner, { paddingBottom: contentBottom, paddingTop: (inner.paddingTop as number) + theme.space[4] }, contentContainerStyle]}
     >
-      <View style={centered}>
+      <View style={centered} testID={contentTestID}>
         <ScreenInsetContext.Provider value={contentInset}>{children}</ScreenInsetContext.Provider>
       </View>
     </ScrollView>
   ) : (
-    <View style={[styles.flex, inner, { paddingBottom: footer ? 0 : bottomInset }, sheet && { backgroundColor: bg }, contentContainerStyle]}>
+    <View style={[styles.flex, inner, { paddingBottom: footer ? 0 : bottomInset }, sheet && { backgroundColor: bg }, contentContainerStyle]} testID={sheet ? testID : undefined}>
       <View style={[styles.flex, centered]}>
         <ScreenInsetContext.Provider value={contentInset}>{children}</ScreenInsetContext.Provider>
       </View>
@@ -103,21 +112,22 @@ export function Screen({
     </View>
   ) : null;
 
-  // Em iOS com scroll e sem rodapé, o ScrollView ajusta o teclado sozinho e fica como primeiro filho
-  // (necessário para o título grande do cabeçalho nativo encolher ao rolar).
-  // Folha nativa: a raiz não pode ter cor opaca (ver doc de `presentation`). O fundo vai no ScrollView/rodapé.
+  // Em iOS com scroll e sem rodapé, o ScrollView ajusta o teclado sozinho e é a própria raiz, como uma
+  // FlatList: sem view intermediária com cor (que vira UIView), o UIKit acompanha o ScrollView para o título
+  // grande encolher ao rolar e não desloca o conteúdo quando a tela volta a ter foco.
+  if (scrollIsRoot) return body;
+  // Folha nativa: a raiz não pode ter cor opaca nem testID (ver doc de `presentation`). O fundo vai no corpo/rodapé.
   const rootBg: ViewStyle | undefined = sheet ? undefined : { backgroundColor: bg };
-  const needsAvoider = keyboardAvoiding && (Platform.OS !== 'ios' || !scroll || !!footer);
   if (!needsAvoider) {
     return (
-      <View style={[styles.flex, rootBg]} testID={testID}>
+      <View style={[styles.flex, rootBg]} testID={rootTestID}>
         {body}
         {footerEl}
       </View>
     );
   }
   return (
-    <KeyboardAvoidingView style={[styles.flex, rootBg]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} testID={testID}>
+    <KeyboardAvoidingView style={[styles.flex, rootBg]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} testID={rootTestID}>
       {body}
       {footerEl}
     </KeyboardAvoidingView>

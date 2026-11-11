@@ -18,6 +18,7 @@ export { selectionFeedback } from './lib/haptics';
 
 // Componentes — base
 export { Screen, useScreenHorizontalInset, type ScreenProps } from './components/Screen';
+export { screenTitleProps, type TitleStyleProps } from './components/screenTitleProps';
 export { Text, type TextProps, type TextColor } from './components/Text';
 export {
   Icon,

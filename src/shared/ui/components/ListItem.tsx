@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Platform, Pressable, StyleSheet, View, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
 import { useTheme } from '../theme';
 import { FocusRing, useFocusState } from '../lib/focus';
@@ -14,7 +14,10 @@ export interface ListItemProps {
   meta?: string;
   /** Avatar, ícone ou marcador à esquerda. */
   leading?: ReactNode;
-  /** Conteúdo à direita (badge, switch). Substitui o chevron. */
+  /**
+   * Conteúdo à direita (badge, switch, botão de menu). Substitui o chevron. Fica fora do elemento de
+   * acessibilidade da linha: o VoiceOver/TalkBack lê a linha e depois chega ao controle da direita.
+   */
   trailing?: ReactNode;
   onPress?: () => void;
   /** Mostra a seta de navegação. Segue a plataforma: aparece no iOS, omitida no Android (Material). */
@@ -61,7 +64,7 @@ export function ListItem({
     </Text>
   ) : null;
 
-  const content = (
+  const textColumn = (
     <>
       {leading ? <View>{leading}</View> : null}
       <View style={styles.texts}>
@@ -76,25 +79,42 @@ export function ListItem({
         {stacked ? metaText : null}
       </View>
       {stacked ? null : metaText}
-      {trailing}
-      {showChevron ? <Icon name="forward" size={15} weight="semibold" color="textTertiary" /> : null}
     </>
   );
 
-  const rowStyle = [
-    styles.row,
-    {
-      minHeight: subtitle ? 64 : 52,
-      paddingHorizontal: inSection ? theme.space[4] : theme.layout.screenGutter,
-      paddingVertical: theme.space[3],
-      gap: theme.space[3],
-    },
-  ];
+  const padH = inSection ? theme.space[4] : theme.layout.screenGutter;
+  const minHeight = subtitle ? 64 : 52;
+  const gap = theme.space[3];
+  const rowStyle = [styles.row, { minHeight, paddingHorizontal: padH, paddingVertical: theme.space[3], gap }];
+  const pressedBg = { backgroundColor: theme.colors.surfaceSunken };
+
+  // Com `trailing`, a linha vira dois elementos irmãos: a área principal (rótulo, toque) e o controle
+  // da direita. Agrupar tudo num só elemento acessível esconde o controle do leitor de tela.
+  if (trailing) {
+    return (
+      <TrailingRow
+        style={[styles.row, { minHeight }, style]}
+        mainStyle={[styles.row, styles.main, { paddingLeft: padH, paddingRight: gap, paddingVertical: theme.space[3], gap }]}
+        trailingStyle={{ paddingRight: padH }}
+        pressedBg={pressedBg}
+        onPress={onPress}
+        disabled={disabled}
+        label={label}
+        hint={accessibilityHint}
+        rippleColor={theme.colors.border}
+        testID={testID}
+        trailing={trailing}
+      >
+        {textColumn}
+      </TrailingRow>
+    );
+  }
 
   if (!onPress) {
     return (
       <View style={[rowStyle, style]} accessible accessibilityLabel={label} testID={testID}>
-        {content}
+        {textColumn}
+        {showChevron ? <Icon name="forward" size={15} weight="semibold" color="textTertiary" /> : null}
       </View>
     );
   }
@@ -110,11 +130,63 @@ export function ListItem({
       accessibilityState={{ disabled }}
       android_ripple={{ color: theme.colors.border }}
       testID={testID}
-      style={({ pressed }) => [rowStyle, pressed && Platform.OS !== 'android' && { backgroundColor: theme.colors.surfaceSunken }, style]}
+      style={({ pressed }) => [rowStyle, pressed && Platform.OS !== 'android' && pressedBg, style]}
     >
-      {content}
+      {textColumn}
+      {showChevron ? <Icon name="forward" size={15} weight="semibold" color="textTertiary" /> : null}
       <FocusRing visible={focus.focused} radius={0} />
     </Pressable>
+  );
+}
+
+interface TrailingRowProps {
+  children: ReactNode;
+  trailing: ReactNode;
+  style: StyleProp<ViewStyle>;
+  mainStyle: StyleProp<ViewStyle>;
+  trailingStyle: ViewStyle;
+  pressedBg: ViewStyle;
+  onPress?: () => void;
+  disabled: boolean;
+  label: string;
+  hint?: string;
+  rippleColor: string;
+  testID?: string;
+}
+
+function TrailingRow({ children, trailing, style, mainStyle, trailingStyle, pressedBg, onPress, disabled, label, hint, rippleColor, testID }: TrailingRowProps) {
+  const focus = useFocusState();
+  // O destaque de toque cobre a linha inteira, inclusive atrás do controle da direita.
+  const [pressed, setPressed] = useState(false);
+  const main = onPress ? (
+    <Pressable
+      onPress={onPress}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
+      disabled={disabled}
+      onFocus={focus.onFocus}
+      onBlur={focus.onBlur}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint={hint}
+      accessibilityState={{ disabled }}
+      android_ripple={{ color: rippleColor }}
+      testID={testID}
+      style={mainStyle}
+    >
+      {children}
+      <FocusRing visible={focus.focused} radius={0} />
+    </Pressable>
+  ) : (
+    <View style={mainStyle} accessible accessibilityLabel={label} testID={testID}>
+      {children}
+    </View>
+  );
+  return (
+    <View style={[style, pressed && Platform.OS !== 'android' && pressedBg]}>
+      {main}
+      <View style={[styles.trailing, trailingStyle]}>{trailing}</View>
+    </View>
   );
 }
 
@@ -122,4 +194,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center' },
   texts: { flex: 1 },
   meta: { flexShrink: 0, maxWidth: '40%' },
+  main: { flex: 1, alignSelf: 'stretch' },
+  trailing: { justifyContent: 'center' },
 });
