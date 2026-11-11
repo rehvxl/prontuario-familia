@@ -11,8 +11,9 @@
 | 0.1.2 | Supabase: migrações, RLS, bucket privado, pgTAP, adaptadores `supabase-*`, `.env.example`, `docs/BACKEND.md` | Backend | ✅ (118 testes pgTAP) |
 | 0.1.3 | Casos de uso + adaptadores locais (modo demo) + container/DI + testes | Mobile | ✅ |
 | 0.1.4 | Telas: onboarding/consentimento, login OTP (Apple/Google preparados), família e membros, novo registro com anexo, linha do tempo com filtro, busca, detalhe com visualizador, ajustes (exportar/excluir) | Mobile | ✅ (336 testes; roteiro no iOS 26.5) |
-| 0.1.6 | Design System v2 nativo: Liquid Glass no iOS 26 e Material 3 no Android (@expo/ui, expo-glass-effect, expo-symbols, NativeTabs), seguido do reskin das telas. Pedido do Douglas em 11/11. | Designer ✅ → Mobile (reskin, 0.1.7) 🔄 |
-| 0.1.5 | QA: checks, testes de fluxo, roteiro manual no simulador iOS/Android, checklist de loja | QA | ⏳ |
+| 0.1.6 | Design System v2 nativo: Liquid Glass no iOS 26 e Material 3 no Android (@expo/ui, expo-glass-effect, expo-symbols, NativeTabs), seguido do reskin das telas. Pedido do Douglas em 11/11. | Designer ✅ → Mobile (reskin, 0.1.7) ✅ (`5755d07`) |
+| 0.1.5 | QA: checks, testes de fluxo, roteiro manual no simulador iOS/Android, checklist de loja | QA | ✅ Fase A e B no iOS 26.5 (26 casos passaram, 4 falharam; `docs/qa/BUGS.md`). Android não testado |
+| 0.1.8 | Correções da QA: menu "…" da pessoa (BUG-01), acessibilidade (voltar, seletores), contraste no escuro, AX5, revogar → consentimento, splash screen, formSheet validado | Mobile + Designer → regressão QA | 🔄 |
 
 ## v0.2 — Backend real e beta fechado
 

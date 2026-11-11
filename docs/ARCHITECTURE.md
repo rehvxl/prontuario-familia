@@ -92,26 +92,37 @@ O container é entregue por `ContainerProvider` (React Context); hooks em `model
 ## 4. Navegação (expo-router)
 
 ```
-src/app/
-├── _layout.tsx                 # Providers (container, React Query, tema, safe area) + guarda de sessão
-├── (onboarding)/welcome.tsx    # Boas-vindas
-├── (onboarding)/consent.tsx    # Aceite LGPD
-├── (auth)/sign-in.tsx          # E-mail / Apple / Google
-├── (auth)/verify.tsx           # Código de 6 dígitos
-├── auth/callback.tsx           # Retorno do OAuth (deep link)
-├── (setup)/family.tsx          # Criar família
-├── (setup)/members.tsx         # Adicionar primeiros membros
-└── (main)/                     # Abas
-    ├── index.tsx               # Família: membros
-    ├── search.tsx              # Busca global
-    ├── settings.tsx            # Ajustes, exportar, excluir conta
-    ├── member/[id].tsx         # Linha do tempo do membro + filtro por tipo
-    ├── member/new.tsx · member/[id]/edit.tsx
-    ├── record/new.tsx          # Adicionar registro (com anexos)
-    └── record/[id].tsx         # Detalhe + visualizador de anexo
+src/app/                          # rotas finas: só reexportam telas de src/screens
+├── _layout.tsx                   # Providers + SessionGate (Stack.Protected + Redirect por resolveNextStep)
+├── (onboarding)/welcome.tsx      # Boas-vindas (3 passos)
+├── (onboarding)/consent.tsx      # Aceite LGPD (duas caixas obrigatórias)
+├── (auth)/sign-in.tsx            # E-mail / Apple / Google
+├── (auth)/verify.tsx             # Código de 6 dígitos
+├── auth/callback.tsx             # Retorno do OAuth (deep link)
+├── (setup)/family.tsx · members.tsx
+└── (main)/_layout.tsx            # Stack principal
+    ├── (tabs)/_layout.tsx        # NativeTabs (Liquid Glass no iOS 26, Material 3 no Android)
+    │   ├── (family)/index.tsx    # Família: pessoas
+    │   ├── (search)/index.tsx    # Busca global (Stack.SearchBar)
+    │   └── (settings)/index.tsx  # Ajustes: exportar, revogar consentimento, excluir conta
+    ├── member/new.tsx            # modal (ver limitação abaixo)
+    ├── member/[id]/index.tsx     # Linha do tempo + filtro por tipo
+    ├── member/[id]/edit.tsx
+    ├── record/new.tsx            # modal, com anexos (câmera, galeria, arquivo)
+    └── record/[id].tsx           # Detalhe + visualizador + menu "…" (excluir)
 ```
 
-Guarda (em `_layout`): sem consentimento → onboarding; sem sessão → auth; sem família → setup; senão → main.
+Guarda (`SessionGate`): sem consentimento → onboarding; sem sessão → auth; sem família → setup; senão → main.
+
+**Consentimento antes do login.** A tabela `consents` exige usuário, mas o aceite acontece antes do login. O aceite fica num store persistido do aparelho (`application/session/device-consent`, só a versão) e é gravado no repositório logo depois do login. `useConsentFlow` lê a sessão **no momento do aceite** (`auth.getCurrentUser()`), não um valor capturado no render. Isso corrigiu um teste intermitente (corrida de estado). Depois de `deleteAccount`, o aceite do aparelho é limpo.
+
+**Exclusão de registro.** O caso de uso `deleteRecord` (`features/delete-record`) usa `HealthRecordRepository.remove`; o adaptador apaga os arquivos do Storage antes do banco, então uma falha no Storage não deixa registro órfão e pode ser repetida. Edição de registro e remoção de anexo individual ficam para depois do MVP.
+
+**Limitações conhecidas (MVP).**
+- `formSheet` nativo com o corpo em branco no Expo Go do iOS 26.5. A causa provável é uma raiz não achatável (fundo opaco ou `testID`); `Screen presentation="sheet"` já trata isso (`DESIGN_SYSTEM.md` §9.1–9.2). Até a validação no simulador, `record/new` e `member/new` usam `presentation: 'modal'`.
+- `Stack.Title` do expo-router apaga as cores do título: use `ScreenTitle`/`LargeTitle` de `@/shared/ui/navigation`.
+- Botão Sign in with Apple em pt-BR (`CFBundleDevelopmentRegion`) só é verificável num development build.
+- `metro.config.js` desliga o Watchman (`useWatchman = false`) porque o Watchman local está quebrado; `brew reinstall watchman` resolve.
 
 ## 5. Modelo de dados (Supabase / Postgres)
 
@@ -160,7 +171,7 @@ Pirâmide: casos de uso e regras de domínio (maioria, sem RN) → adaptadores l
 
 ## 8. Ambientes e build
 
-- `.env` (não versionado) a partir de `.env.example`. Sem variáveis = modo demo (só em dev).
+- `.env` (não versionado) a partir de `.env.example`. Sem variáveis = modo demo (só em dev). Em produção, faltar URL ou anon key do Supabase faz o app falhar ao iniciar (`resolveEnv`), a menos que `EXPO_PUBLIC_DEMO_MODE=1`. **O perfil `production` do EAS nunca define `EXPO_PUBLIC_DEMO_MODE=1`.**
 - `eas.json`: perfis `development` (dev client), `preview` (distribuição interna) e `production` (lojas). Variáveis de produção ficam nos *EAS Environment Variables*, nunca no repositório.
 - Identificadores: iOS `br.com.prontuariofamilia.app`, Android `br.com.prontuariofamilia.app`, scheme `prontuariofamilia`.
 - Publicação nas lojas e repositório remoto: **somente quando o Douglas pedir**.
