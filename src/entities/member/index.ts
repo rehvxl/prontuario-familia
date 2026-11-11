@@ -6,3 +6,5 @@ export { createLocalMemberRepository } from './data/local-member-repository';
 export { memberKeys, useMember, useMembers } from './model/queries';
 export { useMemberRepository } from './model/dependencies';
 export { createSupabaseMemberRepository } from './data/supabase-member-repository';
+export { MemberListItem } from './ui/MemberListItem';
+export type { MemberListItemProps } from './ui/MemberListItem';

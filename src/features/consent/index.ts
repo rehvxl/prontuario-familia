@@ -1,3 +1,4 @@
 export { acceptRequiredConsents, assertExplicitConsent } from './domain/accept-required-consents';
 export type { AcceptConsentsInput } from './domain/accept-required-consents';
-export { useAcceptRequiredConsents } from './model/hooks';
+export { revokeConsents } from './domain/revoke-consents';
+export { useAcceptRequiredConsents, useRevokeConsents } from './model/hooks';

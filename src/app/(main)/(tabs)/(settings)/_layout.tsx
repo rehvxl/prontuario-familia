@@ -1,0 +1,10 @@
+import { Stack } from 'expo-router';
+
+/** Stack da aba "Ajustes": cabeçalho nativo com título grande (sem cor fixa: o iOS 26 aplica o vidro). */
+export default function SettingsLayout() {
+  return (
+    <Stack screenOptions={{ headerLargeTitle: true, headerLargeTitleShadowVisible: false, headerTransparent: process.env.EXPO_OS === 'ios' }}>
+      <Stack.Screen name="index" options={{ title: 'Ajustes' }} />
+    </Stack>
+  );
+}

@@ -4,3 +4,4 @@ export { hasDeviceConsent, useDeviceConsentStore } from './device-consent';
 export { useSessionState } from './use-session-state';
 export type { SessionState, SessionStatus } from './use-session-state';
 export { useConsentFlow } from './use-consent-flow';
+export { useDeleteAccountFlow, useRevokeConsentFlow } from './use-account-flows';
