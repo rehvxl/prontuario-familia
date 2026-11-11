@@ -13,6 +13,7 @@ export function useDeleteRecord() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: recordKeys.timelines }),
         queryClient.invalidateQueries({ queryKey: recordKeys.searches }),
+        queryClient.invalidateQueries({ queryKey: recordKeys.allCounts }),
       ]);
     },
   });

@@ -5,17 +5,17 @@ import { Button, Icon, Screen, Text, useTheme, type IconName } from '@/shared/ui
 
 const SLIDES: readonly { icon: IconName; title: string; message: string }[] = [
   {
-    icon: 'folder-open-outline',
+    icon: 'folder',
     title: 'A pasta da família, no celular',
     message: 'Guarde exames, receitas, laudos e vacinas de cada pessoa, organizados por data.',
   },
   {
-    icon: 'search-outline',
+    icon: 'search',
     title: 'Ache na hora',
     message: 'Busque por exame, médico ou local e mostre o documento certo na hora da consulta.',
   },
   {
-    icon: 'shield-checkmark-outline',
+    icon: 'shield',
     title: 'Só a sua família vê',
     message: 'Seus dados ficam protegidos. Você pode exportar ou apagar tudo quando quiser.',
   },
@@ -38,7 +38,7 @@ export function WelcomeScreen() {
       footer={
         <View style={{ gap: theme.space[2] }}>
           <Button label={last ? 'Começar' : 'Continuar'} onPress={last ? goToConsent : () => setIndex(index + 1)} fullWidth />
-          {last ? null : <Button label="Pular" variant="ghost" onPress={goToConsent} fullWidth />}
+          {last ? null : <Button label="Pular" variant="plain" onPress={goToConsent} fullWidth />}
         </View>
       }
     >

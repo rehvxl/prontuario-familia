@@ -4,7 +4,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { useRouter } from 'expo-router';
 import { DEMO_OTP_CODE, useAuthProviders } from '@/entities/session';
 import { isAuthCancelled, useRequestEmailCode, useSignInWithApple, useSignInWithGoogle } from '@/features/auth';
-import { Banner, Button, Screen, Text, TextField, errorMessage, useTheme } from '@/shared/ui';
+import { Banner, Button, Chip, Screen, Text, TextField, errorMessage, useTheme } from '@/shared/ui';
 
 /** Login sem senha: e-mail → código. Apple (só iOS) e Google aparecem quando o aparelho/ambiente oferece. `demo` mostra o código de teste. */
 export function SignInScreen({ demo }: { demo: boolean }) {
@@ -40,13 +40,9 @@ export function SignInScreen({ demo }: { demo: boolean }) {
         Vamos enviar um código de 6 dígitos para o seu e-mail. Sem senha para lembrar.
       </Text>
       {demo ? (
-        <Banner
-          tone="info"
-          icon="flask-outline"
-          message={`Modo demonstração — use o código ${DEMO_OTP_CODE}`}
-          style={{ marginBottom: theme.space[4] }}
-          testID="demo-banner"
-        />
+        <View style={{ alignSelf: 'flex-start', marginBottom: theme.space[4] }} testID="demo-banner">
+          <Chip icon="flask" label={`Modo demonstração · código ${DEMO_OTP_CODE}`} />
+        </View>
       ) : null}
       <TextField
         label="E-mail"
@@ -71,13 +67,13 @@ export function SignInScreen({ demo }: { demo: boolean }) {
           {showApple ? (
             <AppleAuthentication.AppleAuthenticationButton
               buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
-              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+              buttonStyle={theme.scheme === 'dark' ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
               cornerRadius={theme.radii.md}
               style={{ height: 52 }}
               onPress={() => apple.mutate()}
             />
           ) : null}
-          {showGoogle ? <Button label="Continuar com Google" variant="secondary" icon="logo-google" onPress={() => google.mutate()} disabled={busy} fullWidth /> : null}
+          {showGoogle ? <Button label="Continuar com o Google" variant="bordered" onPress={() => google.mutate()} disabled={busy} fullWidth /> : null}
           {socialError ? <Banner tone="danger" message={errorMessage(socialError, 'Não foi possível entrar. Tente novamente.')} /> : null}
         </View>
       ) : null}

@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { DEMO_OTP_CODE } from '@/entities/session';
 import { OTP_LENGTH, useRequestEmailCode, useVerifyEmailCode } from '@/features/auth';
-import { Banner, Button, OtpInput, Screen, Text, errorMessage, useTheme } from '@/shared/ui';
+import { Banner, Button, Chip, OtpInput, Screen, Text, errorMessage, useTheme } from '@/shared/ui';
 
 export const RESEND_SECONDS = 60;
 
@@ -56,7 +56,9 @@ export function VerifyCodeScreen({ demo }: { demo: boolean }) {
         {email ? `Enviamos um código de ${OTP_LENGTH} dígitos para ${email}.` : `Digite o código de ${OTP_LENGTH} dígitos que enviamos por e-mail.`}
       </Text>
       {demo ? (
-        <Banner tone="info" icon="flask-outline" message={`Modo demonstração — use o código ${DEMO_OTP_CODE}`} style={{ marginBottom: theme.space[4] }} testID="demo-banner" />
+        <View style={{ alignSelf: 'flex-start', marginBottom: theme.space[4] }} testID="demo-banner">
+          <Chip icon="flask" label={`Modo demonstração · código ${DEMO_OTP_CODE}`} />
+        </View>
       ) : null}
       <OtpInput value={code} onChange={setCode} onComplete={submit} error={codeError} disabled={verify.isPending} autoFocus testID="otp-input" />
       <View style={{ marginTop: theme.space[6], alignItems: 'center', gap: theme.space[2] }}>
@@ -68,7 +70,7 @@ export function VerifyCodeScreen({ demo }: { demo: boolean }) {
         {resend.error ? <Banner tone="danger" message={errorMessage(resend.error, 'Não foi possível reenviar o código.')} /> : null}
         <Button
           label={countdown.left > 0 ? `Reenviar código em ${countdown.left} s` : 'Reenviar código'}
-          variant="ghost"
+          variant="plain"
           onPress={onResend}
           disabled={countdown.left > 0 || resend.isPending}
           loading={resend.isPending}

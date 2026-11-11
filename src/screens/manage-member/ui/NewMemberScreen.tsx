@@ -11,7 +11,7 @@ export function NewMemberScreen() {
   const addMember = useAddMember();
   if (!family) return <Screen scroll={false}><Spinner fill label="Carregando" /></Screen>;
   return (
-    <Screen testID="new-member-screen" scroll={false} contentContainerStyle={{ paddingTop: 16 }}>
+    <Screen testID="new-member-screen" presentation="sheet">
       <MemberForm
         submitLabel="Adicionar pessoa"
         submitting={addMember.isPending}

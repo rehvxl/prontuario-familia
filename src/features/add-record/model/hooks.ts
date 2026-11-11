@@ -13,6 +13,7 @@ export function useAddRecord() {
       Promise.all([
         queryClient.invalidateQueries({ queryKey: recordKeys.timeline(record.familyId, record.memberId) }),
         queryClient.invalidateQueries({ queryKey: recordKeys.searches }),
+        queryClient.invalidateQueries({ queryKey: recordKeys.counts(record.familyId) }),
       ]),
   });
 }

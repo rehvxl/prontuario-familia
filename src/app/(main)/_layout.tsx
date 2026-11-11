@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { useTheme } from '@/shared/ui';
+import { headerTitleColors, useTheme } from '@/shared/ui';
 
 /**
  * Stack do app logado: abas nativas + telas empilhadas. Sem cor de fundo fixa nos cabeçalhos no iOS
@@ -13,6 +13,7 @@ export default function MainLayout() {
     <Stack
       screenOptions={{
         headerTintColor: theme.colors.primary,
+        ...headerTitleColors(theme),
         headerBackButtonDisplayMode: 'minimal',
         contentStyle: { backgroundColor: theme.colors.background },
         ...(ios ? { headerTransparent: true } : { headerStyle: { backgroundColor: theme.colors.background }, headerShadowVisible: false }),
@@ -26,9 +27,8 @@ export default function MainLayout() {
         name="member/new"
         options={{
           title: 'Nova pessoa',
-          presentation: 'formSheet',
-          sheetAllowedDetents: [0.8, 1],
-          sheetGrabberVisible: true,
+          // Mesmo defeito do formSheet de "Novo registro" (corpo sem pintar no iOS 26.5): folha de página (modal).
+          presentation: 'modal',
           headerTransparent: false,
         }}
       />
@@ -36,7 +36,7 @@ export default function MainLayout() {
         name="record/new"
         options={{
           title: 'Novo registro',
-          // Folha de página nativa (sem detents): o ScrollView não repinta quando um formSheet muda de detent (iOS 26).
+          // formSheet (iOS 26.5, react-native-screens 4.30, Expo Go) monta os campos mas não os pinta: corpo vazio. Folha de página (modal) pinta.
           presentation: 'modal',
           headerTransparent: false,
         }}

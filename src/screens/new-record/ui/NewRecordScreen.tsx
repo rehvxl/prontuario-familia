@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMyFamily } from '@/entities/family';
 import { useMembers } from '@/entities/member';
@@ -61,7 +61,7 @@ export function NewRecordScreen() {
     return (
       <Screen scroll={false}>
         <EmptyState
-          icon="people-outline"
+          icon="people"
           title="Adicione uma pessoa primeiro"
           message="O registro precisa pertencer a alguém da família."
           action={{ label: 'Adicionar pessoa', onPress: () => router.replace('/(main)/member/new') }}
@@ -70,6 +70,9 @@ export function NewRecordScreen() {
     );
   }
 
+  // Com uma só pessoa na família, o registro já abre com ela escolhida.
+  const soleMemberId = members.data.length === 1 ? members.data[0]!.id : null;
+  const selectedMemberId = memberId ?? soleMemberId;
   const memberOptions = members.data.map((m) => ({ value: m.id, label: m.fullName }));
   const serverField = isDomainError(addRecord.error) ? FIELD_OF_CODE[addRecord.error.code] : undefined;
   const saveError = addRecord.error && !serverField ? addRecord.error : null;
@@ -77,7 +80,7 @@ export function NewRecordScreen() {
   const submit = () => {
     const input: AddRecordInput = {
       familyId: family.id,
-      memberId: memberId ?? '',
+      memberId: selectedMemberId ?? '',
       type: type ?? ('' as RecordType),
       title,
       date: date ?? '',
@@ -113,20 +116,12 @@ export function NewRecordScreen() {
   return (
     <Screen
       testID="new-record-screen"
-      scroll={false}
+      presentation="sheet"
       footer={<Button label="Salvar registro" onPress={submit} loading={busy} fullWidth testID="save-record" />}
     >
-      {/* ScrollView próprio: o do Screen não pinta dentro de formSheet nativo (iOS 26). */}
-      <ScrollView
-        style={{ flex: 1 }}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        contentInsetAdjustmentBehavior="never"
-        contentContainerStyle={{ paddingTop: theme.space[4], paddingBottom: theme.space[6] }}
-      >
       <View style={{ gap: theme.layout.fieldGap }}>
         {saveError ? <Banner tone="danger" message={errorMessage(saveError, 'Não foi possível salvar o registro. Tente novamente.')} testID="save-error" /> : null}
-        <Select label="Pessoa" options={memberOptions} value={memberId} onChange={setMemberId} placeholder="Escolher pessoa" error={fieldError('member')} disabled={busy} testID="member-select" />
+        <Select label="Pessoa" options={memberOptions} value={selectedMemberId} onChange={setMemberId} placeholder="Escolher pessoa" error={fieldError('member')} disabled={busy} testID="member-select" />
         <Select label="Tipo" options={typeOptions} value={type} onChange={setType} placeholder="Escolher tipo" error={fieldError('type')} disabled={busy} testID="type-select" />
         <TextField label="Título" value={title} onChangeText={setTitle} placeholder="Ex.: Hemograma completo" error={fieldError('title')} disabled={busy} returnKeyType="next" testID="title-input" />
         <DateField label="Data" value={date} onChange={setDate} maximumDate={today} error={fieldError('date')} disabled={busy} testID="date-field" />
@@ -135,7 +130,6 @@ export function NewRecordScreen() {
         <TextField label="Observações" optional value={notes} onChangeText={setNotes} multiline maxLength={RECORD_NOTES_MAX} disabled={busy} testID="notes-input" />
         <AttachmentPicker files={files} onChange={setFiles} disabled={busy} />
       </View>
-      </ScrollView>
     </Screen>
   );
 }

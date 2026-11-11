@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMember } from '@/entities/member';
 import {
@@ -14,13 +13,12 @@ import { AttachmentViewer } from '@/widgets/attachment-viewer';
 import {
   Badge,
   Banner,
-  Button,
   Card,
   ConfirmSheet,
-  Divider,
   EmptyState,
   Icon,
   ListItem,
+  ListSection,
   LoadErrorState,
   Screen,
   Spinner,
@@ -31,19 +29,6 @@ import {
 } from '@/shared/ui';
 
 const sizeLabel = (bytes: number) => (bytes >= 1024 * 1024 ? `${(bytes / (1024 * 1024)).toFixed(1).replace('.', ',')} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`);
-
-function Field({ label, value }: { label: string; value: string | null }) {
-  const theme = useTheme();
-  if (!value) return null;
-  return (
-    <View style={{ marginTop: theme.space[4] }}>
-      <Text variant="footnote" color="secondary">
-        {label}
-      </Text>
-      <Text>{value}</Text>
-    </View>
-  );
-}
 
 /** Detalhe de um registro: campos, anexos (abre em tela cheia) e exclusão com confirmação. */
 export function RecordDetailScreen() {
@@ -64,7 +49,7 @@ export function RecordDetailScreen() {
   if (!record.data) {
     return (
       <Screen scroll={false}>
-        <EmptyState icon="document-outline" title="Registro não encontrado" message="Ele pode ter sido excluído." action={{ label: 'Voltar', onPress: () => router.back() }} />
+        <EmptyState icon="file" title="Registro não encontrado" message="Ele pode ter sido excluído." action={{ label: 'Voltar', onPress: () => router.back() }} />
       </Screen>
     );
   }
@@ -72,47 +57,50 @@ export function RecordDetailScreen() {
   const { colorIndex, icon } = RECORD_TYPE_APPEARANCE[r.type];
 
   return (
-    <Screen
-      testID="record-detail-screen"
-      footer={<Button label="Excluir registro" variant="destructive" icon="trash-outline" onPress={() => setConfirming(true)} fullWidth testID="delete-record" />}
-    >
+    <Screen testID="record-detail-screen">
       <Stack.Screen options={{ title: 'Registro' }} />
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.Menu icon="ellipsis" title="Mais ações" accessibilityLabel="Mais ações">
+          <Stack.Toolbar.MenuAction icon="trash" destructive onPress={() => setConfirming(true)}>
+            Excluir registro
+          </Stack.Toolbar.MenuAction>
+        </Stack.Toolbar.Menu>
+      </Stack.Toolbar>
       {remove.error ? <Banner tone="danger" message={errorMessage(remove.error, 'Não foi possível excluir. Nada foi apagado.')} style={{ marginBottom: theme.space[4] }} /> : null}
-      <Card tab={colorIndex}>
+      <Card accent={colorIndex}>
         <Badge label={recordTypeLabel(r.type)} colorIndex={colorIndex} icon={icon} />
         <Text variant="title2" style={{ marginTop: theme.space[3] }} accessibilityRole="header">
           {r.title}
         </Text>
-        <Field label="Pessoa" value={member.data?.fullName ?? null} />
-        <Field label="Data" value={formatDate(r.date, 'long')} />
-        <Field label="Local" value={r.location} />
-        <Field label="Profissional" value={r.professional} />
-        <Field label="Observações" value={r.notes} />
+        <Text color="secondary" style={{ marginTop: theme.space[1] }}>
+          {[member.data?.fullName, formatDate(r.date, 'long')].filter(Boolean).join(' · ')}
+        </Text>
       </Card>
 
-      <Text variant="headline" style={{ marginTop: theme.space[6], marginBottom: theme.space[2] }} accessibilityRole="header">
-        Anexos
-      </Text>
-      {r.attachments.length === 0 ? (
-        <Text color="secondary">Nenhum arquivo anexado a este registro.</Text>
-      ) : (
-        <View>
-          {r.attachments.map((a, i) => (
-            <View key={a.id}>
-              {i > 0 ? <Divider /> : null}
-              <ListItem
-                leading={<Icon name={a.mimeType === 'application/pdf' ? 'document-text-outline' : 'image-outline'} size={24} color="textSecondary" />}
-                title={a.fileName}
-                subtitle={`${a.mimeType === 'application/pdf' ? 'PDF' : 'Imagem'} · ${sizeLabel(a.sizeBytes)}`}
-                onPress={() => setOpened(a)}
-                chevron
-                accessibilityHint="Abre o arquivo em tela cheia"
-                testID={`attachment-${a.id}`}
-              />
-            </View>
-          ))}
-        </View>
-      )}
+      <ListSection header="Informações" style={{ marginTop: theme.space[6] }} separatorInset="none">
+        <ListItem leading={<Icon name="medical" size={22} color="textSecondary" />} title="Local" subtitle={r.location || 'Não informado'} testID="detail-location" />
+        <ListItem leading={<Icon name="stethoscope" size={22} color="textSecondary" />} title="Profissional" subtitle={r.professional || 'Não informado'} testID="detail-professional" />
+        <ListItem leading={<Icon name="fileText" size={22} color="textSecondary" />} title="Observações" subtitle={r.notes || 'Nenhuma observação'} testID="detail-notes" />
+      </ListSection>
+
+      <ListSection header="Anexos" style={{ marginTop: theme.space[6] }}>
+        {r.attachments.length === 0 ? (
+          <ListItem leading={<Icon name="attach" size={22} color="textSecondary" />} title="Nenhum arquivo anexado" subtitle="Os anexos deste registro aparecem aqui." />
+        ) : (
+          r.attachments.map((a) => (
+            <ListItem
+              key={a.id}
+              leading={<Icon name={a.mimeType === 'application/pdf' ? 'fileText' : 'gallery'} size={24} color="textSecondary" />}
+              title={a.fileName}
+              subtitle={`${a.mimeType === 'application/pdf' ? 'PDF' : 'Imagem'} · ${sizeLabel(a.sizeBytes)}`}
+              onPress={() => setOpened(a)}
+              chevron
+              accessibilityHint="Abre o arquivo em tela cheia"
+              testID={`attachment-${a.id}`}
+            />
+          ))
+        )}
+      </ListSection>
 
       <AttachmentViewer attachment={opened} onClose={() => setOpened(null)} />
       <ConfirmSheet

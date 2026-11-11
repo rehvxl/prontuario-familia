@@ -101,7 +101,7 @@ function Viewer({ attachment, onClose }: { attachment: Attachment; onClose: () =
         <View style={styles.body}>{body}</View>
         {isPdf(attachment) && Platform.OS === 'ios' ? (
           <View style={{ paddingBottom: insets.bottom + theme.space[2], paddingHorizontal: theme.layout.screenGutter }}>
-            <Button label="Fechar" variant="secondary" onPress={onClose} fullWidth />
+            <Button label="Fechar" variant="bordered" onPress={onClose} fullWidth />
           </View>
         ) : null}
       </View>

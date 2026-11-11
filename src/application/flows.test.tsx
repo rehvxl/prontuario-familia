@@ -7,6 +7,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-
 import { CURRENT_TERMS_VERSION } from '@/entities/consent';
 import { ConsentScreen } from '@/screens/consent';
 import { CreateFamilyScreen } from '@/screens/create-family';
+import { FamilyHomeScreen } from '@/screens/family-home';
 import { FirstMembersScreen } from '@/screens/first-members';
 import { MemberTimelineScreen } from '@/screens/member-timeline';
 import { NewRecordScreen } from '@/screens/new-record';
@@ -31,6 +32,18 @@ jest.mock('expo-router', () => {
   const React = require('react');
   const { Pressable, TextInput } = require('react-native');
   /* eslint-enable @typescript-eslint/no-require-imports */
+  // Stack.Toolbar.Menu: o menu "…" começa fechado e abre ao tocar; cada MenuAction vira um botão (como o UIMenu).
+  const Menu = ({ accessibilityLabel, children }: { accessibilityLabel: string; children?: unknown }) => {
+    const [open, setOpen] = React.useState(false);
+    return React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(Pressable, { accessibilityRole: 'button', accessibilityLabel, onPress: () => setOpen((o: boolean) => !o) }),
+      open ? children : null,
+    );
+  };
+  const MenuAction = ({ children, onPress }: { children: string; onPress: () => void }) =>
+    React.createElement(Pressable, { accessibilityRole: 'button', accessibilityLabel: children, onPress });
   const Toolbar = Object.assign(({ children }: { children?: unknown }) => React.createElement(React.Fragment, null, children), {
     Button: ({ accessibilityLabel, onPress }: { accessibilityLabel: string; onPress: () => void }) =>
       React.createElement(Pressable, {
@@ -38,6 +51,8 @@ jest.mock('expo-router', () => {
         accessibilityLabel,
         onPress,
       }),
+    Menu,
+    MenuAction,
   });
   const Stack = {
     Screen: () => null,
@@ -70,6 +85,22 @@ jest.mock('react-native-webview', () => ({ WebView: () => null }));
 jest.mock('expo-document-picker', () => ({
   getDocumentAsync: jest.fn(async () => ({ canceled: true, assets: null })),
 }));
+
+/**
+ * O `Button` v2 no iOS é um controle SwiftUI dentro de um wrapper acessível: o leitor de tela (e o teste)
+ * o aciona pela ação de acessibilidade `activate`, não por `onPress` (docs/DESIGN_SYSTEM.md §9.1).
+ */
+const activate = (element: Parameters<typeof fireEvent>[0]) =>
+  fireEvent(element, 'accessibilityAction', { nativeEvent: { actionName: 'activate' } });
+
+/**
+ * `Select` no iOS só monta o menu nativo depois de medir a largura do campo (onLayout): o teste faz a medição
+ * e então dispara a ação do menu como o sistema faria.
+ */
+const chooseOption = async (name: RegExp, value: string) => {
+  await fireEvent(screen.getByRole('button', { name }), 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 320, height: 48 } } });
+  await fireEvent(await screen.findByRole('button', { name }), 'pressAction', { nativeEvent: { event: value } });
+};
 
 // ---- apoio ----------------------------------------------------------------------------------------------------
 
@@ -228,7 +259,7 @@ describe('criar família e primeira pessoa', () => {
     await renderApp(<CreateFamilyScreen />);
 
     await fireEvent.changeText(screen.getByTestId('family-name-input'), 'Souza');
-    await fireEvent.press(screen.getByRole('button', { name: /continuar|criar/i }));
+    await activate(screen.getByRole('button', { name: /continuar|criar/i }));
 
     await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith('/(setup)/members'));
     await expect(container.families.getMyFamily()).resolves.toMatchObject({
@@ -245,8 +276,8 @@ describe('criar família e primeira pessoa', () => {
 
     await fireEvent.changeText(screen.getByTestId('member-name'), 'Bruno Souza');
     // Parentesco é um menu nativo (MenuView): dispara a ação como o sistema faria.
-    await fireEvent(screen.getByRole('button', { name: /Parentesco/ }), 'pressAction', { nativeEvent: { event: 'child' } });
-    await fireEvent.press(screen.getByRole('button', { name: 'Adicionar primeira pessoa' }));
+    await chooseOption(/Parentesco/, 'child');
+    await activate(screen.getByRole('button', { name: 'Adicionar primeira pessoa' }));
 
     await waitFor(async () => expect(await container.members.listByFamily(family.id)).toHaveLength(1));
     await waitFor(() => expect(screen.getByTestId('finish-setup')).toBeOnTheScreen());
@@ -258,21 +289,34 @@ describe('criar família e primeira pessoa', () => {
 });
 
 describe('novo registro', () => {
+  it('com uma única pessoa na família ela já vem escolhida, mesmo sem memberId na rota', async () => {
+    const { family, ana } = await seedFamily();
+    await renderApp(<NewRecordScreen />);
+    await waitFor(() => expect(screen.getByTestId('title-input')).toBeOnTheScreen());
+    expect(screen.getByRole('button', { name: /Pessoa: Ana Souza/ })).toBeOnTheScreen();
+
+    await chooseOption(/Tipo/, 'exam');
+    await fireEvent.changeText(screen.getByTestId('title-input'), 'Raio-X');
+    await activate(screen.getByTestId('save-record'));
+    await waitFor(() =>
+      expect(mockRouter.replace).toHaveBeenCalledWith({ pathname: '/(main)/member/[id]', params: { id: ana.id } }),
+    );
+    await expect(container.records.list(family.id)).resolves.toMatchObject([{ memberId: ana.id, title: 'Raio-X' }]);
+  });
+
   it('sem anexo: valida o título e depois salva e aparece na linha do tempo', async () => {
     const { family, ana } = await seedFamily();
     mockParams = { memberId: ana.id };
     await renderApp(<NewRecordScreen />);
     await waitFor(() => expect(screen.getByTestId('title-input')).toBeOnTheScreen());
 
-    await fireEvent(screen.getByTestId('type-select'), 'pressAction', {
-      nativeEvent: { event: 'exam' },
-    });
-    await fireEvent.press(screen.getByTestId('save-record'));
+    await chooseOption(/Tipo/, 'exam');
+    await activate(screen.getByTestId('save-record'));
     expect(await screen.findByText('Informe um título para o registro.')).toBeOnTheScreen();
     await expect(container.records.list(family.id)).resolves.toHaveLength(0);
 
     await fireEvent.changeText(screen.getByTestId('title-input'), 'Hemograma completo');
-    await fireEvent.press(screen.getByTestId('save-record'));
+    await activate(screen.getByTestId('save-record'));
     await waitFor(() => expect(mockRouter.back).toHaveBeenCalled());
     const saved = await container.records.list(family.id);
     expect(saved).toHaveLength(1);
@@ -305,11 +349,9 @@ describe('novo registro', () => {
     await renderApp(<NewRecordScreen />);
     await waitFor(() => expect(screen.getByTestId('title-input')).toBeOnTheScreen());
 
-    await fireEvent(screen.getByTestId('type-select'), 'pressAction', {
-      nativeEvent: { event: 'prescription' },
-    });
+    await chooseOption(/Tipo/, 'prescription');
     await fireEvent.changeText(screen.getByTestId('title-input'), 'Receita amoxicilina');
-    await fireEvent.press(screen.getByRole('button', { name: /Adicionar anexo/ }));
+    await activate(screen.getByRole('button', { name: /Adicionar anexo/ }));
     await screen.findByText('Escolher da galeria');
     await fireEvent.press(screen.getByRole('button', { name: 'Escolher da galeria' }));
     await waitFor(() => expect(mockLibrary).toHaveBeenCalled(), { timeout: 3000 });
@@ -318,11 +360,11 @@ describe('novo registro', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Remover anexo receita.jpg' }));
     expect(screen.queryByText('receita.jpg')).toBeNull();
 
-    await fireEvent.press(screen.getByRole('button', { name: /Adicionar anexo/ }));
+    await activate(screen.getByRole('button', { name: /Adicionar anexo/ }));
     await fireEvent.press(await screen.findByText('Escolher da galeria'));
     expect(await screen.findByText('receita.jpg')).toBeOnTheScreen();
 
-    await fireEvent.press(screen.getByTestId('save-record'));
+    await activate(screen.getByTestId('save-record'));
     await waitFor(() => expect(mockRouter.back).toHaveBeenCalled());
     const [record] = await container.records.list(family.id);
     expect(record?.attachments).toHaveLength(1);
@@ -333,7 +375,52 @@ describe('novo registro', () => {
   });
 });
 
+describe('home', () => {
+  it('mostra a contagem de registros por pessoa e o botão "Novo registro" já com a única pessoa', async () => {
+    const { family, ana } = await seedFamily();
+    await seedRecord(family.id, ana.id, { title: 'Hemograma completo', date: '2026-03-10' });
+    await seedRecord(family.id, ana.id, { type: 'consultation', title: 'Consulta cardiologista', date: '2026-02-02' });
+    await renderApp(<FamilyHomeScreen />);
+
+    expect(await screen.findByText(/2 registros/)).toBeOnTheScreen();
+    expect(screen.queryByTestId('demo-pill')).toBeNull();
+
+    await activate(screen.getByRole('button', { name: 'Novo registro' }));
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/(main)/record/new', params: { memberId: ana.id } });
+  });
+
+  it('com mais de uma pessoa o botão "Novo registro" abre o formulário sem pessoa escolhida; pessoa sem registro diz "nenhum registro"', async () => {
+    const { family } = await seedFamily();
+    await container.members.create({ familyId: family.id, fullName: 'Bruno Souza', birthDate: null, relationship: 'child', sex: 'male' });
+    await renderApp(<FamilyHomeScreen />);
+
+    expect(await screen.findAllByText(/nenhum registro/)).toHaveLength(2);
+    await activate(screen.getByRole('button', { name: 'Novo registro' }));
+    expect(mockRouter.push).toHaveBeenCalledWith('/(main)/record/new');
+  });
+
+  it('no modo demo mostra o aviso discreto e permite dispensá-lo', async () => {
+    await seedFamily();
+    await renderApp(<FamilyHomeScreen demo />);
+    expect(await screen.findByTestId('demo-pill')).toBeOnTheScreen();
+  });
+});
+
 describe('linha do tempo', () => {
+  it('oferece os 7 tipos como filtro e o botão "Novo registro" abre o formulário com a pessoa', async () => {
+    const { family, ana } = await seedFamily();
+    await seedRecord(family.id, ana.id, { title: 'Hemograma completo', date: '2026-03-10' });
+    mockParams = { id: ana.id };
+    await renderApp(<MemberTimelineScreen />);
+    await screen.findByText('Hemograma completo');
+
+    for (const name of ['Todos', 'Consulta', 'Exame', 'Resultado', 'Laudo', 'Receita', 'Vacina', 'Outro']) {
+      expect(screen.getByRole('button', { name })).toBeOnTheScreen();
+    }
+    await activate(screen.getByRole('button', { name: 'Novo registro' }));
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/(main)/record/new', params: { memberId: ana.id } });
+  });
+
   it('agrupa por mês, filtra por tipo e mostra o estado vazio do filtro', async () => {
     const { family, ana } = await seedFamily();
     await seedRecord(family.id, ana.id, {
@@ -360,12 +447,14 @@ describe('linha do tempo', () => {
     expect(await screen.findByText('Nenhum registro deste tipo')).toBeOnTheScreen();
   });
 
-  it('sem registros mostra o estado vazio com ação de adicionar', async () => {
+  it('sem registros mostra o estado vazio e a ação única de adicionar no botão flutuante', async () => {
     const { ana } = await seedFamily();
     mockParams = { id: ana.id };
     await renderApp(<MemberTimelineScreen />);
     expect(await screen.findByText(/Ainda não há documentos de Ana Souza/)).toBeOnTheScreen();
-    await fireEvent.press(screen.getAllByRole('button', { name: 'Adicionar registro' }).at(-1)!);
+    expect(screen.getAllByRole('button', { name: 'Novo registro' })).toHaveLength(1);
+    expect(screen.queryByRole('button', { name: 'Adicionar registro' })).toBeNull();
+    await activate(screen.getByRole('button', { name: 'Novo registro' }));
     expect(mockRouter.push).toHaveBeenCalledWith({
       pathname: '/(main)/record/new',
       params: { memberId: ana.id },
@@ -399,6 +488,36 @@ describe('busca', () => {
   });
 });
 
+describe('detalhe do registro', () => {
+  it('mostra local, profissional e observações numa seção (e "Não informado" quando vazios)', async () => {
+    const { family, ana } = await seedFamily();
+    const full = await container.records.create({
+      familyId: family.id,
+      memberId: ana.id,
+      type: 'consultation',
+      title: 'Consulta cardiologista',
+      date: '2026-03-10',
+      location: 'Clínica Coração',
+      professional: 'Dra. Helena Prado',
+      notes: 'Retorno em seis meses.',
+    });
+    mockParams = { id: full.id };
+    const first = await renderApp(<RecordDetailScreen />);
+    expect(await screen.findByText('Clínica Coração')).toBeOnTheScreen();
+    expect(screen.getByText('Dra. Helena Prado')).toBeOnTheScreen();
+    expect(screen.getByText('Retorno em seis meses.')).toBeOnTheScreen();
+    first.unmount();
+
+    const empty = await seedRecord(family.id, ana.id, { title: 'Hemograma completo', date: '2026-03-11' });
+    mockParams = { id: empty.id };
+    await renderApp(<RecordDetailScreen />);
+    expect(await screen.findByTestId('detail-location')).toBeOnTheScreen();
+    expect(screen.getByTestId('detail-professional')).toBeOnTheScreen();
+    expect(screen.getByTestId('detail-notes')).toBeOnTheScreen();
+    expect(screen.getAllByText(/Não informado|Nenhuma observação/).length).toBeGreaterThanOrEqual(3);
+  });
+});
+
 describe('excluir registro', () => {
   it('confirma, apaga, volta e some da linha do tempo e da busca', async () => {
     const { family, ana } = await seedFamily();
@@ -410,9 +529,10 @@ describe('excluir registro', () => {
     await renderApp(<RecordDetailScreen />);
 
     expect(await screen.findByText('Hemograma completo')).toBeOnTheScreen();
-    await fireEvent.press(screen.getByTestId('delete-record'));
+    await fireEvent.press(await screen.findByRole('button', { name: 'Mais ações' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Excluir registro' }));
     expect(await screen.findByText('Excluir este registro?')).toBeOnTheScreen();
-    await fireEvent.press(screen.getAllByRole('button', { name: 'Excluir registro' }).find((b) => b.props.testID !== 'delete-record')!);
+    await activate(screen.getAllByRole('button', { name: 'Excluir registro' }).at(-1)!);
 
     await waitFor(() => expect(mockRouter.back).toHaveBeenCalled());
     await expect(container.records.getById(record.id)).resolves.toBeNull();
@@ -429,7 +549,8 @@ describe('excluir registro', () => {
     await renderApp(<RecordDetailScreen />);
 
     await screen.findByText('Hemograma completo');
-    await fireEvent.press(screen.getByTestId('delete-record'));
+    await fireEvent.press(await screen.findByRole('button', { name: 'Mais ações' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Excluir registro' }));
     await fireEvent.press(await screen.findByRole('button', { name: 'Cancelar' }));
     expect(mockRouter.back).not.toHaveBeenCalled();
     await expect(container.records.list(family.id)).resolves.toHaveLength(1);

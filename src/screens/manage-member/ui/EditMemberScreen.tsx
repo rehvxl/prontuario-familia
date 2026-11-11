@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMember } from '@/entities/member';
 import { useRemoveMember, useUpdateMember } from '@/features/manage-members';
 import { MemberForm } from '@/widgets/member-form';
-import { Banner, Button, ConfirmSheet, EmptyState, Screen, Spinner, errorMessage, useTheme } from '@/shared/ui';
+import { Banner, ConfirmSheet, EmptyState, Screen, Spinner, errorMessage, useTheme } from '@/shared/ui';
 
 /** Editar ou remover uma pessoa. Remover apaga também os registros e anexos dela (com confirmação). */
 export function EditMemberScreen() {
@@ -28,6 +28,13 @@ export function EditMemberScreen() {
 
   return (
     <Screen testID="edit-member-screen">
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.Menu icon="ellipsis" title="Mais ações" accessibilityLabel="Mais ações">
+          <Stack.Toolbar.MenuAction icon="trash" destructive onPress={() => setConfirming(true)}>
+            Remover pessoa
+          </Stack.Toolbar.MenuAction>
+        </Stack.Toolbar.Menu>
+      </Stack.Toolbar>
       <MemberForm
         initial={{ fullName: m.fullName, birthDate: m.birthDate, relationship: m.relationship, sex: m.sex }}
         submitLabel="Salvar alterações"
@@ -35,16 +42,7 @@ export function EditMemberScreen() {
         error={update.error}
         onSubmit={(values) => update.mutate({ id: m.id, changes: values }, { onSuccess: () => router.back() })}
       />
-      <Button
-        label="Remover pessoa"
-        variant="destructive"
-        icon="trash-outline"
-        onPress={() => setConfirming(true)}
-        style={{ marginTop: theme.space[8] }}
-        fullWidth
-        testID="remove-member"
-      />
-      {remove.error && !confirming ? <Banner tone="danger" message={errorMessage(remove.error, 'Não foi possível remover. Nada foi apagado.')} style={{ marginTop: theme.space[4] }} /> : null}
+      {remove.error && !confirming ? <Banner tone="danger" message={errorMessage(remove.error, 'Não foi possível remover. Nada foi apagado.')} style={{ marginTop: theme.space[4] }} testID="remove-error" /> : null}
       <ConfirmSheet
         visible={confirming}
         destructive

@@ -3,13 +3,16 @@ import { FlatList, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useMyFamily } from '@/entities/family';
 import { useMembers } from '@/entities/member';
-import { RECORD_TYPE_OPTIONS, RecordCard, type RecordType } from '@/entities/health-record';
+import { RECORD_TYPE_OPTIONS, RecordListItem, type RecordType } from '@/entities/health-record';
 import { MIN_SEARCH_LENGTH, isSearchable, useSearchRecords } from '@/features/search-records';
-import { ChipGroup, EmptyState, ListSkeleton, LoadErrorState, OfflineBanner, useTheme } from '@/shared/ui';
+import { FloatingActions } from '@/widgets/floating-actions';
+import { ChipGroup, EmptyState, ListSection, ListSkeleton, LoadErrorState, headerTitleColors, useTheme } from '@/shared/ui';
 
 /** Busca em todos os registros da família, por texto (título, local, profissional, notas) e/ou tipo. */
 export function SearchScreen() {
   const theme = useTheme();
+  // O Stack.Title do expo-router zera as cores do título; sem isso o título herda o tint azul dos botões.
+  const titleColors = headerTitleColors(theme);
   const router = useRouter();
   const familyId = useMyFamily().data?.id;
   const members = useMembers(familyId).data ?? [];
@@ -27,7 +30,7 @@ export function SearchScreen() {
     if (!searchable) {
       return (
         <EmptyState
-          icon="search-outline"
+          icon="search"
           title="Busque no histórico da família"
           message={`Digite pelo menos ${MIN_SEARCH_LENGTH} letras (exame, médico, local) ou escolha um tipo.`}
         />
@@ -36,42 +39,54 @@ export function SearchScreen() {
     if (search.isError) return <LoadErrorState onRetry={() => void search.refetch()} />;
     if (search.isPending) return search.fetchStatus === 'paused' ? <LoadErrorState onRetry={() => void search.refetch()} /> : <ListSkeleton />;
     if (results.length === 0) {
-      return <EmptyState icon="document-outline" title="Nada encontrado" message="Confira a escrita ou tente outro termo ou tipo." />;
+      return <EmptyState icon="file" title="Nada encontrado" message="Confira a escrita ou tente outro termo ou tipo." />;
     }
     return null;
   })();
+
+  const [occupied, setOccupied] = useState(0);
+  const offline = search.fetchStatus === 'paused';
+  const shown = searchable && !search.isError && !search.isPending ? results : [];
 
   // A lista é a raiz da tela (primeiro filho) para o título grande do cabeçalho nativo encolher ao rolar.
   return (
     <>
       <FlatList
-        data={searchable && !search.isError && !search.isPending ? results : []}
-        keyExtractor={(r) => r.id}
+        data={shown.length > 0 ? [shown] : []}
+        keyExtractor={() => 'results'}
         keyboardShouldPersistTaps="handled"
         contentInsetAdjustmentBehavior="automatic"
         style={{ flex: 1, backgroundColor: theme.colors.background }}
-        contentContainerStyle={{ paddingHorizontal: theme.layout.screenGutter, paddingBottom: theme.space[10], flexGrow: 1 }}
-        ItemSeparatorComponent={() => <View style={{ height: theme.space[3] }} />}
+        contentContainerStyle={{ paddingBottom: occupied + theme.space[4], flexGrow: 1 }}
         ListHeaderComponent={
-          <View style={{ marginBottom: theme.space[3] }}>
-            <OfflineBanner visible={search.fetchStatus === 'paused'} />
-            <ChipGroup
-              options={RECORD_TYPE_OPTIONS}
-              value={types}
-              onChange={setTypes}
-              allLabel="Todos"
-              style={{ marginTop: theme.space[2], flexGrow: 0 }}
-              testID="search-type-filter"
-            />
-          </View>
+          <ChipGroup
+            options={RECORD_TYPE_OPTIONS}
+            value={types}
+            onChange={setTypes}
+            allLabel="Todos"
+            style={{ marginTop: theme.space[2], marginBottom: theme.space[3] }}
+            testID="search-type-filter"
+          />
         }
-        ListEmptyComponent={body ?? undefined}
+        ListEmptyComponent={body ? <View style={{ paddingHorizontal: theme.layout.screenGutter, flex: 1 }}>{body}</View> : undefined}
         renderItem={({ item }) => (
-          <RecordCard record={item} memberName={nameOf(item.memberId)} onPress={() => router.push({ pathname: '/(main)/record/[id]', params: { id: item.id } })} />
+          <ListSection
+            header={item.length === 1 ? '1 resultado' : `${item.length} resultados`}
+            style={{ marginHorizontal: theme.layout.screenGutter }}
+          >
+            {item.map((record) => (
+              <RecordListItem
+                key={record.id}
+                record={record}
+                memberName={nameOf(record.memberId)}
+                onPress={() => router.push({ pathname: '/(main)/record/[id]', params: { id: record.id } })}
+              />
+            ))}
+          </ListSection>
         )}
         testID="search-results"
       />
-      <Stack.Title large>Buscar</Stack.Title>
+      <Stack.Title large style={titleColors.headerTitleStyle} largeStyle={titleColors.headerLargeTitleStyle}>Buscar</Stack.Title>
       <Stack.SearchBar
         placeholder="Título, local, médico ou notas"
         placement="automatic"
@@ -79,6 +94,7 @@ export function SearchScreen() {
         onChangeText={(event) => setText(event.nativeEvent.text)}
         onCancelButtonPress={() => setText('')}
       />
+      <FloatingActions offline={offline} onOccupiedChange={setOccupied} />
     </>
   );
 }

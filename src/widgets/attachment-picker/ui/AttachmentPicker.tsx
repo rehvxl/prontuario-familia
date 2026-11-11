@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { ActionSheet, Banner, Button, FieldLabel, Icon, IconButton, ListItem, Text, errorMessage, useTheme } from '@/shared/ui';
+import { ActionSheet, Banner, Button, FieldLabel, Icon, IconButton, ListItem, ListSection, Text, errorMessage, useTheme } from '@/shared/ui';
 import { validateAttachment, type LocalFile } from '@/entities/health-record';
 import { pickDocuments, pickFromLibrary, takePhoto } from '../lib/pick-attachments';
 
@@ -48,16 +48,16 @@ export function AttachmentPicker({ files, onChange, disabled = false }: Attachme
       <FieldLabel label="Anexos" optional />
       {message ? <Banner tone="danger" message={message} onDismiss={() => setMessage(null)} /> : null}
       {files.length > 0 ? (
-        <View testID="attachment-list">
+        <ListSection testID="attachment-list" separatorInset="text">
           {files.map((file, index) => (
             <ListItem
               key={`${file.uri}-${index}`}
-              leading={<Icon name={file.mimeType === 'application/pdf' ? 'document-text-outline' : 'image-outline'} color="textSecondary" />}
+              leading={<Icon name={file.mimeType === 'application/pdf' ? 'fileText' : 'gallery'} color="textSecondary" />}
               title={file.fileName}
               subtitle={formatSize(file.sizeBytes)}
               trailing={
                 <IconButton
-                  icon="close-circle-outline"
+                  icon="closeCircle"
                   accessibilityLabel={`Remover anexo ${file.fileName}`}
                   onPress={() => onChange(files.filter((_, i) => i !== index))}
                   disabled={disabled}
@@ -65,23 +65,23 @@ export function AttachmentPicker({ files, onChange, disabled = false }: Attachme
               }
             />
           ))}
-        </View>
+        </ListSection>
       ) : (
         <Text variant="subhead" color="secondary">
           Fotos de exames, receitas e laudos, ou PDFs. Até 20 MB cada.
         </Text>
       )}
       <View style={styles.row}>
-        <Button label="Adicionar anexo" icon="attach-outline" variant="secondary" onPress={() => setSheetOpen(true)} disabled={disabled} />
+        <Button label="Adicionar anexo" icon="attach" variant="bordered" onPress={() => setSheetOpen(true)} disabled={disabled} />
       </View>
       <ActionSheet
         visible={sheetOpen}
         onClose={() => setSheetOpen(false)}
         title="Adicionar anexo"
         options={[
-          { label: 'Tirar foto', icon: 'camera-outline', onPress: () => void add(takePhoto) },
-          { label: 'Escolher da galeria', icon: 'images-outline', onPress: () => void add(pickFromLibrary) },
-          { label: 'Escolher arquivo (PDF ou imagem)', icon: 'document-outline', onPress: () => void add(pickDocuments) },
+          { label: 'Tirar foto', icon: 'camera', onPress: () => void add(takePhoto) },
+          { label: 'Escolher da galeria', icon: 'gallery', onPress: () => void add(pickFromLibrary) },
+          { label: 'Escolher arquivo (PDF ou imagem)', icon: 'file', onPress: () => void add(pickDocuments) },
         ]}
       />
     </View>

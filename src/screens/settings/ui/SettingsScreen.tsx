@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { View } from 'react-native';
 import { useCurrentUser } from '@/entities/session';
 import { useExportData } from '@/features/export-data';
 import { useSignOut } from '@/features/auth';
-import { Banner, ConfirmSheet, Divider, Icon, ListItem, Screen, Spinner, Text, errorMessage, useTheme } from '@/shared/ui';
+import { Banner, ConfirmSheet, Icon, ListItem, ListSection, Screen, Spinner, errorMessage, useTheme } from '@/shared/ui';
 import { shareExport } from '../lib/share-export';
 
 /** Ação assíncrona vinda da rota (que a monta com os hooks da camada application). */
@@ -21,15 +20,6 @@ export interface SettingsScreenProps {
 }
 
 type Sheet = 'signOut' | 'revoke' | 'delete1' | 'delete2' | null;
-
-function SectionTitle({ children }: { children: string }) {
-  const theme = useTheme();
-  return (
-    <Text variant="footnote" color="secondary" accessibilityRole="header" style={{ marginTop: theme.space[6], marginBottom: theme.space[1] }}>
-      {children}
-    </Text>
-  );
-}
 
 /** Ajustes: conta, modo, exportar dados, revogar consentimento, sair e excluir conta (confirmação dupla). */
 export function SettingsScreen({ mode, revokeConsent, deleteAccount }: SettingsScreenProps) {
@@ -61,52 +51,56 @@ export function SettingsScreen({ mode, revokeConsent, deleteAccount }: SettingsS
     <Screen testID="settings-screen">
       {error ? <Banner tone="danger" message={errorMessage(error, 'Não foi possível concluir. Tente novamente.')} style={{ marginBottom: theme.space[2] }} testID="settings-error" /> : null}
 
-      <SectionTitle>Conta</SectionTitle>
-      <ListItem leading={<Icon name="person-circle-outline" size={24} color="textSecondary" />} title={user.email ?? user.displayName ?? 'Conta sem e-mail'} subtitle="Conectado" />
-      <Divider />
-      <ListItem
-        leading={<Icon name="flask-outline" size={24} color="textSecondary" />}
-        title={mode === 'demo' ? 'Modo demonstração' : 'Conectado ao servidor'}
-        subtitle={mode === 'demo' ? 'Os dados ficam só neste aparelho.' : 'Seus dados ficam protegidos na nuvem.'}
-        testID="mode-item"
-      />
+      <ListSection header="Conta" footer={mode === 'demo' ? 'No modo demonstração os dados ficam só neste aparelho.' : undefined} style={{ marginTop: theme.space[2] }}>
+        <ListItem leading={<Icon name="personCircle" size={26} color="textSecondary" />} title={user.email ?? user.displayName ?? 'Conta sem e-mail'} subtitle="Conectado" />
+        <ListItem
+          leading={<Icon name="flask" size={24} color="textSecondary" />}
+          title={mode === 'demo' ? 'Modo demonstração' : 'Conectado ao servidor'}
+          subtitle={mode === 'demo' ? 'Dados de teste, sem servidor.' : 'Seus dados ficam protegidos na nuvem.'}
+          testID="mode-item"
+        />
+      </ListSection>
 
-      <SectionTitle>Seus dados</SectionTitle>
-      <ListItem
-        leading={<Icon name="download-outline" size={24} color="textSecondary" />}
-        title="Exportar meus dados"
-        subtitle="Gera um arquivo JSON com tudo o que você guardou."
-        onPress={() => void doExport()}
-        disabled={exporting}
-        trailing={exporting ? <Spinner size="small" /> : undefined}
-        chevron
-        testID="export-data"
-      />
-      <Divider />
-      <ListItem
-        leading={<Icon name="hand-left-outline" size={24} color="textSecondary" />}
-        title="Revogar consentimento"
-        subtitle="Para de tratar seus dados de saúde. Você precisará aceitar de novo para continuar."
-        onPress={() => setSheet('revoke')}
-        chevron
-        testID="revoke-consent"
-      />
+      <ListSection header="Seus dados" style={{ marginTop: theme.space[6] }}>
+        <ListItem
+          leading={<Icon name="download" size={24} color="textSecondary" />}
+          title="Exportar meus dados"
+          subtitle="Gera um arquivo JSON com tudo o que você guardou."
+          onPress={() => void doExport()}
+          disabled={exporting}
+          trailing={exporting ? <Spinner size="small" /> : undefined}
+          chevron
+          testID="export-data"
+        />
+        <ListItem
+          leading={<Icon name="hand" size={24} color="textSecondary" />}
+          title="Revogar consentimento"
+          subtitle="Para de tratar seus dados de saúde. Você precisará aceitar de novo para continuar."
+          onPress={() => setSheet('revoke')}
+          chevron
+          testID="revoke-consent"
+        />
+      </ListSection>
 
-      <SectionTitle>Sessão</SectionTitle>
-      <ListItem leading={<Icon name="log-out-outline" size={24} color="textSecondary" />} title="Sair" onPress={() => setSheet('signOut')} chevron testID="sign-out" />
-      <Divider />
-      <ListItem
-        leading={<Icon name="trash-outline" size={24} color="danger" />}
-        title="Excluir conta"
-        subtitle="Apaga a conta e todos os dados da família."
-        destructive
-        onPress={() => {
-          deleteAccount.reset();
-          setSheet('delete1');
-        }}
-        testID="delete-account"
-      />
-      <View style={{ height: theme.space[8] }} />
+      <ListSection style={{ marginTop: theme.space[6] }}>
+        <ListItem leading={<Icon name="logout" size={24} color="textSecondary" />} title="Sair" onPress={() => setSheet('signOut')} chevron testID="sign-out" />
+      </ListSection>
+
+      <ListSection
+        footer="Apaga a conta e todos os dados da família, para sempre."
+        style={{ marginTop: theme.space[6], marginBottom: theme.space[8] }}
+      >
+        <ListItem
+          leading={<Icon name="trash" size={24} color="danger" />}
+          title="Excluir conta"
+          destructive
+          onPress={() => {
+            deleteAccount.reset();
+            setSheet('delete1');
+          }}
+          testID="delete-account"
+        />
+      </ListSection>
 
       <ConfirmSheet
         visible={sheet === 'signOut'}

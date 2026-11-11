@@ -21,10 +21,10 @@ export { filterByTypes, groupByMonth, monthLabel, sortRecords } from './domain/t
 export type { MonthGroup } from './domain/timeline';
 export { createLocalAttachmentStorage } from './data/local-attachment-storage';
 export { createLocalHealthRecordRepository } from './data/local-health-record-repository';
-export { recordKeys, useAttachmentUrl, useMemberTimeline, useRecord } from './model/queries';
+export { recordKeys, useAttachmentUrl, useMemberTimeline, useRecord, useRecordCounts } from './model/queries';
 export { useAttachmentStorage, useHealthRecordRepository } from './model/dependencies';
 export { createSupabaseAttachmentStorage } from './data/supabase-attachment-storage';
 export { createSupabaseHealthRecordRepository } from './data/supabase-health-record-repository';
 export { RECORD_TYPE_APPEARANCE, RECORD_TYPE_OPTIONS } from './ui/recordTypeAppearance';
-export { RecordCard } from './ui/RecordCard';
-export type { RecordCardProps } from './ui/RecordCard';
+export { RecordListItem } from './ui/RecordListItem';
+export type { RecordListItemProps } from './ui/RecordListItem';

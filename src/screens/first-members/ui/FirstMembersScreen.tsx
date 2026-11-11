@@ -5,7 +5,7 @@ import { useMyFamily } from '@/entities/family';
 import { MemberListItem, useMembers } from '@/entities/member';
 import { useAddMember } from '@/features/manage-members';
 import { MemberForm } from '@/widgets/member-form';
-import { Button, Divider, Screen, Spinner, Text, useTheme } from '@/shared/ui';
+import { Button, ListSection, Screen, Spinner, Text, useTheme } from '@/shared/ui';
 
 /** Segundo passo do setup: cadastrar as primeiras pessoas. Depois da primeira, dá para concluir. */
 export function FirstMembersScreen() {
@@ -30,14 +30,13 @@ export function FirstMembersScreen() {
         Adicione quem terá o histórico de saúde guardado aqui. Você pode incluir mais pessoas depois.
       </Text>
       {members.length > 0 ? (
-        <View style={{ marginBottom: theme.space[6] }}>
-          {members.map((m, i) => (
-            <View key={m.id}>
-              {i > 0 ? <Divider /> : null}
-              <MemberListItem member={m} />
-            </View>
-          ))}
-          <Text variant="headline" style={{ marginTop: theme.space[6] }}>
+        <View style={{ marginBottom: theme.space[6], gap: theme.space[6] }}>
+          <ListSection header="Já adicionadas">
+            {members.map((m) => (
+              <MemberListItem key={m.id} member={m} />
+            ))}
+          </ListSection>
+          <Text variant="headline" accessibilityRole="header">
             Adicionar outra pessoa
           </Text>
         </View>
