@@ -5,6 +5,7 @@ import { FocusRing, useFocusState } from '../lib/focus';
 import { selectionFeedback } from '../lib/haptics';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
+import { useScreenHorizontalInset } from './Screen';
 
 const CHIP_HEIGHT = 40;
 
@@ -105,7 +106,10 @@ export interface ChipGroupProps<T extends string> {
   multiple?: boolean;
   /** Se informado, mostra um primeiro chip (ex.: "Todos") selecionado quando nada está filtrado; tocar limpa. */
   allLabel?: string;
-  /** Recuo lateral do conteúdo rolável. Padrão: margem da tela, para os chips correrem até a borda. */
+  /**
+   * Recuo lateral do conteúdo rolável. Padrão: margem da tela. O primeiro chip alinha com a margem e a
+   * rolagem sangra até a borda: dentro de um `Screen` com padding, o grupo desfaz o recuo do Screen.
+   */
   inset?: number;
   style?: StyleProp<ViewStyle>;
   testID?: string;
@@ -114,6 +118,8 @@ export interface ChipGroupProps<T extends string> {
 /** Linha horizontal rolável de FilterChips. */
 export function ChipGroup<T extends string>({ options, value, onChange, multiple = true, allLabel, inset, style, testID }: ChipGroupProps<T>) {
   const theme = useTheme();
+  const screenInset = useScreenHorizontalInset();
+  const pad = inset ?? (screenInset || theme.layout.screenGutter);
   const toggle = (v: T) => {
     const isOn = value.includes(v);
     if (multiple) onChange(isOn ? value.filter((x) => x !== v) : [...value, v]);
@@ -123,9 +129,9 @@ export function ChipGroup<T extends string>({ options, value, onChange, multiple
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      style={style}
+      style={[{ flexGrow: 0, flexShrink: 0, marginHorizontal: -screenInset }, style]}
       testID={testID}
-      contentContainerStyle={{ paddingHorizontal: inset ?? theme.layout.screenGutter, paddingVertical: theme.space[1], gap: theme.space[2] }}
+      contentContainerStyle={{ paddingHorizontal: pad, paddingVertical: theme.space[1], gap: theme.space[2] }}
     >
       {allLabel ? <FilterChip label={allLabel} selected={value.length === 0} onPress={() => onChange([])} /> : null}
       {options.map((opt) => (

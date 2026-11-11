@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overdrive — Prontuário da Família</title>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+:root{
+  --bg:#F2F2F7; --surface:#FFFFFF; --sunken:#E9E9EF; --t1:#111114; --t2:#55555C; --t3:#6B6B72;
+  --sep:#DCDCE1; --primary:#1D5BD6; --onPrimary:#fff;
+  --glass:rgba(255,255,255,.62); --glassEdge:rgba(255,255,255,.9); --glassShadow:0 8px 24px rgba(20,30,60,.16), 0 1px 2px rgba(20,30,60,.10);
+  --page:#E7E7EC; --pageText:#111114; --pageSub:#55555C; --card:#FFFFFF; --cardEdge:#DCDCE1;
+  --c-blue:#2563EB; --c-teal:#0F766E; --c-green:#15803D; --c-amber:#B45309; --c-rose:#BE123C; --c-violet:#6D28D9; --c-slate:#475569;
+  --s-blue:#E3ECFE; --s-teal:#DDF3F0; --s-green:#E1F4E6; --s-amber:#FBEEDC; --s-rose:#FCE4EA; --s-violet:#EDE6FC; --s-slate:#E7EBF0;
+  --ease-out:cubic-bezier(.16,1,.3,1);
+}
+[data-scheme="dark"]{
+  --bg:#000; --surface:#1C1C1E; --sunken:#2C2C2E; --t1:#FFFFFF; --t2:#AEAEB2; --t3:#98989F;
+  --sep:#38383A; --primary:#6E9EFF; --onPrimary:#06142F;
+  --glass:rgba(40,40,44,.55); --glassEdge:rgba(255,255,255,.18); --glassShadow:0 8px 28px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.4);
+  --page:#0E0E10; --pageText:#F2F2F5; --pageSub:#A4A4AA; --card:#18181B; --cardEdge:#2A2A2E;
+  --c-blue:#7FA8FF; --c-teal:#4FD1C0; --c-green:#6BD68A; --c-amber:#F5B35C; --c-rose:#FF8FA8; --c-violet:#B79CFF; --c-slate:#A8B4C4;
+  --s-blue:#16264A; --s-teal:#0F2E2B; --s-green:#132B1B; --s-amber:#33230E; --s-rose:#3A1520; --s-violet:#251B40; --s-slate:#1E2530;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page);color:var(--pageText);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+::selection{background:color-mix(in srgb,var(--primary) 30%,transparent)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible{outline:3px solid var(--primary);outline-offset:2px;border-radius:12px}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 48px}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+h1{font-size:30px;letter-spacing:-.025em;line-height:1.1;font-weight:700}
+.lede{color:var(--pageSub);font-size:15px;line-height:1.45;max-width:68ch;margin:10px 0 26px}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--cardEdge);border-radius:999px;padding:3px}
+.seg button{padding:7px 14px;border-radius:999px;font-size:14px;color:var(--pageSub)}
+.seg button[aria-pressed="true"]{background:var(--pageText);color:var(--page)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:22px}
+.dir{background:var(--card);border:1px solid var(--cardEdge);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.dir h2{font-size:20px;letter-spacing:-.02em}
+.dir .tag{font-size:13px;color:var(--pageSub);margin-top:-8px}
+.dir p{font-size:14px;line-height:1.5;color:var(--pageSub)}
+.dir p b{color:var(--pageText);font-weight:600}
+.hint{font-size:12.5px;color:var(--pageSub);text-align:center}
+dl.trade{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:13px;border-top:1px solid var(--cardEdge);padding-top:12px}
+dl.trade dt{color:var(--pageSub)} dl.trade dd{color:var(--pageText)}
+.pick{margin-top:auto;padding:12px;border-radius:999px;background:var(--pageText);color:var(--page);font-weight:600;font-size:15px}
+.rec{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--s-blue);color:var(--c-blue);margin-left:6px;vertical-align:3px}
+
+/* ---------- phone ---------- */
+.phone{position:relative;width:300px;height:640px;margin:0 auto;border-radius:52px;padding:10px;background:#0b0b0d;box-shadow:0 30px 60px -20px rgba(0,0,0,.45),inset 0 0 0 2px #2a2a2e}
+.screen{position:relative;width:100%;height:100%;border-radius:43px;overflow:hidden;background:var(--bg);color:var(--t1);isolation:isolate}
+.island{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:92px;height:27px;border-radius:20px;background:#000;z-index:50}
+.status{position:absolute;top:0;left:0;right:0;height:46px;display:flex;justify-content:space-between;align-items:center;padding:4px 28px 0 32px;font-size:14px;font-weight:600;z-index:40;pointer-events:none}
+.status i{display:inline-flex;gap:4px}
+.status svg{width:15px;height:15px}
+.view{position:absolute;inset:0;padding-top:50px;overflow:hidden;background:var(--bg)}
+.view.scroll{overflow-y:auto;scrollbar-width:none}
+.view.scroll::-webkit-scrollbar{display:none}
+.lt{font-size:31px;font-weight:700;letter-spacing:-.02em;padding:6px 18px 10px}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:4px 10px;height:44px}
+.navbar .ttl{font-size:16px;font-weight:600}
+.gbtn{width:38px;height:38px;border-radius:999px;display:grid;place-items:center;background:var(--glass);backdrop-filter:blur(18px) saturate(1.8);-webkit-backdrop-filter:blur(18px) saturate(1.8);box-shadow:var(--glassShadow),inset 0 0 0 .5px var(--glassEdge)}
+.gbtn svg{width:19px;height:19px}
+.section{margin:0 14px 18px;background:var(--surface);border-radius:20px;overflow:hidden}
+.sh{font-size:13px;color:var(--t2);padding:0 30px 6px;text-transform:none}
+.row{display:flex;align-items:center;gap:12px;padding:10px 14px;min-height:60px;width:100%;text-align:left;position:relative}
+.row + .row::before{content:"";position:absolute;top:0;left:66px;right:0;height:.5px;background:var(--sep)}
+.row:active{background:var(--sunken)}
+.av{width:40px;height:40px;border-radius:999px;display:grid;place-items:center;font-weight:600;font-size:15px;flex-shrink:0}
+.rt{flex:1;min-width:0}
+.rt b{display:block;font-size:16px;font-weight:500}
+.rt span{display:block;font-size:13.5px;color:var(--t2);margin-top:1px}
+.chev{width:15px;height:15px;color:var(--t3)}
+.tabbar{position:absolute;left:14px;right:78px;bottom:22px;height:58px;border-radius:999px;display:flex;justify-content:space-around;align-items:center;background:var(--glass);backdrop-filter:blur(20px) saturate(1.8);-webkit-backdrop-filter:blur(20px) saturate(1.8);box-shadow:var(--glassShadow),inset 0 0 0 .5px var(--glassEdge);z-index:30}
+.tab{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:500;color:var(--t2);padding:6px 10px;border-radius:999px}
+.tab svg{width:21px;height:21px}
+.tab.on{color:var(--primary);background:color-mix(in srgb,var(--t1) 7%,transparent)}
+.fab{position:absolute;right:14px;bottom:22px;width:58px;height:58px;border-radius:999px;display:grid;place-items:center;background:var(--glass);backdrop-filter:blur(20px) saturate(1.8);-webkit-backdrop-filter:blur(20px) saturate(1.8);box-shadow:var(--glassShadow),inset 0 0 0 .5px var(--glassEdge);z-index:31;color:var(--primary)}
+.fab svg{width:26px;height:26px}
+.home-ind{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:110px;height:4.5px;border-radius:9px;background:var(--t1);opacity:.85;z-index:60;pointer-events:none}
+
+/* record cards */
+.month{font-size:13px;font-weight:600;color:var(--t2);padding:6px 30px 6px;letter-spacing:.01em}
+.rcard{margin:0 14px 10px;background:var(--surface);border-radius:20px;padding:13px 14px;display:flex;gap:12px;align-items:flex-start;width:calc(100% - 28px);text-align:left}
+.ricon{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex-shrink:0}
+.ricon svg{width:19px;height:19px}
+.rbody{flex:1;min-width:0}
+.rbody b{display:block;font-size:15.5px;font-weight:600;letter-spacing:-.01em}
+.rbody span{display:block;font-size:13px;color:var(--t2);margin-top:2px}
+.rmeta{display:flex;gap:8px;align-items:center;margin-top:7px;font-size:12px;color:var(--t2)}
+.badge{font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px}
+.rdate{font-size:13px;color:var(--t2);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* member header */
+.mh{display:flex;flex-direction:column;align-items:center;padding:4px 0 16px}
+.mh .bigav{width:84px;height:84px;font-size:30px}
+.mh h3{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-top:10px}
+.mh span{font-size:13.5px;color:var(--t2);margin-top:2px}
+
+.chips{display:flex;gap:7px;padding:0 14px 14px;overflow-x:auto;scrollbar-width:none}
+.chip{padding:7px 13px;border-radius:999px;background:var(--surface);font-size:13.5px;font-weight:500;white-space:nowrap;color:var(--t1);transition:background .25s,color .25s}
+.chip[aria-pressed="true"]{background:var(--primary);color:var(--onPrimary)}
+
+/* detail */
+.doc{margin:4px 14px 14px;height:220px;border-radius:20px;background:var(--surface);position:relative;overflow:hidden;display:flex;flex-direction:column;gap:7px;padding:22px 20px}
+.doc i{display:block;height:7px;border-radius:4px;background:var(--sunken)}
+.dfacts .row{min-height:48px}
+.dfacts .rt b{font-size:15px}
+.k{font-size:13px;color:var(--t2);width:96px;flex-shrink:0}
+
+/* glass morph menu (A) */
+.gmenu{position:absolute;right:14px;bottom:22px;z-index:32;display:flex;flex-direction:column;align-items:flex-end;gap:8px;pointer-events:none}
+.gopt{display:flex;align-items:center;gap:10px;height:52px;padding:0 18px 0 16px;border-radius:999px;background:var(--glass);backdrop-filter:blur(20px) saturate(1.8);-webkit-backdrop-filter:blur(20px) saturate(1.8);box-shadow:var(--glassShadow),inset 0 0 0 .5px var(--glassEdge);font-size:15px;font-weight:600;opacity:0;transform:translateY(40px) scale(.4);transform-origin:right bottom;pointer-events:auto}
+.gopt svg{width:20px;height:20px;color:var(--primary)}
+.dim{position:absolute;inset:0;background:color-mix(in srgb,var(--bg) 40%,transparent);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);opacity:0;pointer-events:none;z-index:29;transition:opacity .35s var(--ease-out)}
+.open .dim{opacity:1;pointer-events:auto}
+
+/* B scrubber */
+.scrub{position:absolute;right:4px;top:120px;bottom:100px;width:30px;z-index:35;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:8px 0;border-radius:999px;touch-action:none;cursor:ns-resize}
+.scrub span{font-size:10px;font-weight:600;color:var(--t3);font-variant-numeric:tabular-nums;opacity:0;transition:opacity .2s}
+.scrub::before{content:"";position:absolute;right:3px;top:50%;width:5px;height:44px;margin-top:-22px;border-radius:9px;background:var(--t3);opacity:.45;transition:opacity .2s}
+.scrub.active span{opacity:1}.scrub.active::before{opacity:0}
+.scrub.active{background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:var(--glassShadow),inset 0 0 0 .5px var(--glassEdge)}
+.bubble{position:absolute;right:42px;z-index:36;padding:9px 14px;border-radius:16px;background:var(--glass);backdrop-filter:blur(20px) saturate(1.8);-webkit-backdrop-filter:blur(20px) saturate(1.8);box-shadow:var(--glassShadow),inset 0 0 0 .5px var(--glassEdge);opacity:0;transform:translateX(8px) scale(.96);transition:opacity .2s,transform .3s var(--ease-out);pointer-events:none;text-align:right}
+.bubble b{display:block;font-size:24px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.bubble span{font-size:12px;color:var(--t2)}
+.bubble.show{opacity:1;transform:none}
+.stickyhead{position:sticky;top:0;z-index:20;padding:6px 0 2px;margin-bottom:4px;background:linear-gradient(var(--bg) 70%,transparent)}
+.colhead{display:flex;align-items:center;gap:10px;padding:0 16px 8px}
+.colhead .av{transition:width .2s,height .2s}
+.ytick{display:flex;align-items:baseline;gap:8px;padding:14px 30px 6px}
+.ytick b{font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ytick span{font-size:12.5px;color:var(--t2)}
+.spine{position:relative}
+.rcard.flash{animation:flash 1.4s var(--ease-out)}
+@keyframes flash{0%{box-shadow:0 0 0 3px var(--primary)}100%{box-shadow:0 0 0 0 transparent}}
+
+/* C capture */
+.cam{position:absolute;inset:0;background:#0a0a0b;z-index:45;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .3s}
+.cam.on{opacity:1;pointer-events:auto}
+.vf{flex:1;position:relative;overflow:hidden;background:radial-gradient(120% 80% at 50% 40%,#3a3530,#151312)}
+.paper{position:absolute;left:58px;top:120px;width:170px;height:228px;background:#F4F1EA;border-radius:4px;transform:rotate(-6deg) skewX(-2deg);box-shadow:0 18px 30px rgba(0,0,0,.45);padding:18px 14px;display:flex;flex-direction:column;gap:6px}
+.paper i{display:block;height:5px;border-radius:3px;background:#cfc9bd}
+.paper i.h{height:9px;width:60%;background:#8f877a;margin-bottom:6px}
+.edge{position:absolute;left:58px;top:120px;width:170px;height:228px;border-radius:6px;transform:rotate(-6deg) skewX(-2deg);border:2.5px solid #FFD35C;background:rgba(255,211,92,.14);opacity:0;transition:opacity .25s}
+.edge.lock{opacity:1;animation:lock .5s var(--ease-out)}
+@keyframes lock{0%{transform:rotate(-6deg) skewX(-2deg) scale(1.12)}100%{transform:rotate(-6deg) skewX(-2deg) scale(1)}}
+.camhint{position:absolute;top:62px;left:50%;transform:translateX(-50%);padding:7px 14px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font-size:13px;font-weight:500;white-space:nowrap;backdrop-filter:blur(10px)}
+.cambar{height:150px;display:flex;align-items:center;justify-content:space-around;padding-bottom:20px;color:#fff}
+.shutter{width:72px;height:72px;border-radius:999px;border:4px solid #fff;display:grid;place-items:center}
+.shutter::after{content:"";width:58px;height:58px;border-radius:999px;background:#fff;transition:transform .15s}
+.shutter:active::after{transform:scale(.88)}
+.camside{font-size:14px;font-weight:500;width:70px;text-align:center}
+.who{position:absolute;left:12px;right:12px;bottom:26px;z-index:46;border-radius:30px;background:var(--glass);backdrop-filter:blur(24px) saturate(1.8);-webkit-backdrop-filter:blur(24px) saturate(1.8);box-shadow:var(--glassShadow),inset 0 0 0 .5px var(--glassEdge);padding:14px;transform:translateY(130%);transition:transform .5s var(--ease-out)}
+.who.on{transform:none}
+.who h4{font-size:15px;font-weight:600;padding:0 4px 10px}
+.whos{display:flex;gap:8px}
+.whos button{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0;border-radius:18px;font-size:12.5px;font-weight:500}
+.whos button:active{background:color-mix(in srgb,var(--t1) 8%,transparent)}
+.flyer{position:absolute;z-index:80;background:#F4F1EA;border-radius:6px;box-shadow:0 10px 30px rgba(0,0,0,.35);pointer-events:none}
+.toast{position:absolute;left:50%;top:58px;transform:translate(-50%,-260%);z-index:70;display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;background:var(--glass);backdrop-filter:blur(20px) saturate(1.8);-webkit-backdrop-filter:blur(20px) saturate(1.8);box-shadow:var(--glassShadow),inset 0 0 0 .5px var(--glassEdge);font-size:13.5px;font-weight:600;white-space:nowrap;transition:transform .5s var(--ease-out)}
+.toast.on{transform:translate(-50%,0)}
+.toast svg{width:17px;height:17px;color:var(--c-green)}
+.newrow{animation:grow .6s var(--ease-out)}
+@keyframes grow{from{opacity:0;transform:translateY(-10px) scale(.97)}to{opacity:1;transform:none}}
+
+.replay{display:flex;justify-content:center;gap:8px}
+.replay button{font-size:13px;padding:6px 12px;border-radius:999px;border:1px solid var(--cardEdge);color:var(--pageSub)}
+
+@media (prefers-reduced-motion: reduce){ *{animation-duration:.01ms!important;transition-duration:.01ms!important} }
+</style>
+</head>
+<body data-scheme="light">
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Três direções overdrive</h1>
+    </div>
+    <div class="seg" role="group" aria-label="Aparência">
+      <button aria-pressed="true" data-s="light">Claro</button>
+      <button aria-pressed="false" data-s="dark">Escuro</button>
+    </div>
+  </header>
+  <p class="lede">Cada direção escolhe <b>um</b> momento extraordinário para o app inteiro e mantém o resto calmo e nativo. Os mocks são interativos: toque neles. Eles simulam no navegador o que seria feito com o kit do Expo 58 que já está instalado (zoom nativo, vidro que se funde, Reanimated, vibração). Os dados são de demonstração.</p>
+
+  <div class="grid">
+    <!-- ================= A ================= -->
+    <section class="dir" id="A">
+      <h2>A · Tudo nasce do toque <span class="rec">Recomendada</span></h2>
+      <div class="tag">Continuidade espacial, a linguagem do iOS 26</div>
+      <div class="phone"><div class="screen" id="sA">
+        <div class="island"></div><div class="status"><span>9:41</span><i><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></i></div>
+
+        <div class="view scroll" id="A-home">
+          <div class="lt">Família</div>
+          <div class="sh">Família Souza · 4 pessoas</div>
+          <div class="section" id="A-members"></div>
+          <div class="sh">Recentes</div>
+          <div class="section">
+            <div class="row"><div class="ricon" style="background:var(--s-green);color:var(--c-green)"><i data-lucide="flask-conical"></i></div><div class="rt"><b>Hemograma completo</b><span>Lia · 12 mar</span></div></div>
+            <div class="row"><div class="ricon" style="background:var(--s-violet);color:var(--c-violet)"><i data-lucide="syringe"></i></div><div class="rt"><b>Influenza 2026</b><span>Lia · 20 fev</span></div></div>
+          </div>
+          <div style="height:110px"></div>
+        </div>
+
+        <div class="view scroll" id="A-tl" style="visibility:hidden">
+          <div class="navbar"><button class="gbtn" data-back aria-label="Voltar"><i data-lucide="chevron-left"></i></button><span></span><button class="gbtn" aria-label="Filtrar"><i data-lucide="sliders-horizontal"></i></button></div>
+          <div class="mh"><div class="av bigav" id="A-bigav"></div><h3 id="A-name"></h3><span id="A-meta"></span></div>
+          <div class="month">Março 2026</div>
+          <button class="rcard" id="A-rec"><div class="ricon" style="background:var(--s-green);color:var(--c-green)"><i data-lucide="flask-conical"></i></div><div class="rbody"><b>Hemograma completo</b><span>Laboratório Vida · Dra. Paula Lima</span><div class="rmeta"><span class="badge" style="background:var(--s-green);color:var(--c-green)">Exame</span><span>2 anexos</span></div></div><span class="rdate">12 mar</span></button>
+          <button class="rcard"><div class="ricon" style="background:var(--s-blue);color:var(--c-blue)"><i data-lucide="stethoscope"></i></div><div class="rbody"><b>Pediatra — rotina</b><span>Clínica Bem Crescer · Dr. Rui</span><div class="rmeta"><span class="badge" style="background:var(--s-blue);color:var(--c-blue)">Consulta</span><span>1 anexo</span></div></div><span class="rdate">3 mar</span></button>
+          <div class="month">Fevereiro 2026</div>
+          <button class="rcard"><div class="ricon" style="background:var(--s-violet);color:var(--c-violet)"><i data-lucide="syringe"></i></div><div class="rbody"><b>Influenza 2026</b><span>UBS Jardim · Lote FX2391</span><div class="rmeta"><span class="badge" style="background:var(--s-violet);color:var(--c-violet)">Vacina</span></div></div><span class="rdate">20 fev</span></button>
+          <div style="height:110px"></div>
+        </div>
+
+        <div class="view scroll" id="A-detail" style="visibility:hidden;background:var(--bg)">
+          <div class="navbar"><button class="gbtn" data-back aria-label="Voltar"><i data-lucide="chevron-left"></i></button><span class="ttl"></span><button class="gbtn" aria-label="Compartilhar"><i data-lucide="share"></i></button></div>
+          <div style="padding:2px 18px 12px"><div style="font-size:24px;font-weight:700;letter-spacing:-.02em">Hemograma completo</div><div style="font-size:14px;color:var(--t2);margin-top:3px">Lia Souza · 12 de março de 2026</div></div>
+          <div class="doc"><i style="width:55%;height:10px;background:var(--t3);opacity:.5"></i><i></i><i style="width:85%"></i><i></i><i style="width:70%"></i><i style="width:90%"></i><i style="width:60%"></i><i></i><i style="width:75%"></i></div>
+          <div class="section dfacts">
+            <div class="row"><span class="k">Tipo</span><div class="rt"><b>Exame</b></div></div>
+            <div class="row"><span class="k">Local</span><div class="rt"><b>Laboratório Vida</b></div></div>
+            <div class="row"><span class="k">Profissional</span><div class="rt"><b>Dra. Paula Lima</b></div></div>
+          </div>
+        </div>
+
+        <div class="dim" id="A-dim"></div>
+        <div class="gmenu" id="A-menu">
+          <button class="gopt"><i data-lucide="scan-line"></i>Escanear papel</button>
+          <button class="gopt"><i data-lucide="image"></i>Foto da galeria</button>
+          <button class="gopt"><i data-lucide="file-text"></i>PDF ou arquivo</button>
+        </div>
+        <div class="tabbar" id="A-tabs"><span class="tab on"><i data-lucide="users"></i>Família</span><span class="tab"><i data-lucide="search"></i>Buscar</span><span class="tab"><i data-lucide="settings"></i>Ajustes</span></div>
+        <button class="fab" id="A-fab" aria-label="Adicionar documento"><i data-lucide="plus"></i></button>
+        <div class="home-ind"></div>
+      </div></div>
+      <div class="hint">Toque numa pessoa, depois num exame. Toque no + também.</div>
+      <p><b>O momento:</b> nada aparece do nada. A foto da pessoa cresce e vira o topo da linha do tempo. O cartão do exame se abre e vira o detalhe. O + se desfaz em três opções de vidro. Voltar refaz o caminho ao contrário. Quem tem 67 anos nunca se perde, porque sempre vê de onde veio.</p>
+      <dl class="trade">
+        <dt>No app</dt><dd><code>Link.AppleZoom</code> do expo-router (iOS 18+), <code>GlassContainer</code> do expo-glass-effect para o + que se funde, e vibração leve.</dd>
+        <dt>Android</dt><dd>Transição de contêiner do Material 3, com Reanimated.</dd>
+        <dt>Acessibilidade</dt><dd>Com "Reduzir movimento" vira fade cruzado, e com "Reduzir transparência" o vidro fica sólido.</dd>
+        <dt>Custo</dt><dd>Médio: cerca de 3 dias. Tudo já está instalado.</dd>
+        <dt>Risco</dt><dd>Baixo. Ainda falta confirmar o zoom com o cabeçalho nativo num build de desenvolvimento.</dd>
+      </dl>
+      <button class="pick" data-pick="A · Tudo nasce do toque">Quero a A</button>
+    </section>
+
+    <!-- ================= B ================= -->
+    <section class="dir" id="B">
+      <h2>B · Linha da vida</h2>
+      <div class="tag">Achar o exame certo na frente do médico</div>
+      <div class="phone"><div class="screen" id="sB">
+        <div class="island"></div><div class="status"><span>9:41</span><i><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></i></div>
+        <div class="view scroll" id="B-list">
+          <div class="stickyhead">
+            <div class="colhead"><div class="av" id="B-av" style="background:var(--s-rose);color:var(--c-rose)">D</div><div class="rt"><b id="B-name" style="font-size:20px;font-weight:700;letter-spacing:-.02em">Dirce Almeida</b><span>Mãe · 31 registros</span></div></div>
+            <div class="chips" id="B-chips"></div>
+          </div>
+          <div class="spine" id="B-spine"></div>
+          <div style="height:110px"></div>
+        </div>
+        <div class="scrub" id="B-scrub" aria-label="Rolar por ano"><span>26</span><span>25</span><span>24</span><span>23</span><span>22</span></div>
+        <div class="bubble" id="B-bubble"><b>2026</b><span>9 registros</span></div>
+        <div class="tabbar"><span class="tab on"><i data-lucide="users"></i>Família</span><span class="tab"><i data-lucide="search"></i>Buscar</span><span class="tab"><i data-lucide="settings"></i>Ajustes</span></div>
+        <button class="fab" aria-label="Adicionar documento"><i data-lucide="plus"></i></button>
+        <div class="home-ind"></div>
+      </div></div>
+      <div class="hint">Arraste a régua de anos à direita. Toque num filtro.</div>
+      <p><b>O momento:</b> a linha do tempo inteira vira algo que se pode folhear. Uma régua de anos de vidro, como a do app Fotos, leva a 2022 com um polegar, e cada ano dá um toque de vibração. Os filtros reorganizam a lista com movimento, sem piscar. O cabeçalho da pessoa encolhe ao rolar. Serve para quem tem 31 registros e um médico esperando.</p>
+      <dl class="trade">
+        <dt>No app</dt><dd>Gesture Handler e Reanimated (régua e reorganização da lista), FlashList ou SectionList com <code>scrollToLocation</code>, e vibração por ano.</dd>
+        <dt>Android</dt><dd>Mesmo comportamento, com rolagem rápida no estilo Material.</dd>
+        <dt>Acessibilidade</dt><dd>A régua é um "ajustável" para o VoiceOver (deslizar para cima e para baixo troca o ano). Com "Reduzir movimento", sem reorganização animada.</dd>
+        <dt>Custo</dt><dd>Médio-alto: cerca de 4 dias. A régua é um componente nosso, não do sistema.</dd>
+        <dt>Risco</dt><dd>Médio. É preciso desempenho de 60 qps com centenas de registros, testado em Android intermediário.</dd>
+      </dl>
+      <button class="pick" data-pick="B · Linha da vida">Quero a B</button>
+    </section>
+
+    <!-- ================= C ================= -->
+    <section class="dir" id="C">
+      <h2>C · Do papel à pasta</h2>
+      <div class="tag">Guardar um documento em menos de 30 s</div>
+      <div class="phone"><div class="screen" id="sC">
+        <div class="island"></div><div class="status" id="C-status"><span>9:41</span><i><i data-lucide="signal"></i><i data-lucide="wifi"></i><i data-lucide="battery-full"></i></i></div>
+        <div class="view scroll" id="C-tl">
+          <div class="lt">Lia Souza</div>
+          <div class="sh" style="padding-top:0">Filha, 7 anos · 22 registros</div>
+          <div class="month" style="padding-top:12px">Novembro 2026</div>
+          <div id="C-slot"></div>
+          <button class="rcard"><div class="ricon" style="background:var(--s-blue);color:var(--c-blue)"><i data-lucide="stethoscope"></i></div><div class="rbody"><b>Pediatra — rotina</b><span>Clínica Bem Crescer · Dr. Rui</span></div><span class="rdate">3 nov</span></button>
+          <div class="month">Outubro 2026</div>
+          <button class="rcard"><div class="ricon" style="background:var(--s-violet);color:var(--c-violet)"><i data-lucide="syringe"></i></div><div class="rbody"><b>Influenza 2026</b><span>UBS Jardim · Lote FX2391</span></div><span class="rdate">20 out</span></button>
+          <button class="rcard"><div class="ricon" style="background:var(--s-amber);color:var(--c-amber)"><i data-lucide="pill"></i></div><div class="rbody"><b>Amoxicilina 250 mg</b><span>Dr. Rui · 7 dias</span></div><span class="rdate">2 out</span></button>
+          <div style="height:110px"></div>
+        </div>
+        <div class="tabbar"><span class="tab on"><i data-lucide="users"></i>Família</span><span class="tab"><i data-lucide="search"></i>Buscar</span><span class="tab"><i data-lucide="settings"></i>Ajustes</span></div>
+        <button class="fab" id="C-fab" aria-label="Escanear documento"><i data-lucide="scan-line"></i></button>
+        <div class="cam" id="C-cam">
+          <div class="vf"><div class="paper"><i class="h"></i><i></i><i style="width:80%"></i><i></i><i style="width:65%"></i><i></i><i style="width:85%"></i><i style="width:50%"></i></div><div class="edge" id="C-edge"></div><div class="camhint" id="C-hint">Procurando o documento…</div></div>
+          <div class="cambar"><span class="camside" id="C-cancel">Cancelar</span><button class="shutter" id="C-shot" aria-label="Capturar"></button><span class="camside">Auto</span></div>
+        </div>
+        <div class="who" id="C-who"><h4>De quem é este documento?</h4><div class="whos" id="C-whos"></div></div>
+        <div class="toast" id="C-toast"><i data-lucide="circle-check"></i>Guardado na pasta da Lia</div>
+        <div class="home-ind" style="z-index:90"></div>
+      </div></div>
+      <div class="hint">Toque no botão de escanear e siga.</div>
+      <p><b>O momento:</b> a câmera acha as bordas do papel sozinha e trava com um toque de vibração. Você escolhe a pessoa, e o documento literalmente voa para dentro da pasta dela e aparece no mês certo. O app preenche tipo e data depois, com calma. Três toques do papel à pasta.</p>
+      <dl class="trade">
+        <dt>No app</dt><dd>O scanner do sistema (VisionKit no iOS, ML Kit Document Scanner no Android) <b>exige um pacote novo</b> e um build de desenvolvimento. O voo e o resto usam Reanimated.</dd>
+        <dt>Android</dt><dd>O scanner do Google Play Services tem tela própria do Google.</dd>
+        <dt>Acessibilidade</dt><dd>O scanner do sistema já fala as bordas no VoiceOver. A escolha da pessoa é uma lista simples.</dd>
+        <dt>Custo</dt><dd>Alto: cerca de 5 dias, com pacote, plugin de configuração e revisão de privacidade.</dd>
+        <dt>Risco</dt><dd>Médio-alto. Depende de pacote de terceiros e o Expo Go deixa de servir.</dd>
+      </dl>
+      <button class="pick" data-pick="C · Do papel à pasta">Quero a C</button>
+    </section>
+  </div>
+</div>
+
+<script>
+lucide.createIcons();
+const $ = (s, r=document) => r.querySelector(s);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const EASE = 'cubic-bezier(.16,1,.3,1)';
+const send = t => { try { mausbot.send(t) } catch(e) { alert(t) } };
+
+/* theme */
+document.querySelectorAll('.seg button').forEach(b => b.onclick = () => {
+  document.body.dataset.scheme = b.dataset.s;
+  document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', x === b));
+});
+document.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => send('Escolho a direção ' + b.dataset.pick));
+
+const MEMBERS = [
+  { n:'Ana Souza', m:'Você · 14 registros', c:'blue' },
+  { n:'Carlos Souza', m:'Cônjuge · 9 registros', c:'teal' },
+  { n:'Lia Souza', m:'Filha, 7 anos · 22 registros', c:'violet' },
+  { n:'Dirce Almeida', m:'Mãe · 31 registros', c:'rose' },
+];
+const avStyle = c => `background:var(--s-${c});color:var(--c-${c})`;
+
+/* ================= A ================= */
+(() => {
+  const s = $('#sA'), home = $('#A-home'), tl = $('#A-tl'), det = $('#A-detail');
+  const list = $('#A-members');
+  list.innerHTML = MEMBERS.map((p,i) => `<button class="row" data-i="${i}"><div class="av" style="${avStyle(p.c)}">${p.n[0]}</div><div class="rt"><b>${p.n}</b><span>${p.m}</span></div><i data-lucide="chevron-right" class="chev"></i></button>`).join('');
+  lucide.createIcons();
+  const rel = el => { const a = el.getBoundingClientRect(), b = s.getBoundingClientRect(); return { x:a.left-b.left, y:a.top-b.top, w:a.width, h:a.height }; };
+  let origin = null, cardOrigin = null;
+
+  function morph(fromEl, toEl, fromView, toView, opts={}) {
+    const a = rel(fromEl); toView.style.visibility = 'visible'; toView.scrollTop = 0;
+    const b = rel(toEl);
+    if (reduce) { fromView.style.visibility = 'hidden'; return; }
+    const ghost = fromEl.cloneNode(true);
+    Object.assign(ghost.style, { position:'absolute', left:a.x+'px', top:a.y+'px', width:a.w+'px', height:a.h+'px', margin:0, zIndex:70, transformOrigin:'0 0' });
+    s.appendChild(ghost);
+    toEl.style.opacity = 0;
+    const sx = b.w/a.w, sy = b.h/a.h;
+    ghost.animate([{ transform:'none' }, { transform:`translate(${b.x-a.x}px,${b.y-a.y}px) scale(${sx},${sy})` }], { duration:520, easing:EASE, fill:'forwards' });
+    toView.animate([{ opacity:0, transform:'scale(.98)' }, { opacity:1, transform:'none' }], { duration:420, easing:EASE, delay:60, fill:'backwards' });
+    fromView.animate([{ opacity:1, filter:'blur(0)' }, { opacity:0, filter:'blur(6px)' }], { duration:300, easing:EASE, fill:'forwards' }).onfinish = () => { fromView.style.visibility = 'hidden'; fromView.getAnimations().forEach(x => x.cancel()); };
+    setTimeout(() => { toEl.style.opacity = 1; ghost.animate([{opacity:1},{opacity:0}], {duration:120, fill:'forwards'}).onfinish = () => ghost.remove(); }, 500);
+  }
+
+  list.onclick = e => {
+    const r = e.target.closest('.row'); if (!r) return;
+    const p = MEMBERS[r.dataset.i];
+    const big = $('#A-bigav'); big.textContent = p.n[0]; big.setAttribute('style', avStyle(p.c));
+    $('#A-name').textContent = p.n; $('#A-meta').textContent = p.m;
+    origin = r.querySelector('.av');
+    morph(origin, big, home, tl);
+  };
+  $('#A-rec').onclick = () => {
+    cardOrigin = $('#A-rec');
+    if (reduce) { det.style.visibility='visible'; tl.style.visibility='hidden'; return; }
+    const a = rel(cardOrigin);
+    det.style.visibility = 'visible'; det.scrollTop = 0;
+    det.animate([{ clipPath:`inset(${a.y}px ${300-20-a.x-a.w}px ${620-a.y-a.h}px ${a.x}px round 20px)` }, { clipPath:'inset(0 0 0 0 round 43px)' }], { duration:560, easing:EASE });
+    det.firstElementChild.nextElementSibling.animate([{ transform:`translateY(${a.y-100}px)`, opacity:.4 }, { transform:'none', opacity:1 }], { duration:560, easing:EASE });
+    setTimeout(() => tl.style.visibility = 'hidden', 560);
+  };
+  s.addEventListener('click', e => {
+    if (!e.target.closest('[data-back]')) return;
+    if (det.style.visibility === 'visible') {
+      tl.style.visibility = 'visible';
+      const a = rel(cardOrigin);
+      if (reduce) { det.style.visibility='hidden'; return; }
+      det.animate([{ clipPath:'inset(0 0 0 0 round 43px)' }, { clipPath:`inset(${a.y}px ${300-20-a.x-a.w}px ${620-a.y-a.h}px ${a.x}px round 20px)` }], { duration:460, easing:EASE }).onfinish = () => det.style.visibility = 'hidden';
+    } else if (tl.style.visibility === 'visible') {
+      home.style.visibility = 'visible';
+      morph($('#A-bigav'), origin, tl, home);
+    }
+  });
+  /* glass morph menu */
+  const fab = $('#A-fab'), opts = [...document.querySelectorAll('#A-menu .gopt')];
+  let open = false;
+  const toggle = () => {
+    open = !open; s.classList.toggle('open', open);
+    fab.querySelector('svg').animate([{ transform:`rotate(${open?0:45}deg)` }, { transform:`rotate(${open?45:0}deg)` }], { duration:380, easing:EASE, fill:'forwards' });
+    fab.animate([{ transform:open?'scale(1)':'scale(.9)' }, { transform:open?'scale(.9)':'scale(1)' }], { duration:380, easing:EASE, fill:'forwards' });
+    opts.slice().reverse().forEach((o,i) => {
+      const k = open ? i : opts.length-1-i;
+      o.animate(open
+        ? [{ opacity:0, transform:`translateY(${(i+1)*60}px) scale(.35)`, filter:'blur(4px)' }, { opacity:1, transform:'none', filter:'blur(0)' }]
+        : [{ opacity:1, transform:'none', filter:'blur(0)' }, { opacity:0, transform:`translateY(${(i+1)*60}px) scale(.35)`, filter:'blur(4px)' }],
+        { duration: reduce ? 1 : 460, delay: reduce ? 0 : k*35, easing:EASE, fill:'forwards' });
+    });
+    $('#A-menu').style.bottom = '92px';
+  };
+  fab.onclick = toggle; $('#A-dim').onclick = toggle;
+  opts.forEach(o => o.onclick = toggle);
+})();
+
+/* ================= B ================= */
+(() => {
+  const DATA = {
+    2026:[['exam','Glicemia de jejum','Laboratório Vida','14 out'],['prescription','Losartana 50 mg','Dra. Helena Prado · uso contínuo','2 set'],['visit','Cardiologista','Clínica Coração · Dra. Helena','2 set'],['vaccine','Influenza 2026','UBS Jardim','15 abr']],
+    2025:[['result','Ecocardiograma — laudo','Hospital Santa Luzia','20 nov'],['exam','Hemoglobina glicada','Laboratório Vida','8 jul'],['visit','Oftalmologista','Visão Clara · Dr. Mauro','12 mar']],
+    2024:[['exam','Hemograma completo','Laboratório Vida','30 set'],['prescription','Metformina 850 mg','Dr. André · uso contínuo','5 mai'],['vaccine','Covid-19 reforço','UBS Jardim','10 fev']],
+    2023:[['result','Densitometria óssea','Clínica Imagem','22 ago'],['visit','Geriatra','Dr. André Ramos','3 abr']],
+    2022:[['exam','Colesterol total e frações','Laboratório Vida','11 nov'],['vaccine','Pneumocócica 23','UBS Jardim','6 jun']],
+  };
+  const K = { exam:['Exame','green','flask-conical'], result:['Resultado','teal','file-check-2'], prescription:['Receita','amber','pill'], visit:['Consulta','blue','stethoscope'], vaccine:['Vacina','violet','syringe'] };
+  const chips = $('#B-chips'), spine = $('#B-spine'), list = $('#B-list');
+  let filter = 'all';
+  chips.innerHTML = [['all','Tudo'],...Object.entries(K).map(([k,v]) => [k,v[0]])].map(([k,l]) => `<button class="chip" data-k="${k}" aria-pressed="${k==='all'}">${l}</button>`).join('');
+  function render() {
+    const before = new Map([...spine.querySelectorAll('.rcard')].map(el => [el.dataset.id, el.getBoundingClientRect().top]));
+    spine.innerHTML = Object.keys(DATA).sort((a,b)=>b-a).map(y => {
+      const items = DATA[y].filter(i => filter==='all' || i[0]===filter);
+      if (!items.length) return '';
+      return `<div class="ytick" data-y="${y}"><b>${y}</b><span>${items.length} ${items.length>1?'registros':'registro'}</span></div>` + items.map(([k,t,p,d]) => {
+        const [lab,c,ic] = K[k];
+        return `<button class="rcard" data-id="${y}${t}"><div class="ricon" style="background:var(--s-${c});color:var(--c-${c})"><i data-lucide="${ic}"></i></div><div class="rbody"><b>${t}</b><span>${p}</span></div><span class="rdate">${d}</span></button>`;
+      }).join('');
+    }).join('');
+    lucide.createIcons();
+    if (reduce) return;
+    spine.querySelectorAll('.rcard').forEach((el,i) => {
+      const t0 = before.get(el.dataset.id), t1 = el.getBoundingClientRect().top;
+      if (t0 != null) el.animate([{ transform:`translateY(${t0-t1}px)` }, { transform:'none' }], { duration:520, easing:EASE });
+      else el.animate([{ opacity:0, transform:'scale(.96)' }, { opacity:1, transform:'none' }], { duration:420, delay:Math.min(i,8)*25, easing:EASE, fill:'backwards' });
+    });
+  }
+  chips.onclick = e => { const c = e.target.closest('.chip'); if (!c) return; filter = c.dataset.k; chips.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', x===c)); render(); };
+  render();
+  /* collapsing header */
+  const av = $('#B-av'), nm = $('#B-name');
+  list.addEventListener('scroll', () => { const k = Math.min(list.scrollTop/80,1); av.style.width = av.style.height = (40-k*10)+'px'; nm.style.fontSize = (20-k*3)+'px'; });
+  /* scrubber */
+  const scrub = $('#B-scrub'), bubble = $('#B-bubble'), years = ['2026','2025','2024','2023','2022'];
+  let last = null;
+  const at = y => {
+    const r = scrub.getBoundingClientRect(); const k = Math.max(0, Math.min(.999, (y - r.top) / r.height));
+    const yr = years[Math.floor(k*years.length)];
+    bubble.style.top = (y - $('#sB').getBoundingClientRect().top - 28) + 'px';
+    if (yr !== last) {
+      last = yr; const tick = spine.querySelector(`[data-y="${yr}"]`);
+      bubble.querySelector('b').textContent = yr;
+      bubble.querySelector('span').textContent = (DATA[yr].length) + ' registros';
+      if (tick) list.scrollTo({ top: tick.offsetTop - 118, behavior: reduce ? 'auto' : 'smooth' });
+      if (!reduce) bubble.animate([{ transform:'scale(1.06)' }, { transform:'none' }], { duration:220, easing:EASE });
+      try { navigator.vibrate && navigator.vibrate(8) } catch(e){}
+    }
+  };
+  scrub.addEventListener('pointerdown', e => { scrub.setPointerCapture(e.pointerId); scrub.classList.add('active'); bubble.classList.add('show'); last=null; at(e.clientY); });
+  scrub.addEventListener('pointermove', e => { if (scrub.hasPointerCapture(e.pointerId)) at(e.clientY); });
+  const end = () => { scrub.classList.remove('active'); bubble.classList.remove('show'); };
+  scrub.addEventListener('pointerup', end); scrub.addEventListener('pointercancel', end);
+})();
+
+/* ================= C ================= */
+(() => {
+  const s = $('#sC'), cam = $('#C-cam'), edge = $('#C-edge'), hint = $('#C-hint'), who = $('#C-who'), toast = $('#C-toast'), slot = $('#C-slot');
+  $('#C-whos').innerHTML = MEMBERS.map((p,i) => `<button data-i="${i}"><div class="av" style="${avStyle(p.c)}">${p.n[0]}</div>${p.n.split(' ')[0]}</button>`).join('');
+  let timer;
+  $('#C-fab').onclick = () => {
+    cam.classList.add('on'); edge.classList.remove('lock'); hint.textContent = 'Procurando o documento…';
+    $('#C-status').style.color = '#fff';
+    timer = setTimeout(() => { edge.classList.add('lock'); hint.textContent = 'Documento encontrado · segure firme'; try{navigator.vibrate&&navigator.vibrate(12)}catch(e){} }, 1100);
+  };
+  $('#C-cancel').onclick = () => { clearTimeout(timer); cam.classList.remove('on'); who.classList.remove('on'); $('#C-status').style.color=''; };
+  $('#C-shot').onclick = () => {
+    if (!reduce) cam.querySelector('.vf').animate([{ filter:'brightness(2.2)' }, { filter:'brightness(1)' }], { duration:260 });
+    hint.textContent = 'Capturado';
+    setTimeout(() => who.classList.add('on'), 200);
+  };
+  $('#C-whos').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const p = MEMBERS[b.dataset.i];
+    const sr = s.getBoundingClientRect(), pr = cam.querySelector('.paper').getBoundingClientRect();
+    who.classList.remove('on');
+    const fly = document.createElement('div'); fly.className = 'flyer';
+    Object.assign(fly.style, { left:(pr.left-sr.left)+'px', top:(pr.top-sr.top)+'px', width:pr.width+'px', height:pr.height+'px' });
+    s.appendChild(fly);
+    cam.classList.remove('on'); $('#C-status').style.color='';
+    $('#C-tl').scrollTop = 0;
+    const tgt = { x:14, y:150, w:272, h:70 };
+    const dx = tgt.x - (pr.left-sr.left), dy = tgt.y - (pr.top-sr.top);
+    fly.animate([
+      { transform:'rotate(-6deg)', borderRadius:'6px', opacity:1 },
+      { transform:`translate(${dx*.55}px,${dy*.3-60}px) rotate(4deg) scale(.6)`, offset:.5 },
+      { transform:`translate(${dx}px,${dy}px) scale(${tgt.w/pr.width},${tgt.h/pr.height})`, borderRadius:'20px', opacity:.2 }
+    ], { duration: reduce ? 1 : 780, easing:'cubic-bezier(.3,.7,.2,1)', fill:'forwards' }).onfinish = () => {
+      fly.remove();
+      slot.innerHTML = `<button class="rcard newrow"><div class="ricon" style="background:var(--s-slate);color:var(--c-slate)"><i data-lucide="file-scan"></i></div><div class="rbody"><b>Documento escaneado</b><span>${p.n} · toque para completar tipo e data</span></div><span class="rdate">hoje</span></button>`;
+      lucide.createIcons();
+      toast.lastChild.textContent = ' Guardado na pasta de ' + p.n.split(' ')[0];
+      toast.classList.add('on'); setTimeout(() => toast.classList.remove('on'), 2200);
+      try{navigator.vibrate&&navigator.vibrate([10,40,10])}catch(e){}
+    };
+  };
+})();
+</script>
+</body>
+</html>

@@ -138,7 +138,7 @@ Todos aceitam `style` e `testID`. Props marcadas como v1 continuam funcionando.
 ### Base
 | Componente | Props principais | Notas |
 |---|---|---|
-| `Screen` | `scroll`, `padded`, `footer`, `keyboard` | Usa `nativeScrollProps` |
+| `Screen` | `scroll`, `padded`, `footer`, `keyboard`, `presentation: 'screen'\|'sheet'` | Usa `nativeScrollProps`. Em rota `formSheet` use `presentation="sheet"` (ver §9.1). Expõe `useScreenHorizontalInset()` para filhos que sangram até a borda |
 | `Text` | `variant`, `color` (`primary\|secondary\|tertiary\|danger\|disabled\|inverse\|…`), `tabular`, `align`, `numberOfLines` | — |
 | `Icon` | `name: SemanticIconName` (ou Ionicons v1), `size=22`, `color`, `weight`, `filled`, `accessibilityLabel` | Sem rótulo, fica decorativo e oculto do leitor de tela. Mapa em `ICON_MAP`; `resolveIcon`, `nativeIcon` |
 | `GlassSurface` **novo** | `shape: 'capsule'\|'container'\|'card'\|'circle'`, `interactive`, `tint`, `accessible`, `accessibilityLabel` | Ver §4 |
@@ -160,7 +160,7 @@ Todos aceitam `style` e `testID`. Props marcadas como v1 continuam funcionando.
 | `SearchField` | v1 | Cápsula |
 | `OtpInput` | v1 | — |
 | `DateField` | v1 | Raio `field` |
-| `Select` | v1 (`label`, `value`, `options`, `onChange`, …) | iOS: menu nativo. `SelectSheet` exportado para forçar a sheet |
+| `Select` | v1 (`label`, `value`, `options`, `onChange`, …) | iOS: menu nativo. Ocupa a largura toda, como os outros campos. `SelectSheet` exportado para forçar a sheet |
 | `SegmentedControl` | v1 (`options`, `value`, `onChange`, `accessibilityLabel`) | 2–4 opções curtas |
 | `Switch` **novo** | `value`, `onValueChange`, `label`, `description`, `disabled` | Linha inteira com `role="switch"` e `checked` |
 | `Checkbox` | v1 | Círculo no iOS, quadrado M3 no Android. Para liga/desliga, prefira `Switch` |
@@ -171,7 +171,7 @@ Todos aceitam `style` e `testID`. Props marcadas como v1 continuam funcionando.
 | `ListSection` **novo** | `header`, `footer`, `separatorInset: 'text'\|'none'\|number`, `children` | Lista agrupada inset (raio 26). `ListItem` dentro dela vira célula |
 | `ListItem` | `title`, `subtitle`, `meta`, `leading`, `trailing`, `onPress`, `chevron`, `destructive`, `disabled` | Chevron só no iOS. Com fonte de acessibilidade (≥1,35×), `meta` desce para baixo do título |
 | `Card` | `accent?: CategoricalIndex` (v1 `tab`), `onPress`, `elevation=0`, `padded`, `accessibilityLabel` | Raio 20. O acento é uma pílula 28×4 no topo; não use acento e Badge da mesma cor juntos |
-| `Avatar`, `Badge`, `Chip`/`FilterChip`/`ChipGroup`, `Divider`, `Spinner`, `Skeleton*` | v1 | — |
+| `Avatar`, `Badge`, `Chip`/`FilterChip`/`ChipGroup`, `Divider`, `Spinner`, `Skeleton*` | v1 | Dentro de um `Screen`, o `ChipGroup` sangra até a borda sozinho: o 1º chip fica na margem e a rolagem vai até a borda. Não aplique margem negativa na tela |
 | `Banner` | v1 + `appearance: 'inline'\|'floating'` | `floating` = pílula de vidro sobre o conteúdo (ex.: offline, modo demo) |
 | `EmptyState`, `ListSkeleton`, `LoadErrorState`, `OfflineBanner`, `errorMessage` | v1 | Ícones semânticos |
 
@@ -241,7 +241,37 @@ Nada foi removido: **todo código v1 compila**. Os nomes antigos estão marcados
 | Grupo de `ListItem` + `Divider` | `ListSection` | Novo | Ajustes e detalhes |
 | `ScrollView` com `paddingTop: insets.top` | `nativeScrollProps` sem inset manual | Evita inset dobrado sob o título grande | Ajustar telas com cabeçalho nativo |
 | Menu "⋯" feito com ActionSheet | `Menu` | Novo | Preferir `Menu` para "Mais ações" |
+| `ChipGroup` com `flexGrow: 0` ou margem negativa na tela | `ChipGroup` sozinho (v0.1.7): `flexGrow: 0` embutido; dentro de `Screen` sangra até a borda, fora (ex.: `ListHeaderComponent` de `FlatList`) usa a margem `screenGutter` | Margem negativa manual dentro de `Screen` dobraria o recuo | Remover `flexGrow: 0` manual (redundante) e qualquer margem negativa |
+| `Select` (iOS) encolhia até o texto | Ocupa a largura (v0.1.7) | Visual | Nenhuma |
+| — | `Screen presentation="sheet"`, `useScreenHorizontalInset`, `headerTitleColors(theme)` (v0.1.7) | Novos, opcionais | Ver §9.1 |
 | — | `FloatingActionButton`, `ContextMenu`, `GlassSurface`, `useInListSection`, `nativeIcon`, `resolveIcon`, `ICON_MAP`, `theme.glass`, `theme.native`, `theme.motion.spring`, `headerOptions(theme, config)`, `nativeScrollProps` | Novos exports | — |
+
+### 9.1 Correções da v0.1.7 (verificadas no iOS 26.5)
+
+**Folha nativa (`presentation: 'formSheet'`).** No iOS 26, se a view raiz de uma rota `formSheet` tem cor de fundo opaca, o conteúdo não pinta na montagem nem na troca de detent. Só a área fixa aparece. O `ScrollView` com cor não causa o problema, só a raiz. A causa é do host nativo da folha (react-native-screens 4.30), e o `Screen` passou a contornar:
+
+```tsx
+// rota com presentation: 'formSheet'
+<Screen presentation="sheet" footer={<Button label="Salvar" fullWidth />}>
+  …campos…
+</Screen>
+```
+
+- O visual é igual: a cor vai no `ScrollView`, na área fixa e no corpo (`scroll={false}`). O inset `automatic` continua, então o conteúdo fica abaixo do cabeçalho da folha.
+- **Não** embrulhe o `Screen` de uma folha em outra `View` com `backgroundColor`, e não ponha `style` com fundo na raiz da rota. Isso traz o bug de volta.
+- O `ScrollView` próprio com `contentInsetAdjustmentBehavior="never"` dentro de `Screen scroll={false}` (contorno antigo) **também não pinta**, porque a raiz continua opaca. Troque por `presentation="sheet"`.
+
+**Cor do título do cabeçalho.** Quando há `headerTintColor` e nenhum `headerTitleStyle.color`, o expo-router usa o tint no título (com cabeçalho transparente no iOS 26, também no título grande). Por isso o título ficava azul. O `headerOptions(theme)` já define o título com `label` e o tint só nos botões. Um layout que monta as próprias opções deve espalhar `headerTitleColors(theme)`:
+
+```tsx
+<Stack screenOptions={{ ...headerOptions(theme, { transparent: true }) }} />
+// ou, mantendo opções próprias:
+<Stack screenOptions={{ headerTintColor: theme.colors.primary, ...headerTitleColors(theme) }} />
+```
+
+**Blur do cabeçalho.** O `headerOptions(theme, { transparent: true })` só aplica `systemChromeMaterial` quando o Liquid Glass não está disponível (iOS < 26). No 26, o vidro do sistema já faz o papel, e o blur junto gera o aviso de efeitos sobrepostos do RNScreens.
+
+Capturas: `docs/screenshots/v2/sheet-formsheet-bug-light.png` (antes), `sheet-formsheet-light.png` (montagem), `sheet-formsheet-detent-full-light.png` e `…-dark.png` (troca de detent), `header-title-tint-bug-light.png` (antes) e `chipgroup-select-title-light.png` (depois).
 
 ---
 

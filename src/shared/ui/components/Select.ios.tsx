@@ -1,4 +1,5 @@
 import { MenuView } from '@expo/ui/community/menu';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme';
 import { selectionFeedback } from '../lib/haptics';
@@ -16,6 +17,9 @@ export type { SelectOption, SelectProps } from './SelectSheet';
 export function Select<T extends string>(props: SelectProps<T>) {
   const { label, options, value, onChange, placeholder = 'Selecionar', helper, error, optional, disabled = false, testID } = props;
   const theme = useTheme();
+  // O gatilho do MenuView (RNHostView com matchContents) encolhe até o conteúdo. Medimos a largura
+  // disponível e fixamos o campo nela, para ocupar a largura toda como os demais campos.
+  const [width, setWidth] = useState<number>();
   if (options.some((o) => o.description)) return <SelectSheet {...props} />;
   const current = options.find((o) => o.value === value) ?? null;
 
@@ -48,23 +52,26 @@ export function Select<T extends string>(props: SelectProps<T>) {
   return (
     <View>
       <FieldLabel label={label} optional={optional} />
-      {disabled ? (
-        <View testID={testID}>{field}</View>
-      ) : (
-        <MenuView
-          title={label}
-          testID={testID}
-          actions={options.map((o) => ({ id: o.value, title: o.label, state: o.value === value ? 'on' : 'off' }))}
-          onPressAction={({ nativeEvent }) => {
-            const next = options.find((o) => o.value === nativeEvent.event);
-            if (!next) return;
-            selectionFeedback();
-            onChange(next.value);
-          }}
-        >
-          {field}
-        </MenuView>
-      )}
+      {/* Mede sempre (rotação, Dynamic Type, split view) e fixa o gatilho do menu nessa largura. */}
+      <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} testID={testID ? `${testID}-frame` : undefined}>
+        {disabled || width === undefined ? (
+          <View testID={testID}>{field}</View>
+        ) : (
+          <MenuView
+            title={label}
+            testID={testID}
+            actions={options.map((o) => ({ id: o.value, title: o.label, state: o.value === value ? 'on' : 'off' }))}
+            onPressAction={({ nativeEvent }) => {
+              const next = options.find((o) => o.value === nativeEvent.event);
+              if (!next) return;
+              selectionFeedback();
+              onChange(next.value);
+            }}
+          >
+            <View style={{ width }}>{field}</View>
+          </MenuView>
+        )}
+      </View>
       <FieldMessage helper={helper} error={error} />
     </View>
   );

@@ -8,7 +8,7 @@
 export * from './tokens';
 
 // Tema
-export { ThemeProvider, UiProvider, useTheme, createTheme, lightTheme, darkTheme, headerOptions, nativeScrollProps } from './theme';
+export { ThemeProvider, UiProvider, useTheme, createTheme, lightTheme, darkTheme, headerOptions, headerTitleColors, nativeScrollProps } from './theme';
 export type { Theme, ThemePreference, ThemeProviderProps, CreateThemeOptions, GlassState, HeaderOptionsConfig, NativeColors } from './theme';
 
 // Utilitários de apresentação
@@ -17,7 +17,7 @@ export { categoricalIndexFor, getInitials } from './lib/identity';
 export { selectionFeedback } from './lib/haptics';
 
 // Componentes — base
-export { Screen, type ScreenProps } from './components/Screen';
+export { Screen, useScreenHorizontalInset, type ScreenProps } from './components/Screen';
 export { Text, type TextProps, type TextColor } from './components/Text';
 export {
   Icon,

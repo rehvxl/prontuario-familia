@@ -3,6 +3,7 @@ export {
   createTheme,
   darkTheme,
   headerOptions,
+  headerTitleColors,
   lightTheme,
   nativeScrollProps,
   type CreateThemeOptions,

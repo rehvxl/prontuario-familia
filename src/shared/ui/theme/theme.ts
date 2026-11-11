@@ -138,7 +138,11 @@ export interface HeaderOptionsConfig {
  * Opções de cabeçalho para o Stack do expo-router, sem acoplar shared/ui à navegação:
  * `<Stack screenOptions={headerOptions(theme)} />`.
  *
- * iOS: título grande nativo, sem sombra, fundo do sistema; com `transparent`, blur/Glass do sistema.
+ * iOS: título grande nativo, sem sombra, fundo do sistema; com `transparent`, Liquid Glass do sistema
+ * (iOS 26) ou blur (iOS < 26). Os títulos (pequeno e grande) usam sempre a cor de texto do sistema
+ * (`label`); o tint (`primary`) fica só nos botões. Atenção: no expo-router, `headerTintColor` sem cor
+ * de título explícita pinta o título com o tint. Se sobrescrever `headerTintColor`, espalhe
+ * `headerOptions` antes ou use `headerTitleColors(theme)` junto.
  * Android: top app bar do Material 3 (fundo da superfície, título 22 sp, sem sombra até rolar).
  */
 export function headerOptions(theme: Theme, config: HeaderOptionsConfig = {}) {
@@ -149,12 +153,12 @@ export function headerOptions(theme: Theme, config: HeaderOptionsConfig = {}) {
       headerLargeTitleShadowVisible: false,
       headerShadowVisible: false,
       headerTransparent: transparent,
-      headerBlurEffect: transparent ? ('systemChromeMaterial' as const) : undefined,
+      // No iOS 26 o sistema já aplica o Liquid Glass; blur junto gera o aviso de efeitos sobrepostos do RNScreens.
+      headerBlurEffect: transparent && !theme.glass.available ? ('systemChromeMaterial' as const) : undefined,
       headerStyle: transparent ? undefined : { backgroundColor: theme.native.groupedBackground },
       headerLargeStyle: transparent ? undefined : { backgroundColor: theme.native.groupedBackground },
       headerTintColor: theme.colors.primary,
-      headerTitleStyle: { color: theme.native.label },
-      headerLargeTitleStyle: { color: theme.native.label },
+      ...headerTitleColors(theme),
       headerBackButtonDisplayMode: 'minimal' as const,
       contentStyle: { backgroundColor: theme.native.groupedBackground },
     };
@@ -168,6 +172,15 @@ export function headerOptions(theme: Theme, config: HeaderOptionsConfig = {}) {
     headerTitleAlign: 'left' as const,
     contentStyle: { backgroundColor: theme.colors.background },
   };
+}
+
+/**
+ * Cor do título do cabeçalho nativo: texto do sistema (`label` no iOS, que segue escuro e "Aumentar
+ * contraste"; textPrimary no Android). Para layouts com `screenOptions` próprios que definem `headerTintColor`.
+ */
+export function headerTitleColors(theme: Theme) {
+  const color = Platform.OS === 'ios' ? theme.native.label : theme.colors.textPrimary;
+  return { headerTitleStyle: { color }, headerLargeTitleStyle: { color } };
 }
 
 /**
