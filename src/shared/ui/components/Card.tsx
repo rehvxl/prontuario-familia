@@ -11,11 +11,16 @@ export interface CardProps {
   accessibilityLabel?: string;
   accessibilityHint?: string;
   /**
-   * Divisória colorida no topo do cartão (assinatura visual: a aba da pasta de documentos).
-   * Índice da paleta categórica. Sempre acompanhe com texto/ícone — a cor sozinha não informa.
+   * Acento categórico: a "aba da pasta", uma cápsula curta na cor da categoria no topo do cartão.
+   * Sempre acompanhe com texto/ícone — a cor sozinha não informa.
    */
+  accent?: CategoricalIndex;
+  /** @deprecated v1 — use `accent`. */
   tab?: CategoricalIndex;
-  /** Padrão 1. */
+  /**
+   * Padrão 0 (v2): cartão claro sobre o fundo agrupado, sem sombra, como as células do iOS.
+   * Use 1+ só para algo que flutua sobre conteúdo.
+   */
   elevation?: ElevationLevel;
   /** Padrão true (16 pt). */
   padded?: boolean;
@@ -23,27 +28,45 @@ export interface CardProps {
   testID?: string;
 }
 
-export function Card({ children, onPress, accessibilityLabel, accessibilityHint, tab, elevation = 1, padded = true, style, testID }: CardProps) {
+/** Cartão de conteúdo (raio 20, concêntrico ao container 26). Nunca use vidro em cartão de conteúdo. */
+export function Card({
+  children,
+  onPress,
+  accessibilityLabel,
+  accessibilityHint,
+  accent,
+  tab,
+  elevation = 0,
+  padded = true,
+  style,
+  testID,
+}: CardProps) {
   const theme = useTheme();
   const focus = useFocusState();
-  const radius = theme.radii.lg;
+  const radius = theme.radii.card;
+  const accentIndex = accent ?? tab;
   const base: StyleProp<ViewStyle> = [
-    { backgroundColor: theme.scheme === 'dark' && elevation > 0 ? theme.colors.surfaceRaised : theme.colors.surface, borderRadius: radius },
+    {
+      backgroundColor: theme.scheme === 'dark' && elevation > 0 ? theme.colors.surfaceRaised : theme.colors.surface,
+      borderRadius: radius,
+      borderCurve: 'continuous',
+    },
     padded && { padding: theme.space[4] },
+    accentIndex !== undefined && padded && { paddingTop: theme.space[4] + 10 },
     theme.elevation(elevation),
   ];
-  const tabEl =
-    tab !== undefined ? (
+  const accentEl =
+    accentIndex !== undefined ? (
       <View
         pointerEvents="none"
-        style={[styles.tab, { backgroundColor: theme.categorical[tab]?.main, left: theme.space[4], borderTopLeftRadius: 3, borderTopRightRadius: 3 }]}
+        style={[styles.accent, { backgroundColor: theme.categorical[accentIndex]?.main, left: theme.space[4] }]}
       />
     ) : null;
 
   if (!onPress) {
     return (
       <View style={[base, style]} testID={testID}>
-        {tabEl}
+        {accentEl}
         {children}
       </View>
     );
@@ -58,9 +81,14 @@ export function Card({ children, onPress, accessibilityLabel, accessibilityHint,
       accessibilityHint={accessibilityHint}
       android_ripple={{ color: theme.colors.border, foreground: true }}
       testID={testID}
-      style={({ pressed }) => [base, pressed && Platform.OS !== 'android' && { opacity: 0.85 }, style]}
+      style={({ pressed }) => [
+        base,
+        styles.clip,
+        pressed && Platform.OS !== 'android' && { backgroundColor: theme.colors.surfaceSunken },
+        style,
+      ]}
     >
-      {tabEl}
+      {accentEl}
       {children}
       <FocusRing visible={focus.focused} radius={radius} />
     </Pressable>
@@ -68,5 +96,6 @@ export function Card({ children, onPress, accessibilityLabel, accessibilityHint,
 }
 
 const styles = StyleSheet.create({
-  tab: { position: 'absolute', top: -5, width: 36, height: 5 },
+  accent: { position: 'absolute', top: 12, width: 28, height: 4, borderRadius: 2 },
+  clip: { overflow: Platform.OS === 'android' ? 'hidden' : 'visible' },
 });

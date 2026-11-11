@@ -1,8 +1,10 @@
 /**
- * Cores do Prontuário da Família.
+ * Cores do Prontuário da Família — Design System v2 ("nativo").
  *
- * Direção "Pasta da família": papel claro levemente quente, tinta azul-caneta como única cor de ação
- * e divisórias coloridas (paleta categórica) para separar tipos de documento.
+ * Os valores espelham as cores semânticas do sistema (iOS grouped / Material 3 neutro) para que as
+ * telas em RN combinem com os controles nativos do @expo/ui. Uma única cor de ação (azul da família)
+ * e uma paleta categórica de 7 cores para tipos de documento e pessoas.
+ * Para cabeçalhos e fundos que devem acompanhar o sistema, use `theme.native` (PlatformColor).
  * Todos os pares texto/fundo são verificados por `tokens.test.ts` (WCAG AA).
  */
 
@@ -58,80 +60,84 @@ export interface ColorTokens {
 }
 
 export const lightColors: ColorTokens = {
-  background: '#F5F5F1',
+  // Paleta "agrupada" do iOS (systemGroupedBackground / secondarySystemGroupedBackground),
+  // com os rótulos secundários escurecidos para passar AA — o iOS usa 60% de opacidade, que não passa.
+  background: '#F2F2F7',
   surface: '#FFFFFF',
-  surfaceSunken: '#ECECE6',
+  surfaceSunken: '#E9E9EF',
   surfaceRaised: '#FFFFFF',
-  scrim: 'rgba(17, 19, 24, 0.45)',
+  scrim: 'rgba(0, 0, 0, 0.35)',
 
-  textPrimary: '#1B1F2A',
-  textSecondary: '#4A5060',
-  textTertiary: '#626878',
+  textPrimary: '#111114',
+  textSecondary: '#55555C',
+  textTertiary: '#6B6B72',
   textInverse: '#FFFFFF',
-  textDisabled: '#8D919C',
+  textDisabled: '#A1A1A8',
 
-  border: '#E1E1DA',
-  borderStrong: '#848A98',
-  focusRing: '#2D45B5',
+  border: '#DCDCE1',
+  borderStrong: '#8A8A91',
+  focusRing: '#1D5BD6',
 
-  primary: '#2D45B5',
-  primaryPressed: '#22378F',
+  // Azul da família: menos "caneta", mais próximo do azul do sistema, mas com 5,9:1 sobre branco.
+  primary: '#1D5BD6',
+  primaryPressed: '#1649AE',
   onPrimary: '#FFFFFF',
-  primarySoft: '#E6EAFA',
-  onPrimarySoft: '#1E2F80',
+  primarySoft: '#E5EDFC',
+  onPrimarySoft: '#123F99',
 
-  success: '#1E7A4C',
-  successSoft: '#E3F3EA',
-  onSuccessSoft: '#1A6A42',
+  success: '#1C7A45',
+  successSoft: '#E2F4E8',
+  onSuccessSoft: '#17683B',
   warning: '#8A5300',
   warningSoft: '#FCF0D9',
   onWarningSoft: '#7A4A00',
-  danger: '#B3261E',
-  dangerPressed: '#8F1E18',
+  danger: '#C4261D',
+  dangerPressed: '#A11E17',
   onDanger: '#FFFFFF',
-  dangerSoft: '#FBE7E5',
-  onDangerSoft: '#9A1F18',
+  dangerSoft: '#FDE8E6',
+  onDangerSoft: '#A11E17',
   info: '#1D6584',
   infoSoft: '#E2F0F6',
   onInfoSoft: '#185874',
 };
 
 export const darkColors: ColorTokens = {
-  background: '#111318',
-  surface: '#1A1D24',
-  surfaceSunken: '#0C0E12',
-  surfaceRaised: '#232731',
-  scrim: 'rgba(0, 0, 0, 0.6)',
+  // Preto verdadeiro (OLED) com superfícies agrupadas elevadas do iOS escuro.
+  background: '#000000',
+  surface: '#1C1C1E',
+  surfaceSunken: '#2C2C2E',
+  surfaceRaised: '#2C2C2E',
+  scrim: 'rgba(0, 0, 0, 0.55)',
 
-  textPrimary: '#ECEDF0',
-  textSecondary: '#B6BAC5',
-  textTertiary: '#9095A3',
-  textInverse: '#111318',
-  textDisabled: '#5F6472',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#AEAEB2',
+  textTertiary: '#98989F',
+  textInverse: '#000000',
+  textDisabled: '#5A5A60',
 
-  border: '#2A2E38',
-  borderStrong: '#6E7484',
-  focusRing: '#9FB1FF',
+  border: '#38383A',
+  borderStrong: '#7C7C82',
+  focusRing: '#6E9EFF',
 
-  primary: '#9FB1FF',
-  primaryPressed: '#BCC8FF',
-  onPrimary: '#10183F',
-  primarySoft: '#263063',
-  onPrimarySoft: '#D6DDFF',
+  primary: '#6E9EFF',
+  primaryPressed: '#94B7FF',
+  onPrimary: '#000000',
+  primarySoft: '#1A2C52',
+  onPrimarySoft: '#C9DAFF',
 
-  success: '#7FD3A4',
-  successSoft: '#1D3A2B',
-  onSuccessSoft: '#A9E5C3',
+  success: '#6FD49A',
+  successSoft: '#163323',
+  onSuccessSoft: '#A6E8C1',
   warning: '#F2BE62',
-  warningSoft: '#3D3020',
+  warningSoft: '#3A2D17',
   onWarningSoft: '#F7D597',
-  danger: '#FF9A8F',
-  dangerPressed: '#FFB8B0',
-  onDanger: '#3D0905',
-  dangerSoft: '#46211F',
+  danger: '#FF8A80',
+  dangerPressed: '#FFADA6',
+  onDanger: '#330704',
+  dangerSoft: '#3F1A18',
   onDangerSoft: '#FFC4BD',
-  info: '#7CC8E8',
-  infoSoft: '#1B3542',
+  info: '#74C4E8',
+  infoSoft: '#15303D',
   onInfoSoft: '#B2DFF2',
 };
 
@@ -155,23 +161,23 @@ export type CategoricalIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 export const CATEGORICAL_COUNT = CATEGORICAL_NAMES.length;
 
 export const lightCategorical: readonly CategoricalColor[] = [
-  { name: 'blue', main: '#2F5FD0', soft: '#ECF1FB', onMain: '#FFFFFF' },
-  { name: 'teal', main: '#0E7672', soft: '#E9F3F2', onMain: '#FFFFFF' },
-  { name: 'green', main: '#3A7522', soft: '#EDF3EB', onMain: '#FFFFFF' },
-  { name: 'amber', main: '#A65800', soft: '#F7F0E8', onMain: '#FFFFFF' },
-  { name: 'rose', main: '#C0335A', soft: '#F9EDF0', onMain: '#FFFFFF' },
-  { name: 'violet', main: '#7449BF', soft: '#F2EFF9', onMain: '#FFFFFF' },
-  { name: 'slate', main: '#56607A', soft: '#F0F1F3', onMain: '#FFFFFF' },
+  { name: 'blue', main: '#2862D9', soft: '#EAF0FC', onMain: '#FFFFFF' },
+  { name: 'teal', main: '#0B7A75', soft: '#E4F4F2', onMain: '#FFFFFF' },
+  { name: 'green', main: '#367A1F', soft: '#EAF4E5', onMain: '#FFFFFF' },
+  { name: 'amber', main: '#A35A00', soft: '#FBF0E2', onMain: '#FFFFFF' },
+  { name: 'rose', main: '#C62E5A', soft: '#FCEBF0', onMain: '#FFFFFF' },
+  { name: 'violet', main: '#7447C9', soft: '#F1ECFB', onMain: '#FFFFFF' },
+  { name: 'slate', main: '#5A6278', soft: '#EEF0F4', onMain: '#FFFFFF' },
 ];
 
 export const darkCategorical: readonly CategoricalColor[] = [
-  { name: 'blue', main: '#82A4FF', soft: '#2F3850', onMain: '#111318' },
-  { name: 'teal', main: '#4FC6C0', soft: '#253F43', onMain: '#111318' },
-  { name: 'green', main: '#8FCB6E', soft: '#314033', onMain: '#111318' },
-  { name: 'amber', main: '#F0A24D', soft: '#45382C', onMain: '#111318' },
-  { name: 'rose', main: '#F4859F', soft: '#46323D', onMain: '#111318' },
-  { name: 'violet', main: '#B99EFF', soft: '#3A3750', onMain: '#111318' },
-  { name: 'slate', main: '#A6AFC2', soft: '#363A44', onMain: '#111318' },
+  { name: 'blue', main: '#7EA6FF', soft: '#1B2A4A', onMain: '#000000' },
+  { name: 'teal', main: '#4CCDC5', soft: '#123634', onMain: '#000000' },
+  { name: 'green', main: '#8BD36A', soft: '#1D3416', onMain: '#000000' },
+  { name: 'amber', main: '#F5A54A', soft: '#3A2812', onMain: '#000000' },
+  { name: 'rose', main: '#FF86A6', soft: '#401C28', onMain: '#000000' },
+  { name: 'violet', main: '#BA9CFF', soft: '#2C2148', onMain: '#000000' },
+  { name: 'slate', main: '#A9B1C4', soft: '#2A2D35', onMain: '#000000' },
 ];
 
 export const palettes = {

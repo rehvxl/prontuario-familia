@@ -19,3 +19,12 @@ export const easing = {
   /** Mudanças de estado no lugar. */
   standard: [0.2, 0, 0, 1],
 } as const satisfies Record<string, readonly [number, number, number, number]>;
+
+/**
+ * Molas (v2). O iOS 26 anima por mola; use com `Animated.spring` / Reanimated `withSpring`.
+ * `snappy` para controles, `smooth` para superfícies (sheets, FAB). Com "Reduzir movimento", não use.
+ */
+export const spring = {
+  snappy: { damping: 22, stiffness: 320, mass: 1 },
+  smooth: { damping: 26, stiffness: 200, mass: 1 },
+} as const;

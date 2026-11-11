@@ -48,20 +48,20 @@ export function Checkbox({ checked, onChange, label, description, error, disable
           style={[
             styles.box,
             {
-              borderRadius: theme.radii.xs + 2,
+              borderRadius: Platform.OS === 'ios' ? 14 : 4,
               borderColor: boxColor,
               backgroundColor: checked ? boxColor : theme.colors.surface,
             },
           ]}
         >
-          {checked ? <Icon name="checkmark" size={20} color={disabled ? 'surface' : 'onPrimary'} /> : null}
+          {checked ? <Icon name="check" size={16} weight="bold" color={disabled ? 'surface' : 'onPrimary'} /> : null}
         </View>
         <View style={styles.text}>
           <Text variant="body" color={disabled ? 'disabled' : 'primary'}>
             {label}
           </Text>
           {description ? (
-            <Text variant="subhead" color="secondary" style={{ marginTop: theme.space[1] }}>
+            <Text variant="subheadline" color="secondary" style={{ marginTop: theme.space[1] }}>
               {description}
             </Text>
           ) : null}

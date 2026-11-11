@@ -27,7 +27,7 @@ export function EmptyState({ title, message, icon, action, secondaryAction, tone
           { backgroundColor: isError ? theme.colors.dangerSoft : theme.colors.primarySoft, marginBottom: theme.space[2] },
         ]}
       >
-        <Icon name={icon ?? (isError ? 'cloud-offline-outline' : 'folder-open-outline')} size={36} color={isError ? 'onDangerSoft' : 'onPrimarySoft'} />
+        <Icon name={icon ?? (isError ? 'offline' : 'folder')} size={34} color={isError ? 'onDangerSoft' : 'onPrimarySoft'} />
       </View>
       <Text variant="title3" align="center">
         {title}

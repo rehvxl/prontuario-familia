@@ -1,37 +1,21 @@
-# Design System — Prontuário da Família (v0.1.1)
+# Design System — Prontuário da Família (v2 · v0.1.6 "nativo")
 
-Código-fonte: `src/shared/ui` · API pública única: `import { … } from '@/shared/ui'`.
-Testes: `npx jest src/shared/ui` (contraste AA verificado automaticamente em `tokens/tokens.test.ts`).
+O código fica em `src/shared/ui` e é importado de `@/shared/ui`. Os tokens estão em `src/shared/ui/tokens`, o tema em `src/shared/ui/theme` e os componentes em `src/shared/ui/components`.
+A v2 troca a pele própria da v1 ("Pasta da família" em RN puro) por **controles do sistema**: SwiftUI via `@expo/ui` e Liquid Glass via `expo-glass-effect` no iOS 26, Material 3 no Android, ícones `expo-symbols` (SF Symbols / Material Symbols). Os nomes exportados da v1 continuam válidos. Os detalhes estão na [tabela de migração](#9-migração-v1--v2).
 
----
-
-## 1. Direção visual: "Pasta da família"
-
-A referência é a pasta física onde a família guarda exames, receitas e cadernetas de vacina: papel claro, divisórias coloridas e uma caneta azul. O app deve passar a mesma sensação: as coisas estão guardadas, organizadas e fáceis de achar. Não deve parecer hospital (branco clínico e verde-cirúrgico) nem IA genérica (gradientes roxos e vidro).
-
-**Contrato da direção**
-
-| Eixo | Decisão |
-|---|---|
-| Fundo | Papel levemente quente (`#F5F5F1`), com superfícies brancas por cima. No escuro, grafite azulado (`#111318`), sem preto puro. |
-| Cor de ação | Uma só: **azul-caneta** (`#2D45B5`, escuro `#9FB1FF`). Se algo é azul-caneta, dá para tocar. |
-| Cor categórica | 7 "divisórias" (`blue, teal, green, amber, rose, violet, slate`). Servem para identificar tipos de documento e pessoas, **nunca** como única fonte de informação. |
-| Tipografia | Fonte do sistema (SF Pro / Roboto). Corpo com 17 pt e escala segue a do iOS. Sem fonte de display: o tom é de documento, não de marca. |
-| Densidade | Confortável: linhas de lista de 52–64 pt, campos de 52 pt, margem de tela de 20 pt. |
-| Movimento | Curto (120–300 ms), com ease-out exponencial. Desliga com "Reduzir movimento". |
-| **Assinatura** | **A aba da divisória**: uma lingueta colorida de 36×5 pt na borda superior do `Card` (`tab={i}`), repetida como ponto colorido nos `Chip`s de filtro. É o único ornamento do sistema. |
-
-> Seed do Impeccable: `none (unavailable)`. O launcher `concept-seed` não estava disponível neste ambiente, então a direção foi decidida pelo código e pelo contexto (docs/PRODUCT.md e público).
-
-**Princípios**
-
-1. **Legível antes de bonito.** Corpo com 17 pt e Dynamic Type até 200%. Contraste AA em todos os pares, testado.
-2. **Calma.** Pouca cor por tela, sem alertas desnecessários e com erro que sempre diz como resolver.
-3. **Nativo.** O cabeçalho é do expo-router (título grande no iOS, top app bar no Android), o voltar é do sistema e os seletores de data são nativos. O ripple aparece no Android e o feedback de opacidade no iOS.
-4. **Toque generoso.** O alvo mínimo é 44 pt no iOS e 48 dp no Android (`theme.minTouchTarget`), e a linha inteira é tocável.
-5. **Nada só por cor.** Cada estado também tem ícone, texto ou forma (✓ no chip selecionado, ícone no erro).
+Screenshots de referência (iPhone 17 Pro, iOS 26.5, Expo Go): `docs/screenshots/v2/` — `login|home|timeline|detail|settings` × `light|dark`, mais `timeline-dark-a11y-xl.png` e `settings-light-a11y-xl.png` (maior fonte de acessibilidade).
 
 ---
+
+## 1. Direção
+
+**Calmo, confiável, do sistema.** O app deve parecer feito pela Apple ou pelo Google para guardar a pasta de saúde da família. Nada de "cara de hospital" nem de IA genérica.
+
+- **O conteúdo é plano; o vidro é só dos controles.** Liquid Glass aparece apenas na camada que flutua sobre o conteúdo: cabeçalho e barra de abas (do sistema), FAB, banner flutuante e botões sobre imagem. Cartões, listas e campos são superfícies sólidas. Vidro sobre vidro é proibido.
+- **Uma cor de ação.** O azul da família (`primary`) é a única cor para tocar. As 7 cores categóricas identificam pessoas e tipos de documento, sempre com rótulo junto.
+- **Listas agrupadas no lugar de cartões soltos.** Ajustes, detalhes e anexos usam `ListSection` (inset grouped). `Card` fica para itens de linha do tempo e destaques.
+- **Cantos concêntricos.** container 26 → card 20 → controle em cápsula, com `borderCurve: 'continuous'`.
+- **Tipo grande.** Corpo de 17 pt, nada legível abaixo de 13 pt, e Dynamic Type até a maior fonte de acessibilidade.
 
 ## 2. Uso
 
@@ -42,7 +26,7 @@ import { UiProvider, useTheme, headerOptions } from '@/shared/ui';
 
 function RootStack() {
   const theme = useTheme();
-  return <Stack screenOptions={headerOptions(theme)} />;
+  return <Stack screenOptions={headerOptions(theme /*, { largeTitle: true, transparent: false } */)} />;
 }
 
 export default function RootLayout() {
@@ -54,351 +38,223 @@ export default function RootLayout() {
 }
 ```
 
-`useTheme()` retorna `{ scheme, colors, categorical, typography, space, layout, radii, elevation(level), motion: { duration, easing, reduced }, minTouchTarget }`. Fora do provider, ele lança um erro.
+`useTheme()` retorna `{ scheme, colors, categorical, native, typography, space, layout, radii, elevation(level), motion: { duration, easing, spring, reduced }, glass: { available, reduceTransparency, enabled }, minTouchTarget }`.
+
+- **`theme.glass.enabled`** = `isGlassEffectAPIAvailable()` **e** "Reduzir transparência" desligado. É o único sinal que um componente pode usar para decidir entre vidro e superfície sólida. O `UiProvider` escuta `AccessibilityInfo` e atualiza em tempo real.
+- **`theme.native`** traz cores do sistema (`PlatformColor` no iOS: `systemGroupedBackground`, `label`, `separator`…), para cabeçalhos e fundos que precisam casar com os controles nativos e com "Aumentar contraste".
+- **`headerOptions(theme, { largeTitle, transparent })`**: no iOS, título grande nativo e voltar minimalista; com `transparent`, o conteúdo passa por baixo e o sistema aplica o material. No Android, top app bar M3.
+- **`nativeScrollProps`**: espalhe em `FlatList`/`SectionList`/`ScrollView` próprios (`contentInsetAdjustmentBehavior="automatic"`). **Não** some `insets.top` manualmente junto: o inset fica dobrado.
+- **`nativeIcon(name, { selected })`** devolve `{ sf, md }` para APIs do expo-router que recebem nomes de símbolo (NativeTabs, toolbar).
 
 ---
 
 ## 3. Tokens
 
-### 3.1 Cor: papéis
+### 3.1 Cor
 
-| Token | Claro | Escuro | Uso |
+Os valores espelham a paleta agrupada do iOS e o neutro do M3. Todos os pares de texto e fundo são testados em `tokens/tokens.test.ts` para WCAG AA.
+
+| Papel | Claro | Escuro | Uso |
 |---|---|---|---|
-| `background` | `#F5F5F1` | `#111318` | Fundo da tela |
-| `surface` | `#FFFFFF` | `#1A1D24` | Cartões, campos, sheets |
-| `surfaceRaised` | `#FFFFFF` | `#232731` | Cartão elevado no escuro |
-| `surfaceSunken` | `#ECECE6` | `#0C0E12` | Trilho do segmented, skeleton |
-| `scrim` | `rgba(17,19,24,.45)` | — | Atrás de sheets |
-| `textPrimary` | `#1B1F2A` | `#ECEDF0` | Texto principal |
-| `textSecondary` | `#4A5060` | `#B6BAC5` | Subtítulos, ajuda |
-| `textTertiary` | `#626878` | `#9095A3` | Placeholder, metadados (≥4.5:1) |
-| `textDisabled` | `#8D919C` | `#5F6472` | Desabilitado (isento de AA) |
-| `border` | `#E1E1DA` | `#2A2E38` | Divisores (decorativo) |
-| `borderStrong` | `#848A98` | `#6E7484` | Contorno de campo/controle (≥3:1) |
-| `focusRing` | `#2D45B5` | `#9FB1FF` | Anel de foco (teclado, Switch Control) |
-| `primary` / `onPrimary` | `#2D45B5` / `#FFFFFF` | `#9FB1FF` / `#10183F` | Ação principal |
-| `primaryPressed` | `#22378F` | `#BCC8FF` | Pressionado (iOS) |
-| `primarySoft` / `onPrimarySoft` | `#E6EAFA` / `#1E2F80` | `#263063` / `#D6DDFF` | Botão secundário, seleção |
-| `success` · `successSoft` · `onSuccessSoft` | `#1E7A4C` · `#E3F3EA` · `#1A6A42` | `#7FD3A4` · `#1D3A2B` · `#A9E5C3` | Concluído |
-| `warning` · `warningSoft` · `onWarningSoft` | `#8A5300` · `#FCF0D9` · `#7A4A00` | `#F2BE62` · `#3D3020` · `#F7D597` | Atenção, modo demo |
-| `danger` · `dangerSoft` · `onDangerSoft` | `#B3261E` · `#FBE7E5` · `#9A1F18` | `#FF9A8F` · `#46211F` · `#FFC4BD` | Erro, destrutivo |
-| `info` · `infoSoft` · `onInfoSoft` | `#1D6584` · `#E2F0F6` · `#185874` | `#7CC8E8` · `#1B3542` · `#B2DFF2` | Informação |
+| `background` | `#F2F2F7` | `#000000` | Fundo da tela (systemGroupedBackground) |
+| `surface` | `#FFFFFF` | `#1C1C1E` | Seções, cartões, campos |
+| `surfaceSunken` | `#E9E9EF` | `#2C2C2E` | Pressionado (iOS), skeleton, trilho |
+| `surfaceRaised` | `#FFFFFF` | `#2C2C2E` | Sheet, fallback sólido do vidro |
+| `textPrimary / Secondary / Tertiary` | `#111114 / #55555C / #6B6B72` | `#FFF / #AEAEB2 / #98989F` | Rótulos. O secundário do iOS (60% de opacidade) não passa AA, por isso é sólido e mais escuro |
+| `border` | `#DCDCE1` | `#38383A` | Separador decorativo |
+| `borderStrong` | `#8A8A91` | `#7C7C82` | Contorno de campo, ≥3:1 (WCAG 1.4.11) |
+| `primary` | `#1D5BD6` | `#6E9EFF` | Única cor de ação (5,9:1 sobre branco) |
+| `success / warning / danger / info` + `*Soft` / `on*Soft` | — | — | Estados (Banner, Badge) |
 
-### 3.2 Cor: paleta categórica (divisórias)
+**Paleta categórica** (`theme.categorical[0..6]`: blue, teal, green, amber, rose, violet, slate). Cada uma tem `main` (≥4.5:1 sobre surface e sobre `soft`), `soft` e `onMain`. Para pessoas, use `categoricalIndexFor(id)` (hash estável).
 
-Os índices `0–6` têm o tipo `CategoricalIndex`. Use `theme.categorical[i]` → `{ name, main, soft, onMain }`. `main` serve para texto ou ícone sobre `soft`, e `onMain` para texto sobre `main`. Todos os pares passam AA nos dois temas.
+### 3.2 Tipografia
 
-| # | Nome | main (claro) | soft (claro) | main (escuro) | soft (escuro) |
-|---|---|---|---|---|---|
-| 0 | blue | `#2F5FD0` | `#ECF1FB` | `#82A4FF` | `#2F3850` |
-| 1 | teal | `#0E7672` | `#E9F3F2` | `#4FC6C0` | `#253F43` |
-| 2 | green | `#3A7522` | `#EDF3EB` | `#8FCB6E` | `#314033` |
-| 3 | amber | `#A65800` | `#F7F0E8` | `#F0A24D` | `#45382C` |
-| 4 | rose | `#C0335A` | `#F9EDF0` | `#F4859F` | `#46323D` |
-| 5 | violet | `#7449BF` | `#F2EFF9` | `#B99EFF` | `#3A3750` |
-| 6 | slate | `#56607A` | `#F0F1F3` | `#A6AFC2` | `#363A44` |
+Usa a fonte do sistema (SF Pro / Roboto) com os nomes dos estilos do iOS. `maxFontSizeMultiplier` só limita o exagero.
 
-`categoricalIndexFor(id)` dá uma cor estável por id (FNV-1a mod 7). O `Avatar` usa isso: a mesma pessoa tem sempre a mesma cor.
+| Variante | pt / linha / peso | Uso |
+|---|---|---|
+| `largeTitle` | 34/41/700 | Título de tela sem cabeçalho nativo |
+| `title1` · `title2` · `title3` | 28 · 22 · 20 | Títulos de detalhe e seção |
+| `headline` | 17/22/600 | Título de cartão, cabeçalho de ListSection (iOS) |
+| `body` · `bodyStrong` | 17/22 | Texto corrido, rótulo de linha |
+| `callout` | 16/21 | Texto de apoio maior |
+| `subheadline` | 15/20 | Subtítulo de linha, meta |
+| `footnote` · `caption` | 13/18 | Rodapé de seção, legenda (o iOS usa 12, mas aqui o mínimo é 13 por causa do público) |
+| `label` | 17/22/600 | Rótulo de botão RN (Android) |
 
-### 3.3 Tipografia
+Títulos (`isHeading`) são anunciados como cabeçalho. `display` e `subhead` continuam como aliases v1.
 
-A fonte é a do sistema (`fontFamily`, com `fontFamilyMedium` no Android). Todos os textos escalam com o tamanho de fonte do sistema, e `maxFontSizeMultiplier` limita só o que quebraria o layout.
+### 3.3 Espaçamento, layout, raio
 
-| Variante | Tamanho/linha | Peso | Máx. escala | Uso |
-|---|---|---|---|---|
-| `display` | 34/41 | 700 | 1.4 | Boas-vindas |
-| `title1` | 28/34 | 700 | 1.6 | Título de tela sem cabeçalho |
-| `title2` | 22/28 | 700 | 1.8 | Seção |
-| `title3` | 20/25 | 600 | 1.8 | Estado vazio, título de sheet |
-| `headline` | 17/22 | 600 | 2 | Rótulo de campo, título de card |
-| `body` | 17/24 | 400 | 2 | Texto corrido, lista |
-| `bodyStrong` | 17/24 | 600 | 2 | Ênfase |
-| `label` | 17/22 | 600 | 1.6 | Botões |
-| `callout` | 16/22 | 400 | 2 | Texto auxiliar maior |
-| `subhead` | 15/20 | 400 | 2 | Subtítulo, chips |
-| `footnote` | 13/18 | 400 | 2 | Ajuda e erro de campo |
-| `caption` | 13/16 | 400 | 2 | Badge, legenda |
+- **`space`**: `0.5=2, 1=4, 2=8, 3=12, 4=16, 5=20, 6=24, 8=32, 10=40, 12=48, 16=64`.
+- **`layout`**: `screenGutter 20`, `sectionGap 32`, `fieldGap 20`, `maxContentWidth 640`, `controlHeight 52`, `controlHeightSmall 44`.
+- **`radii` v2**: `container 26` (ListSection, sheet), `card 20`, `field 14` (TextField, Select, DateField), `control 999` (botões, chips, FAB, SearchField), `sheet 34`. As chaves v1 `xs…xl, full` continuam. Use `concentric(outer, inset)` para calcular o raio interno.
 
-Os títulos (`display`…`title3`) recebem `accessibilityRole="header"` automaticamente.
+### 3.4 Elevação
 
-### 3.4 Espaçamento, layout, raio
+`theme.elevation(0–3)`. No claro é uma sombra suave; no escuro, tom de superfície e contorno fino. Na v2 quase nada usa sombra: listas e cartões são planos (`elevation 0`), e o vidro traz a própria profundidade. O nível 2 é o fallback sólido do vidro, o 3 é a sheet no Android.
 
-- **`space`** em pt: `0.5=2, 1=4, 2=8, 3=12, 4=16, 5=20, 6=24, 8=32, 10=40, 12=48, 16=64`.
-- **`layout`**: `screenGutter 20`, `sectionGap 32`, `fieldGap 20`, `maxContentWidth 640` (tablet), `controlHeight 52`, `controlHeightSmall 44`.
-- **`radii`**: `xs 4`, `sm 8`, `md 12` (campos, banner), `lg 16` (cards, sheets), `xl 24`, `full 999` (chips, badges).
+### 3.5 Movimento
 
-### 3.5 Elevação
-
-`theme.elevation(0–3)`. Cada nível é declarado uma vez: no claro é uma sombra suave com deslocamento (iOS `shadow*`, Android `elevation`); no escuro é uma borda de 1 px, porque sombra não aparece. Nunca combine os dois.
-
-| Nível | Uso |
-|---|---|
-| 0 | Plano |
-| 1 | Card |
-| 2 | Elemento flutuante (FAB, futuro) |
-| 3 | BottomSheet / ActionSheet |
-
-### 3.6 Movimento
-
-- **`duration`**: `instant 0`, `fast 120` (pressionar), `base 200` (aparecer), `slow 300` (sheet).
-- **`easing`**: curvas bézier `out [0.16,1,0.3,1]`, `in`, `standard`.
-- `theme.motion.reduced` acompanha "Reduzir movimento" do sistema. Com ele ligado, a sheet aparece sem deslizar e o skeleton fica parado.
+- `duration` (`fast 120`, `base 200`, `slow 300`), `easing` (`out`, `in`, `standard`) e o novo **`spring`** (`snappy`, `smooth`) para Reanimated/Animated.
+- Os componentes nativos (sheet, menu, diálogo, vidro) usam a animação do sistema, que já respeita "Reduzir movimento". Em animação RN nova, verifique `theme.motion.reduced` e troque por fade.
 
 ---
 
-## 4. Componentes
+## 4. Regras do Liquid Glass
 
-As props principais estão abaixo. A tipagem completa fica nos arquivos `src/shared/ui/components/*.tsx`.
+1. **Somente `GlassSurface`** (ou componentes que o usam: FAB, `IconButton variant="glass"`, `Banner appearance="floating"`). Não importe `GlassView` em telas.
+2. **Só na camada flutuante**: sobre conteúdo que rola ou sobre imagem. Nunca em cartão, linha de lista ou campo, nem vidro dentro de vidro.
+3. **Nunca `opacity < 1`** em um GlassView nem em um ancestral dele: o efeito some ou pisca. Para esconder, desmonte. Para desabilitar, use cor de texto `disabled`.
+4. **Fallback obrigatório.** Com `theme.glass.enabled === false` (iOS < 26, Reduzir transparência, Android, web), `GlassSurface` vira uma superfície sólida `surfaceRaised` com contorno fino e `elevation(2)`. Mesmo tamanho, mesmo texto, mesmo contraste.
+5. **Texto sobre vidro** usa `textPrimary` ou `primary` com peso ≥ 600. Não use `textTertiary`.
+6. O cabeçalho e a barra de abas já recebem vidro do sistema no iOS 26. Não ponha um GlassSurface por trás deles.
 
-### Screen
-Safe area, rolagem opcional, teclado e rodapé fixo.
+## 5. Plataformas e fallbacks
 
-| Prop | Tipo | Padrão |
-|---|---|---|
-| `scroll` | `boolean` | `true` |
-| `padded` | `boolean` | `true` (20 pt) |
-| `edges` | `Edge[]` | `['left','right','bottom']` (o cabeçalho cuida do topo) |
-| `footer` | `ReactNode` | — (sobe com o teclado) |
-| `background` | `'background' \| 'surface'` | `'background'` |
-| `keyboardAvoiding` | `boolean` | `true` |
+| Componente | iOS 26 | Android | Observação |
+|---|---|---|---|
+| Button | SwiftUI `Button` (`glassProminent`, `glass`, `borderedProminent`, `bordered`, `plain`), cápsula | RN M3: filled, tonal, text | No iOS < 26 o `glass*` cai para `bordered*` |
+| FloatingActionButton | SwiftUI `glassProminent`, círculo ou cápsula, `extraLarge` | FAB M3 56 dp, raio 16, `primarySoft` | — |
+| Menu / ContextMenu | SwiftUI `Menu` / `contextMenu` (`@expo/ui/community/menu`) | Compose `DropdownMenu` | Ícones só no iOS (M3 recomenda menu só com texto) |
+| Select | Menu nativo com marca de seleção | `SelectSheet` (BottomSheet RN) | Com `description` em alguma opção, o iOS também usa `SelectSheet` |
+| SegmentedControl | SwiftUI `Picker(.segmented)` | Botões segmentados M3 (contorno, check no selecionado) | — |
+| Switch | `UISwitch` | Switch M3 | A linha inteira é tocável |
+| ActionSheet | SwiftUI `confirmationDialog` | BottomSheet RN com lista | **iOS não mostra ícones** (padrão do sistema) |
+| BottomSheet | SwiftUI `.sheet` com detents e vidro do sistema | RN Modal, topo 28, alça | — |
+| Ícones | SF Symbols | Material Symbols | `expo-symbols` |
+| Vidro | `GlassView` | Sólido | Ver §4 |
 
-```tsx
-<Screen footer={<Button label="Salvar" onPress={save} fullWidth />}>
-  <TextField label="Nome" value={name} onChangeText={setName} />
-</Screen>
-```
-
-Para listas longas, use `<Screen scroll={false} padded={false}>` com `FlatList` dentro.
-
-### Text
-`variant` (§3.3), `color` (`primary | secondary | tertiary | inverse | disabled | link | danger | …` ou qualquer token), `align` e `tabular` (números alinhados).
-
-```tsx
-<Text variant="title2">Documentos da Ana</Text>
-<Text color="secondary">Atualizado em 12 de março de 2024</Text>
-```
-
-### Icon
-É um wrapper de Ionicons. As props são `name`, `size=24`, `color` (token ou cor) e `accessibilityLabel`. Sem rótulo, o ícone é decorativo e fica oculto do leitor de tela. O objeto `icons` traz apelidos genéricos: `add, back, close, check, search, filter, calendar, camera, gallery, file, fileText, attach, share, download, edit, trash, person, people, settings, lock, shield, info, warning, error, success, stethoscope, flask, pulse, clipboard, pill, shot, folder, more, logout, mail`.
-
-```tsx
-<Icon name={icons.camera} />
-```
-
-### Button
-| Prop | Tipo | Padrão |
-|---|---|---|
-| `label` | `string` | — |
-| `onPress` | `() => void` | — |
-| `variant` | `'primary' \| 'secondary' \| 'ghost' \| 'destructive'` | `'primary'` |
-| `size` | `'md'` (52) `\| 'sm'` (44/48) | `'md'` |
-| `icon`, `iconPosition` | `IconName`, `'start' \| 'end'` | —, `'start'` |
-| `loading`, `disabled`, `fullWidth` | `boolean` | `false` |
-
-Em `loading`, o botão anuncia `busy`, bloqueia o toque e mantém o rótulo. Use **um** `primary` por tela.
-
-```tsx
-<Button label="Adicionar documento" icon="add" onPress={open} />
-<Button label="Excluir" variant="destructive" onPress={confirm} />
-```
-
-### IconButton
-`icon`, `accessibilityLabel` (**obrigatório**), `onPress`, `variant: 'plain' | 'tonal' | 'filled'`, `color` e `disabled`. O alvo é sempre `minTouchTarget`.
-
-```tsx
-<IconButton icon="share-outline" accessibilityLabel="Compartilhar documento" onPress={share} />
-```
-
-### TextField
-Aceita as props de `TextInput` e mais `label`, `helper`, `error`, `optional`, `disabled`, `leadingIcon` e `multiline` (120 pt). O rótulo fica sempre visível acima do campo, nunca só como placeholder. O erro aparece abaixo, com ícone, e é anunciado.
-
-```tsx
-<TextField label="Médico ou profissional" optional value={v} onChangeText={setV} helper="Ex.: Dra. Helena Souza" />
-<TextField label="E-mail" error="Confira o e-mail: falta o @." keyboardType="email-address" />
-```
-
-### SearchField
-As props são `value`, `onChangeText`, `onSubmit`, `placeholder="Buscar exames, médicos, locais"` e `onClear`. Tem papel `search` e mostra o botão "Limpar busca" quando há texto.
-
-### OtpInput
-As props são `value`, `onChange`, `onComplete(code)`, `length=6`, `label="Código de verificação"`, `helper`, `error`, `autoFocus` e `disabled`. Há um único `TextInput` invisível sobre as caixas, com `textContentType="oneTimeCode"` e `autoComplete="sms-otp"` no Android. Isso permite autopreenchimento por SMS, colar o código e apagar normalmente. A entrada é saneada com `sanitizeOtp` (só dígitos).
-
-```tsx
-<OtpInput value={code} onChange={setCode} onComplete={verify} error={err} />
-```
-
-### DateField
-As props são `label`, `value: 'YYYY-MM-DD' | null`, `onChange`, `minimumDate`, `maximumDate`, `optional`, `clearable`, `helper` e `error`. No Android abre o diálogo nativo, com botões "Concluir/Cancelar". No iOS abre uma sheet com calendário inline em pt-BR e as ações "Limpar data" e "Concluir". O valor aparece por extenso ("12 de março de 2024"). Use `formatDate`/`parseISODate`/`toISODate` para converter.
-
-```tsx
-<DateField label="Data do exame" value={date} onChange={setDate} maximumDate={new Date()} />
-```
-
-### Select
-As props são `label`, `options: { value, label, description? }[]`, `value | null`, `onChange`, `placeholder="Selecionar"`, `helper`, `error` e `optional`. Abre uma BottomSheet com opções de rádio. Para 2–4 opções curtas, prefira `SegmentedControl`.
-
-### SegmentedControl
-As props são `options: { value, label }[]`, `value`, `onChange` e `accessibilityLabel` (obrigatório). Usa o papel `radiogroup`/`radio`.
-
-```tsx
-<SegmentedControl accessibilityLabel="Ordenar por" options={[{value:'recent',label:'Mais recentes'},{value:'old',label:'Mais antigos'}]} value={o} onChange={setO} />
-```
-
-### Checkbox
-As props são `checked`, `onChange(bool)`, `label`, `description`, `error` e `disabled`. A linha inteira é tocável, com caixa de 28 pt e retorno háptico. Use para consentimento.
-
-```tsx
-<Checkbox checked={ok} onChange={setOk} label="Li e aceito os termos de uso" error={showErr ? 'Para continuar, aceite os termos.' : undefined} />
-```
-
-### Card
-As props são `children`, `onPress`, `accessibilityLabel`, `tab?: CategoricalIndex` (a aba da divisória, que é a assinatura), `elevation=1` e `padded=true`. Não aninhe cards e não use card para tudo: listas são `ListItem`.
-
-```tsx
-<Card tab={1} onPress={openRecord} accessibilityLabel="Hemograma, exame, 12 de março de 2024">
-  <Badge label="Exame" colorIndex={1} icon="flask-outline" />
-  <Text variant="headline" style={{ marginTop: 8 }}>Hemograma completo</Text>
-</Card>
-```
-
-### ListItem
-As props são `title`, `subtitle`, `meta` (à direita, ex.: data), `leading`, `trailing`, `onPress`, `chevron` (só aparece no iOS), `destructive` e `disabled`. A linha é lida como um único elemento ("título, subtítulo, meta").
-
-```tsx
-<ListItem leading={<Avatar name="Ana Lima" id={m.id} />} title="Ana Lima" subtitle="12 anos · 8 documentos" onPress={go} />
-```
-
-### Avatar
-As props são `name`, `id`, `size: 'sm' 32 | 'md' 44 | 'lg' 56 | 'xl' 80`, `imageUri` e `accessible=false`. Mostra as iniciais (ignorando "da/de/do/e") sobre a cor categórica do id. É decorativo por padrão, porque o nome já aparece ao lado.
-
-### Chip / FilterChip / ChipGroup
-- **`Chip`** aceita `label`, `onPress`, `selected`, `icon`, `colorIndex` e `disabled`. A altura visual é 40 pt, e o `hitSlop` completa o alvo mínimo. Quando selecionado, mostra ✓, fundo `soft` e borda `main`.
-- **`FilterChip`** é um `Chip` com `selected` e `onPress` obrigatórios.
-- **`ChipGroup<T>`** aceita `options: { value, label, icon?, colorIndex? }[]`, `value: T[]`, `onChange`, `multiple=true`, `allLabel` (ex.: "Todos", selecionado quando nada está filtrado) e `inset`. É uma linha horizontal rolável.
-
-```tsx
-<ChipGroup allLabel="Todos" options={typeOptions} value={types} onChange={setTypes} />
-```
-
-### Badge
-As props são `label`, `tone: 'neutral' | 'primary' | 'success' | 'warning' | 'danger' | 'info'`, `colorIndex` e `icon`.
-
-### Banner
-As props são `message`, `title`, `tone: 'info' | 'warning' | 'success' | 'danger'`, `icon`, `action: { label, onPress }` e `onDismiss`. Usa fundo suave e ícone, sem borda lateral. Fica no fluxo da tela: não é toast nem modal.
-
-```tsx
-<Banner tone="warning" title="Modo demonstração" message="Os dados ficam só neste aparelho e são de exemplo." />
-```
-
-### EmptyState
-As props são `title`, `message`, `icon`, `action: { label, onPress, icon? }`, `secondaryAction` e `tone: 'neutral' | 'error'`.
-
-### Divider
-As props são `inset` (ex.: 72 para alinhar ao texto depois de um avatar) e `spacing`. É decorativo.
-
-### Spinner / Skeleton
-- **`Spinner`** aceita `size`, `color`, `label` e `fill` (centraliza na área). Tem papel `progressbar`.
-- **`Skeleton`** aceita `width`, `height` e `radius`. **`SkeletonListItem`** é uma linha de lista pronta. Os dois ficam ocultos do leitor de tela e param com "Reduzir movimento".
-
-### BottomSheet / ActionSheet
-- **`BottomSheet`** aceita `visible`, `onClose`, `onDismissed`, `title`, `message` e `children`. Tocar no fundo ou usar o voltar do Android fecha.
-- **`ActionSheet`** aceita `visible`, `onClose`, `title`, `options: { label, icon?, onPress, destructive?, disabled? }[]` e `cancelLabel="Cancelar"`. A ação escolhida roda **depois** que a sheet fecha, para não competir com o seletor de câmera ou galeria do sistema.
-
-```tsx
-<ActionSheet
-  visible={open}
-  onClose={() => setOpen(false)}
-  title="Adicionar arquivo"
-  options={[
-    { label: 'Tirar foto', icon: 'camera-outline', onPress: takePhoto },
-    { label: 'Escolher da galeria', icon: 'images-outline', onPress: pickImage },
-    { label: 'Escolher arquivo (PDF)', icon: 'document-outline', onPress: pickFile },
-  ]}
-/>
-```
-
-### Utilitários exportados
-`formatDate(iso, 'long' | 'short' | 'numeric' | 'monthYear')`, `parseISODate`, `toISODate`, `getInitials`, `categoricalIndexFor`, `sanitizeOtp`, `selectionFeedback`, `contrastRatio`, `FieldLabel`, `FieldMessage`.
+**Em teste (Jest/jest-expo, plataforma iOS)**, os botões SwiftUI não recebem `press`. Acione com
+`fireEvent(el, 'accessibilityAction', { nativeEvent: { actionName: 'activate' } })` usando o `testID` / rótulo do wrapper acessível.
 
 ---
 
-## 5. Padrões de tela
+## 6. Componentes
+
+Todos aceitam `style` e `testID`. Props marcadas como v1 continuam funcionando.
+
+### Base
+| Componente | Props principais | Notas |
+|---|---|---|
+| `Screen` | `scroll`, `padded`, `footer`, `keyboard` | Usa `nativeScrollProps` |
+| `Text` | `variant`, `color` (`primary\|secondary\|tertiary\|danger\|disabled\|inverse\|…`), `tabular`, `align`, `numberOfLines` | — |
+| `Icon` | `name: SemanticIconName` (ou Ionicons v1), `size=22`, `color`, `weight`, `filled`, `accessibilityLabel` | Sem rótulo, fica decorativo e oculto do leitor de tela. Mapa em `ICON_MAP`; `resolveIcon`, `nativeIcon` |
+| `GlassSurface` **novo** | `shape: 'capsule'\|'container'\|'card'\|'circle'`, `interactive`, `tint`, `accessible`, `accessibilityLabel` | Ver §4 |
+
+### Ações
+| Componente | Props | Notas |
+|---|---|---|
+| `Button` | `label`, `onPress`, `variant: 'glassProminent'\|'glass'\|'filled'\|'bordered'\|'plain'` (+ v1), `role: 'default'\|'destructive'\|'cancel'`, `size: 'md'\|'sm'`, `icon`, `iconPosition`, `loading`, `disabled`, `fullWidth` | `glass*` só para ação sobre a camada de controles (rodapé flutuante, sobre imagem). Dentro do conteúdo use `filled`/`bordered`. `resolveButtonStyle()` exportado |
+| `IconButton` | `icon`, `accessibilityLabel` (obrigatório), `variant: 'plain'\|'tonal'\|'filled'\|'glass'`, `color`, `iconSize` | `glass` = círculo de vidro (sobre imagem/cabeçalho transparente) |
+| `FloatingActionButton` **novo** | `icon`, `label`, `onPress`, `extended`, `disabled`, `accessibilityHint` | Um por tela, para a ação principal ("Adicionar documento"). `extended` mostra o rótulo; mesmo compacto, `label` vira o rótulo de acessibilidade |
+| `Menu` **novo** | `items: MenuItem[]`, `children` (gatilho), `title`, `stretch` | Toque abre. `stretch` faz o gatilho ocupar a largura (linha de lista) |
+| `ContextMenu` **novo** | igual a `Menu` | Toque longo. Ofereça sempre o mesmo caminho por outro lugar: toque longo não é descobrível |
+| `MenuItem` | `id`, `label`, `icon`, `onPress`, `destructive`, `disabled`, `selected`, `children`, `inline` | `children` vira submenu; `inline` vira seção |
+
+### Entrada
+| Componente | Props | Notas |
+|---|---|---|
+| `TextField` | v1 sem mudança (`label`, `value`, `onChangeText`, `error`, `hint`, `optional`, …) | Raio `field` 14, contorno `borderStrong` |
+| `SearchField` | v1 | Cápsula |
+| `OtpInput` | v1 | — |
+| `DateField` | v1 | Raio `field` |
+| `Select` | v1 (`label`, `value`, `options`, `onChange`, …) | iOS: menu nativo. `SelectSheet` exportado para forçar a sheet |
+| `SegmentedControl` | v1 (`options`, `value`, `onChange`, `accessibilityLabel`) | 2–4 opções curtas |
+| `Switch` **novo** | `value`, `onValueChange`, `label`, `description`, `disabled` | Linha inteira com `role="switch"` e `checked` |
+| `Checkbox` | v1 | Círculo no iOS, quadrado M3 no Android. Para liga/desliga, prefira `Switch` |
+
+### Conteúdo
+| Componente | Props | Notas |
+|---|---|---|
+| `ListSection` **novo** | `header`, `footer`, `separatorInset: 'text'\|'none'\|number`, `children` | Lista agrupada inset (raio 26). `ListItem` dentro dela vira célula |
+| `ListItem` | `title`, `subtitle`, `meta`, `leading`, `trailing`, `onPress`, `chevron`, `destructive`, `disabled` | Chevron só no iOS. Com fonte de acessibilidade (≥1,35×), `meta` desce para baixo do título |
+| `Card` | `accent?: CategoricalIndex` (v1 `tab`), `onPress`, `elevation=0`, `padded`, `accessibilityLabel` | Raio 20. O acento é uma pílula 28×4 no topo; não use acento e Badge da mesma cor juntos |
+| `Avatar`, `Badge`, `Chip`/`FilterChip`/`ChipGroup`, `Divider`, `Spinner`, `Skeleton*` | v1 | — |
+| `Banner` | v1 + `appearance: 'inline'\|'floating'` | `floating` = pílula de vidro sobre o conteúdo (ex.: offline, modo demo) |
+| `EmptyState`, `ListSkeleton`, `LoadErrorState`, `OfflineBanner`, `errorMessage` | v1 | Ícones semânticos |
+
+### Sobreposição
+| Componente | Props | Notas |
+|---|---|---|
+| `BottomSheet` | v1 (`visible`, `onClose`, `onDismissed`, `title`, `message`, `children`) + `detents?: ('half'\|'full')[]` | Sem `detents`, ajusta ao conteúdo |
+| `ActionSheet` | v1 (`visible`, `onClose`, `options`, `title`, `message`, `cancelLabel`) | A ação escolhida roda depois que o diálogo fecha |
+| `ConfirmSheet` | v1 | Use para toda ação destrutiva |
+
+---
+
+## 7. Padrões de tela
 
 | Padrão | Receita |
 |---|---|
-| **Lista** | Cabeçalho nativo com título grande no iOS. Abaixo, `SearchField` e `ChipGroup` de filtros (`allLabel="Todos"`). Depois, `FlatList` de `ListItem` ou `Card` com `tab`, agrupados por mês (`formatDate(d,'monthYear')` como `Text variant="title3"`). A ação principal fica num `Button` no rodapé ou no botão do cabeçalho. Use `Screen scroll={false} padded={false}`. |
-| **Formulário** | `Screen` com `footer` contendo um único `Button` primary `fullWidth`. Os campos ficam empilhados com `layout.fieldGap` (20). Obrigatórios não levam marca; opcionais levam "(opcional)". Valide ao sair do campo ou ao enviar, nunca a cada tecla. Se houver erro, foque o primeiro campo inválido. |
-| **Detalhe** | Um `Card tab={cor do tipo}` no topo com `Badge` do tipo, título (`title2`), data por extenso e profissional ou local. Abaixo, seções com `Text variant="title3"` e `ListItem`s (anexos com ícone de arquivo). Ações secundárias (compartilhar, editar) em `IconButton` no cabeçalho. Excluir fica num `Button variant="ghost"` com confirmação. |
-| **Vazio** | `EmptyState` com uma frase que diz o que vai aparecer e uma ação: "Ainda não há documentos da Ana" / "Guarde aqui exames, receitas e vacinas." / [Adicionar documento]. |
-| **Erro** | `EmptyState tone="error"`: "Não foi possível carregar" / "Verifique a conexão e tente de novo. Nada foi perdido." / [Tentar de novo]. Erros parciais aparecem como `Banner tone="danger"` no topo do conteúdo. |
-| **Carregando** | Na primeira carga, 3–5 `SkeletonListItem` com o mesmo formato do conteúdo. Em ações (salvar, enviar), use `Button loading`. Use `Spinner fill` só onde não há como prever o formato. Nunca bloqueie a tela inteira por mais de um toque. |
-| **Modo demo** | `Banner tone="warning" title="Modo demonstração"` no topo da tela inicial. Não é dispensável na sessão. |
+| **Lista / linha do tempo** | Cabeçalho nativo com título grande. `SearchField`, `ChipGroup` e depois `FlatList` com `nativeScrollProps`. Itens são `Card` (sem acento quando já há `Badge` do tipo) agrupados por mês (`title3`). A ação principal vai no `FloatingActionButton extended`. |
+| **Início da família** | Seção "Próximo" (`Card accent`), pessoas em `ListSection` com `Avatar`. Avisos de estado (offline, modo demo) em `Banner appearance="floating"` acima do FAB. |
+| **Detalhe** | Título `title2`, `Badge` do tipo, data por extenso. Dados e anexos em `ListSection`. "Mais ações" num `Menu` sobre `IconButton` (`glass` sobre imagem, `plain` no cabeçalho). Excluir fica no menu como `destructive` e confirma com `ConfirmSheet`. Ações do fluxo usam `filled`/`bordered`. |
+| **Ajustes** | Só `ListSection`. Toggles com `Switch`. Escolha única curta com `Menu stretch` sobre `ListItem` (meta = valor atual, ícone `expand`). "Sair" numa seção própria, `destructive`. |
+| **Formulário** | `Screen footer` com um `Button filled fullWidth`. Campos com `layout.fieldGap`. Valide ao sair do campo ou ao enviar. |
+| **Vazio / Erro / Carregando** | Mesmo da v1 (`EmptyState`, `LoadErrorState`, `ListSkeleton`). |
 
----
+## 8. Tipo de registro → cor e ícone
 
-## 6. Mapeamento recomendado: tipo de registro → cor/ícone
+Fica em `src/entities/health-record/ui`, porque o `shared/ui` não conhece `RecordType`. Ícones v2 semânticos:
 
-Este mapeamento deve ser implementado pelo Mobile em `src/entities/health-record/ui` (ex.: `recordTypeAppearance.ts`). O `shared/ui` não conhece `RecordType`.
-
-| `RecordType` | Rótulo | Cor (`CategoricalIndex`) | Ícone (Ionicons) |
+| `RecordType` | Rótulo | Cor | Ícone (semântico → SF / Material) |
 |---|---|---|---|
-| `consultation` | Consulta | 0 · blue | `medkit-outline` |
-| `exam` | Exame | 1 · teal | `flask-outline` |
-| `result` | Resultado | 2 · green | `pulse-outline` |
-| `report` | Laudo | 5 · violet | `document-text-outline` |
-| `prescription` | Receita | 3 · amber | `clipboard-outline` |
-| `vaccine` | Vacina | 4 · rose | `eyedrop-outline` |
-| `other` | Outro | 6 · slate | `folder-open-outline` |
+| `consultation` | Consulta | 0 · blue | `stethoscope` |
+| `exam` | Exame | 1 · teal | `flask` → flask / science |
+| `result` | Resultado | 2 · green | `pulse` → waveform.path.ecg / monitor_heart |
+| `report` | Laudo | 5 · violet | `fileText` → doc.text / description |
+| `prescription` | Receita | 3 · amber | `clipboard` → list.clipboard / assignment |
+| `vaccine` | Vacina | 4 · rose | `shot` → syringe / vaccines |
+| `other` | Outro | 6 · slate | `folder` |
 
-```ts
-// src/entities/health-record/ui/recordTypeAppearance.ts (sugestão)
-import type { CategoricalIndex, IconName } from '@/shared/ui';
-import type { RecordType } from '../domain/health-record';
-
-export const RECORD_TYPE_APPEARANCE: Record<RecordType, { colorIndex: CategoricalIndex; icon: IconName }> = {
-  consultation: { colorIndex: 0, icon: 'medkit-outline' },
-  exam: { colorIndex: 1, icon: 'flask-outline' },
-  result: { colorIndex: 2, icon: 'pulse-outline' },
-  report: { colorIndex: 5, icon: 'document-text-outline' },
-  prescription: { colorIndex: 3, icon: 'clipboard-outline' },
-  vaccine: { colorIndex: 4, icon: 'eyedrop-outline' },
-  other: { colorIndex: 6, icon: 'folder-open-outline' },
-};
-```
-
-Sempre mostre o **rótulo** junto (Badge, Chip, texto). A cor e o ícone ajudam a reconhecer, mas não substituem o texto.
+Mostre sempre o rótulo junto. Cor e ícone ajudam, mas não substituem o texto.
 
 ---
 
-## 7. Acessibilidade (obrigatório em toda tela)
+## 9. Migração v1 → v2
 
-1. **Contraste**: texto ≥4.5:1, texto grande e contorno de controle ≥3:1. Os tokens são testados. Ao criar uma combinação nova, adicione um caso em `tokens/tokens.test.ts`.
-2. **Alvo de toque** ≥ `theme.minTouchTarget` (44 pt iOS / 48 dp Android). Elementos visualmente menores usam `hitSlop`.
-3. **Dynamic Type**: não desligue `allowFontScaling`. Teste com a maior fonte de acessibilidade. Layouts com linhas lado a lado precisam quebrar (use `flexWrap` ou empilhe).
-4. **Leitor de tela (VoiceOver/TalkBack)**: todo controle tem papel e rótulo em pt-BR. `IconButton` exige `accessibilityLabel`. Cards e linhas tocáveis são lidos como um único elemento, com rótulo completo ("Hemograma, exame, 12 de março de 2024"). Estados como selecionado, marcado, desabilitado e ocupado são anunciados pelos componentes.
-5. **Erros** são anunciados (`liveRegion`) e ficam ligados ao campo pelo hint.
-6. **Movimento**: respeite `theme.motion.reduced` em qualquer animação nova.
-7. **Modo escuro**: toda cor vem de `theme.colors` ou `theme.categorical`. Não use hex na tela.
-8. **Foco**: componentes interativos mostram `FocusRing` com teclado físico ou Switch Control.
-9. **Nativo**: use o cabeçalho e o voltar do sistema, e seletores nativos (data, câmera, arquivos). Não reinvente gestos.
+Nada foi removido: **todo código v1 compila**. Os nomes antigos estão marcados com `@deprecated` e devem ser trocados aos poucos.
+
+| v1 | v2 | Impacto | Ação no app |
+|---|---|---|---|
+| `Button variant="primary"` | `variant="filled"` | Visual: cápsula SwiftUI no iOS | Opcional (alias) |
+| `variant="secondary"` | `variant="bordered"` | Idem | Opcional |
+| `variant="ghost"` | `variant="plain"` | Idem | Opcional |
+| `variant="destructive"` | `variant="filled" role="destructive"` | Idem | Opcional |
+| — | `variant="glassProminent" \| "glass"` | Novo | Só na camada flutuante |
+| `Button` no Jest: `fireEvent.press` | `fireEvent(el, 'accessibilityAction', { nativeEvent: { actionName: 'activate' } })` | **Quebra testes** que pressionam Button no iOS | Ajustar testes de telas |
+| `Card tab={n}` | `Card accent={n}` | Visual: pílula no topo, no lugar da aba | Opcional (alias) |
+| `Card` com sombra padrão | `elevation` padrão `0` | Cartões ficam planos | Passe `elevation={1}` se precisar |
+| `Icon name="flask-outline"` (Ionicons) | `name="flask"` (`SemanticIconName`) | Aliases cobrem ~50 nomes. Nomes Ionicons sem alias continuam renderizando Ionicons | Trocar para os nomes semânticos |
+| `icons.add` etc. | Mesmos atalhos, agora semânticos | — | Nenhuma |
+| `Text variant="display"` | `largeTitle` | Alias | Opcional |
+| `Text variant="subhead"` | `subheadline` | Alias | Opcional |
+| `radii.md` em campos / `radii.lg` em cartões | `radii.field` / `radii.card` / `radii.container` | Chaves v1 mantidas | Usar as novas em código novo |
+| `Select` | iOS: menu nativo com check; Android: igual | Não abre mais sheet no iOS (exceto com `description`) | Nenhuma. `SelectSheet` se quiser a sheet |
+| `ActionSheet` | iOS: `confirmationDialog` do sistema | **Ícones das opções não aparecem no iOS.** `disabled` some da lista. A ação roda ~350 ms depois de fechar | Não depender de ícone para entender a opção |
+| `BottomSheet` | iOS: sheet SwiftUI + `detents` opcional | Conteúdo RN dentro de host nativo. `onDismissed` ~400 ms depois de fechar | Nenhuma. Teste o fluxo em dev build |
+| `Banner` | `appearance="inline"` (padrão) \| `"floating"` | Novo | Avisos de estado → `floating` |
+| `IconButton variant` | + `'glass'` | Novo | Sobre imagem/cabeçalho transparente |
+| `Checkbox` para liga/desliga | `Switch` | Novo | Ajustes → `Switch` |
+| Grupo de `ListItem` + `Divider` | `ListSection` | Novo | Ajustes e detalhes |
+| `ScrollView` com `paddingTop: insets.top` | `nativeScrollProps` sem inset manual | Evita inset dobrado sob o título grande | Ajustar telas com cabeçalho nativo |
+| Menu "⋯" feito com ActionSheet | `Menu` | Novo | Preferir `Menu` para "Mais ações" |
+| — | `FloatingActionButton`, `ContextMenu`, `GlassSurface`, `useInListSection`, `nativeIcon`, `resolveIcon`, `ICON_MAP`, `theme.glass`, `theme.native`, `theme.motion.spring`, `headerOptions(theme, config)`, `nativeScrollProps` | Novos exports | — |
 
 ---
 
-## 8. Tom de escrita (pt-BR)
+## 10. Acessibilidade (obrigatório)
 
-Escreva como alguém da família que é organizado: calmo, direto, sem jargão técnico nem alarmismo.
+1. **Contraste**: texto ≥4.5:1, texto grande e contorno ≥3:1, nos dois modos. Toda combinação nova entra em `tokens.test.ts`.
+2. **Alvo de toque** ≥ `theme.minTouchTarget` (44 pt / 48 dp). FAB 56, botões 52.
+3. **Dynamic Type**: nunca desligue `allowFontScaling`. Teste na maior fonte de acessibilidade. Linhas lado a lado precisam quebrar (o `ListItem` já empilha o meta).
+4. **Leitor de tela**: todo controle tem papel e rótulo em pt-BR. Botões SwiftUI ficam dentro de um wrapper RN acessível com ação `activate`. `Switch` anuncia "interruptor, ligado". Cartões e linhas tocáveis são lidos como um elemento só.
+5. **Reduzir transparência** → sem vidro (automático). **Reduzir movimento** → animações do sistema cuidam disso; em animação RN, use `theme.motion.reduced`.
+6. **Toque longo** (`ContextMenu`) nunca é o único caminho para uma ação.
+7. **Modo escuro**: toda cor vem de `theme.colors`, `theme.categorical` ou `theme.native`. Nada de hex na tela.
 
-| Faça | Evite |
-|---|---|
-| "Documento salvo." | "Sucesso!!" / "Operação realizada com êxito" |
-| "Não foi possível enviar. Verifique a conexão e tente de novo." | "Erro 500" / "Falha na requisição" |
-| "Confira a data: ela está no futuro." | "Data inválida" |
-| "Ainda não há vacinas registradas para o Pedro." | "Nenhum resultado encontrado" |
-| "Excluir este exame? Os arquivos anexados também serão apagados." | "Tem certeza?" |
-| Botões com verbo + objeto: "Adicionar documento", "Tirar foto" | "OK", "Enviar", "Clique aqui" |
-| "Seus dados ficam protegidos e só a sua família vê." | Linguagem jurídica ou de segurança assustadora |
+## 11. Tom de escrita (pt-BR)
 
-- Use você, frases curtas e o nome da pessoa quando houver ("documentos da Ana").
-- Datas por extenso em listas e detalhes ("12 de março de 2024"); numéricas (`02/03/2024`) só em espaço apertado.
-- Sem exclamações, sem emoji na interface, sem MAIÚSCULAS para ênfase.
-- Termos de saúde do dia a dia: "exame", "receita", "laudo", "vacina". Evite "prontuário eletrônico do paciente" ou siglas.
+Calmo, direto, sem jargão técnico nem alarmismo. Botões com verbo + objeto ("Adicionar documento"). Datas por extenso. Sem exclamação, emoji ou MAIÚSCULAS para ênfase (exceção: o rótulo de seção pequeno "PRÓXIMO", em `footnote`). Ver os exemplos da v1 no histórico do git, que continuam valendo.

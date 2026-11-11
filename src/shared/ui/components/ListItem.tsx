@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
-import { Platform, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Platform, Pressable, StyleSheet, View, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
 import { useTheme } from '../theme';
 import { FocusRing, useFocusState } from '../lib/focus';
 import { Icon } from './Icon';
 import { Text } from './Text';
+import { useInListSection } from './ListSection';
 
 export interface ListItemProps {
   title: string;
@@ -28,6 +29,10 @@ export interface ListItemProps {
   testID?: string;
 }
 
+/**
+ * Linha de lista. Dentro de `ListSection` vira célula de lista agrupada (recuo 16, separador fino);
+ * fora dela, linha de tela cheia com margem 20 (v1).
+ */
 export function ListItem({
   title,
   subtitle,
@@ -45,8 +50,16 @@ export function ListItem({
 }: ListItemProps) {
   const theme = useTheme();
   const focus = useFocusState();
+  const inSection = useInListSection();
   const label = accessibilityLabel ?? [title, subtitle, meta].filter(Boolean).join(', ');
   const showChevron = chevron && !trailing && Platform.OS === 'ios';
+  // Com texto grande (Dynamic Type de acessibilidade), o meta desce para baixo do título em vez de disputar a largura.
+  const stacked = useWindowDimensions().fontScale >= 1.35;
+  const metaText = meta ? (
+    <Text variant="subheadline" color="secondary" tabular style={stacked ? { marginTop: 2 } : styles.meta}>
+      {meta}
+    </Text>
+  ) : null;
 
   const content = (
     <>
@@ -56,24 +69,26 @@ export function ListItem({
           {title}
         </Text>
         {subtitle ? (
-          <Text variant="subhead" color="secondary" style={{ marginTop: 2 }}>
+          <Text variant="subheadline" color="secondary" style={{ marginTop: 2 }}>
             {subtitle}
           </Text>
         ) : null}
+        {stacked ? metaText : null}
       </View>
-      {meta ? (
-        <Text variant="subhead" color="secondary" tabular style={styles.meta}>
-          {meta}
-        </Text>
-      ) : null}
+      {stacked ? null : metaText}
       {trailing}
-      {showChevron ? <Icon name="chevron-forward" size={20} color="textTertiary" /> : null}
+      {showChevron ? <Icon name="forward" size={15} weight="semibold" color="textTertiary" /> : null}
     </>
   );
 
   const rowStyle = [
     styles.row,
-    { minHeight: subtitle ? 64 : 52, paddingHorizontal: theme.layout.screenGutter, paddingVertical: theme.space[3], gap: theme.space[3] },
+    {
+      minHeight: subtitle ? 64 : 52,
+      paddingHorizontal: inSection ? theme.space[4] : theme.layout.screenGutter,
+      paddingVertical: theme.space[3],
+      gap: theme.space[3],
+    },
   ];
 
   if (!onPress) {

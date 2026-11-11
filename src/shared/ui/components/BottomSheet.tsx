@@ -4,6 +4,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme';
 import { Text } from './Text';
 
+/** Alturas de repouso. 'half' ≈ metade da tela, 'full' = tela cheia. Sem detents, ajusta ao conteúdo. */
+export type BottomSheetDetent = 'half' | 'full';
+
 export interface BottomSheetProps {
   visible: boolean;
   /** Toque no véu, botão Voltar do Android ou ação de cancelar. */
@@ -13,11 +16,16 @@ export interface BottomSheetProps {
   title?: string;
   /** Ajuda opcional abaixo do título. */
   message?: string;
+  /** v2: alturas de repouso (iOS: presentationDetents; Android: a folha fica na altura do conteúdo). */
+  detents?: readonly BottomSheetDetent[];
   children?: ReactNode;
   testID?: string;
 }
 
-/** Folha que sobe da base para uma tarefa curta e autocontida. Fecha no véu e no Voltar. */
+/**
+ * Folha que sobe da base para uma tarefa curta e autocontida. Fecha no véu e no Voltar.
+ * Android/web: folha modal Material 3 (cantos de 28, alça de arraste). iOS: ver BottomSheet.ios.tsx.
+ */
 export function BottomSheet({ visible, onClose, onDismissed, title, message, children, testID }: BottomSheetProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -65,9 +73,9 @@ export function BottomSheet({ visible, onClose, onDismissed, title, message, chi
             styles.sheet,
             {
               backgroundColor: theme.colors.surfaceRaised,
-              borderTopLeftRadius: theme.radii.xl,
-              borderTopRightRadius: theme.radii.xl,
-              paddingTop: theme.space[5],
+              borderTopLeftRadius: 28,
+              borderTopRightRadius: 28,
+              paddingTop: theme.space[3],
               paddingHorizontal: theme.layout.screenGutter,
               paddingBottom: Math.max(insets.bottom, theme.space[4]) + theme.space[2],
               transform: [{ translateY: translate }],
@@ -75,13 +83,14 @@ export function BottomSheet({ visible, onClose, onDismissed, title, message, chi
             theme.elevation(3),
           ]}
         >
+          <View style={[styles.handle, { backgroundColor: theme.colors.borderStrong }]} />
           {title ? (
             <Text variant="title3" style={{ marginBottom: message ? theme.space[1] : theme.space[4] }}>
               {title}
             </Text>
           ) : null}
           {message ? (
-            <Text variant="subhead" color="secondary" style={{ marginBottom: theme.space[4] }}>
+            <Text variant="subheadline" color="secondary" style={{ marginBottom: theme.space[4] }}>
               {message}
             </Text>
           ) : null}
@@ -95,4 +104,5 @@ export function BottomSheet({ visible, onClose, onDismissed, title, message, chi
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'flex-end' },
   sheet: { width: '100%', maxWidth: 640, alignSelf: 'center' },
+  handle: { width: 32, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 16, opacity: 0.6 },
 });

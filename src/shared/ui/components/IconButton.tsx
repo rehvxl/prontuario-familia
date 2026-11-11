@@ -2,9 +2,11 @@ import { Platform, Pressable, StyleSheet, type GestureResponderEvent, type Style
 import type { ColorTokens } from '../tokens';
 import { useTheme } from '../theme';
 import { FocusRing, useFocusState } from '../lib/focus';
+import { GlassSurface } from './GlassSurface';
 import { Icon, type IconName } from './Icon';
 
-export type IconButtonVariant = 'plain' | 'tonal' | 'filled';
+/** v2: 'glass' = círculo de vidro para ações sobre conteúdo (fechar sobre foto, voltar sobre visualizador). */
+export type IconButtonVariant = 'plain' | 'tonal' | 'filled' | 'glass';
 
 export interface IconButtonProps {
   icon: IconName;
@@ -58,7 +60,13 @@ export function IconButton({
         style,
       ]}
     >
-      <Icon name={icon} size={iconSize} color={fg} />
+      {variant === 'glass' ? (
+        <GlassSurface shape="circle" interactive style={[StyleSheet.absoluteFill, styles.base]}>
+          <Icon name={icon} size={iconSize - 2} weight="semibold" color={fg} />
+        </GlassSurface>
+      ) : (
+        <Icon name={icon} size={iconSize} color={fg} />
+      )}
       <FocusRing visible={focus.focused} radius={size / 2} />
     </Pressable>
   );

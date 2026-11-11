@@ -1,6 +1,7 @@
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme';
 import { selectionFeedback } from '../lib/haptics';
+import { Icon } from './Icon';
 import { Text } from './Text';
 
 export interface SegmentOption<T extends string> {
@@ -19,16 +20,21 @@ export interface SegmentedControlProps<T extends string> {
   testID?: string;
 }
 
+/**
+ * Android/web: botões segmentados do Material 3 (cápsula contornada, segmento escolhido em
+ * secondary container com marca). iOS: SegmentedControl.ios.tsx usa o Picker segmentado do sistema.
+ */
 export function SegmentedControl<T extends string>({ options, value, onChange, accessibilityLabel, disabled = false, testID }: SegmentedControlProps<T>) {
   const theme = useTheme();
+  const outline = disabled ? theme.colors.border : theme.colors.borderStrong;
   return (
     <View
       accessibilityRole="radiogroup"
       accessibilityLabel={accessibilityLabel}
       testID={testID}
-      style={[styles.track, { backgroundColor: theme.colors.surfaceSunken, borderRadius: theme.radii.md, padding: 3, gap: 3 }]}
+      style={[styles.track, { borderColor: outline, borderRadius: 999 }]}
     >
-      {options.map((opt) => {
+      {options.map((opt, i) => {
         const selected = opt.value === value;
         return (
           <Pressable
@@ -42,19 +48,26 @@ export function SegmentedControl<T extends string>({ options, value, onChange, a
             accessibilityRole="radio"
             accessibilityLabel={opt.label}
             accessibilityState={{ checked: selected, selected, disabled }}
-            style={({ pressed }) => [
+            android_ripple={{ color: theme.colors.border }}
+            style={[
               styles.segment,
               {
-                minHeight: theme.minTouchTarget - 6,
-                borderRadius: theme.radii.sm + 1,
-                paddingHorizontal: theme.space[2],
-                backgroundColor: selected ? theme.colors.surfaceRaised : 'transparent',
+                minHeight: theme.minTouchTarget,
+                paddingHorizontal: theme.space[3],
+                backgroundColor: selected ? theme.colors.primarySoft : 'transparent',
+                borderLeftWidth: i === 0 ? 0 : 1,
+                borderLeftColor: outline,
               },
-              selected && theme.elevation(1),
-              pressed && !selected && Platform.OS !== 'android' && { opacity: 0.6 },
             ]}
           >
-            <Text variant={selected ? 'bodyStrong' : 'body'} color={disabled ? 'disabled' : selected ? 'primary' : 'secondary'} align="center" numberOfLines={2}>
+            {selected ? <Icon name="check" size={18} color={disabled ? 'textDisabled' : 'onPrimarySoft'} /> : null}
+            <Text
+              variant={selected ? 'bodyStrong' : 'body'}
+              color={disabled ? 'disabled' : selected ? 'onPrimarySoft' : 'primary'}
+              align="center"
+              numberOfLines={2}
+              style={styles.shrink}
+            >
               {opt.label}
             </Text>
           </Pressable>
@@ -65,6 +78,7 @@ export function SegmentedControl<T extends string>({ options, value, onChange, a
 }
 
 const styles = StyleSheet.create({
-  track: { flexDirection: 'row' },
-  segment: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 6 },
+  track: { flexDirection: 'row', borderWidth: 1, overflow: 'hidden' },
+  segment: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 6 },
+  shrink: { flexShrink: 1 },
 });

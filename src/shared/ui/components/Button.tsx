@@ -1,55 +1,52 @@
-import { ActivityIndicator, Platform, Pressable, StyleSheet, View, type GestureResponderEvent, type StyleProp, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, View } from 'react-native';
 import type { ColorTokens } from '../tokens';
 import { useTheme } from '../theme';
 import { FocusRing, useFocusState } from '../lib/focus';
-import { Icon, type IconName } from './Icon';
+import { Icon } from './Icon';
 import { Text } from './Text';
+import { resolveButtonStyle, type ButtonProps, type ButtonRole, type ButtonStyleName } from './Button.types';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
-export type ButtonSize = 'md' | 'sm';
-
-export interface ButtonProps {
-  /** Texto do botão: um verbo que nomeia a ação ("Salvar registro", não "OK"). */
-  label: string;
-  onPress?: (event: GestureResponderEvent) => void;
-  variant?: ButtonVariant;
-  /** md = 52 pt (padrão); sm = altura mínima de toque da plataforma. */
-  size?: ButtonSize;
-  icon?: IconName;
-  iconPosition?: 'start' | 'end';
-  loading?: boolean;
-  disabled?: boolean;
-  fullWidth?: boolean;
-  accessibilityLabel?: string;
-  accessibilityHint?: string;
-  style?: StyleProp<ViewStyle>;
-  testID?: string;
-}
+export type { ButtonProps, ButtonSize, ButtonVariant, ButtonStyleName, ButtonRole } from './Button.types';
 
 interface VariantColors {
   bg: string;
   bgPressed: string;
   fg: keyof ColorTokens;
   ripple: string;
+  border?: string;
 }
 
-function variantColors(colors: ColorTokens, variant: ButtonVariant): VariantColors {
-  switch (variant) {
-    case 'secondary':
-      return { bg: colors.primarySoft, bgPressed: colors.surfaceSunken, fg: 'onPrimarySoft', ripple: colors.border };
-    case 'ghost':
-      return { bg: 'transparent', bgPressed: colors.primarySoft, fg: 'primary', ripple: colors.primarySoft };
-    case 'destructive':
-      return { bg: colors.danger, bgPressed: colors.dangerPressed, fg: 'onDanger', ripple: colors.dangerPressed };
+/**
+ * Material 3 (Android/web): glassProminent e filled → Filled button; glass e bordered → Filled tonal;
+ * plain → Text button. Não imitamos vidro no Android.
+ */
+function variantColors(colors: ColorTokens, style: ButtonStyleName, role: ButtonRole): VariantColors {
+  const destructive = role === 'destructive';
+  switch (style) {
+    case 'glass':
+    case 'bordered':
+      return destructive
+        ? { bg: colors.dangerSoft, bgPressed: colors.surfaceSunken, fg: 'onDangerSoft', ripple: colors.border }
+        : { bg: colors.primarySoft, bgPressed: colors.surfaceSunken, fg: 'onPrimarySoft', ripple: colors.border };
+    case 'plain':
+      return {
+        bg: 'transparent',
+        bgPressed: destructive ? colors.dangerSoft : colors.primarySoft,
+        fg: destructive ? 'danger' : 'primary',
+        ripple: destructive ? colors.dangerSoft : colors.primarySoft,
+      };
     default:
-      return { bg: colors.primary, bgPressed: colors.primaryPressed, fg: 'onPrimary', ripple: colors.primaryPressed };
+      return destructive
+        ? { bg: colors.danger, bgPressed: colors.dangerPressed, fg: 'onDanger', ripple: colors.dangerPressed }
+        : { bg: colors.primary, bgPressed: colors.primaryPressed, fg: 'onPrimary', ripple: colors.primaryPressed };
   }
 }
 
 export function Button({
   label,
   onPress,
-  variant = 'primary',
+  variant = 'filled',
+  role: roleProp,
   size = 'md',
   icon,
   iconPosition = 'start',
@@ -63,11 +60,12 @@ export function Button({
 }: ButtonProps) {
   const theme = useTheme();
   const focus = useFocusState();
+  const { style: resolved, role } = resolveButtonStyle(variant, roleProp);
   const inactive = disabled || loading;
-  const c = variantColors(theme.colors, variant);
+  const c = variantColors(theme.colors, resolved, role);
   const fg: keyof ColorTokens = disabled ? 'textDisabled' : c.fg;
   const minHeight = size === 'md' ? theme.layout.controlHeight : theme.minTouchTarget;
-  const radius = theme.radii.md;
+  const radius = minHeight / 2;
 
   const leading = loading ? (
     <ActivityIndicator size="small" color={theme.colors[fg]} />
@@ -86,18 +84,22 @@ export function Button({
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: inactive, busy: loading }}
-      android_ripple={variant === 'ghost' || inactive ? undefined : { color: c.ripple }}
+      android_ripple={inactive ? undefined : { color: c.ripple }}
       testID={testID}
       style={({ pressed }) => [
         styles.base,
         {
           minHeight,
           borderRadius: radius,
-          paddingHorizontal: size === 'md' ? theme.space[5] : theme.space[4],
-          backgroundColor: disabled ? theme.colors.surfaceSunken : pressed && Platform.OS !== 'android' ? c.bgPressed : c.bg,
+          paddingHorizontal: size === 'md' ? theme.space[6] : theme.space[4],
+          backgroundColor:
+            disabled && resolved !== 'plain'
+              ? theme.colors.surfaceSunken
+              : pressed && Platform.OS !== 'android'
+                ? c.bgPressed
+                : c.bg,
           alignSelf: fullWidth ? 'stretch' : 'auto',
         },
-        variant === 'ghost' && pressed && Platform.OS === 'android' && { backgroundColor: c.bgPressed },
         style,
       ]}
     >
@@ -114,7 +116,7 @@ export function Button({
 }
 
 const styles = StyleSheet.create({
-  base: { justifyContent: 'center', alignItems: 'center', overflow: Platform.OS === 'android' ? 'hidden' : 'visible', paddingVertical: 12 },
+  base: { justifyContent: 'center', alignItems: 'center', overflow: 'hidden', paddingVertical: 12 },
   content: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexShrink: 1 },
   label: { flexShrink: 1 },
 });

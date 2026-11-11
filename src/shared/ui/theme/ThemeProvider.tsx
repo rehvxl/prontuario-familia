@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, useColorScheme } from 'react-native';
+import { isGlassEffectAPIAvailable } from 'expo-glass-effect';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import type { ColorScheme } from '../tokens';
 import { createTheme, type Theme } from './theme';
@@ -14,14 +15,30 @@ export interface ThemeProviderProps {
   scheme?: ThemePreference;
   /** Força "reduzir movimento" (testes). Por padrão lê a configuração do sistema. */
   reducedMotion?: boolean;
+  /** Força "reduzir transparência" (testes/catálogo). Por padrão lê a configuração do sistema. */
+  reduceTransparency?: boolean;
+  /** Força a disponibilidade do Liquid Glass (testes). Por padrão `isGlassEffectAPIAvailable()`. */
+  glassAvailable?: boolean;
 }
 
-export function ThemeProvider({ children, scheme = 'system', reducedMotion }: ThemeProviderProps) {
+export function ThemeProvider({
+  children,
+  scheme = 'system',
+  reducedMotion,
+  reduceTransparency,
+  glassAvailable,
+}: ThemeProviderProps) {
   const system = useColorScheme();
-  const systemReduced = useSystemReducedMotion(reducedMotion === undefined);
+  const systemReduced = useAccessibilityFlag('reduceMotion', reducedMotion === undefined);
+  const systemTransparency = useAccessibilityFlag('reduceTransparency', reduceTransparency === undefined);
   const resolved: ColorScheme = scheme === 'system' ? (system === 'dark' ? 'dark' : 'light') : scheme;
   const reduced = reducedMotion ?? systemReduced;
-  const theme = useMemo(() => createTheme(resolved, { reducedMotion: reduced }), [resolved, reduced]);
+  const transparency = reduceTransparency ?? systemTransparency;
+  const available = glassAvailable ?? safeGlassAvailable();
+  const theme = useMemo(
+    () => createTheme(resolved, { reducedMotion: reduced, reduceTransparency: transparency, glassAvailable: available }),
+    [resolved, reduced, transparency, available],
+  );
   return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>;
 }
 
@@ -41,21 +58,36 @@ export function UiProvider({ children, ...themeProps }: ThemeProviderProps) {
   );
 }
 
-function useSystemReducedMotion(enabled: boolean): boolean {
-  const [reduced, setReduced] = useState(false);
+function safeGlassAvailable(): boolean {
+  try {
+    return isGlassEffectAPIAvailable();
+  } catch {
+    return false;
+  }
+}
+
+type AccessibilityFlag = 'reduceMotion' | 'reduceTransparency';
+
+function useAccessibilityFlag(flag: AccessibilityFlag, enabled: boolean): boolean {
+  const [value, setValue] = useState(false);
   useEffect(() => {
     if (!enabled) return;
     let active = true;
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((value) => {
-        if (active) setReduced(value);
+    const read =
+      flag === 'reduceMotion' ? AccessibilityInfo.isReduceMotionEnabled : AccessibilityInfo.isReduceTransparencyEnabled;
+    read()
+      .then((v) => {
+        if (active) setValue(v);
       })
       .catch(() => undefined);
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced);
+    const sub = AccessibilityInfo.addEventListener(
+      flag === 'reduceMotion' ? 'reduceMotionChanged' : 'reduceTransparencyChanged',
+      setValue,
+    );
     return () => {
       active = false;
       sub.remove();
     };
-  }, [enabled]);
-  return reduced;
+  }, [enabled, flag]);
+  return value;
 }

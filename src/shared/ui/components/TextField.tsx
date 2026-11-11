@@ -47,7 +47,7 @@ export function TextField({
           styles.box,
           {
             minHeight: multiline ? 120 : theme.layout.controlHeight,
-            borderRadius: theme.radii.md,
+            borderRadius: theme.radii.field,
             borderColor,
             borderWidth,
             // compensa a borda para o texto não "pular" no foco

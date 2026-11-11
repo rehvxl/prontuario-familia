@@ -88,7 +88,7 @@ export function DateField({
           styles.field,
           {
             minHeight: theme.layout.controlHeight,
-            borderRadius: theme.radii.md,
+            borderRadius: theme.radii.field,
             borderWidth: error ? 2 : 1,
             borderColor: error ? theme.colors.danger : theme.colors.borderStrong,
             paddingHorizontal: theme.space[4] - (error ? 1 : 0),
@@ -101,7 +101,7 @@ export function DateField({
         <Text variant="body" color={display ? (disabled ? 'disabled' : 'primary') : 'tertiary'} tabular style={styles.flex}>
           {display || placeholder}
         </Text>
-        <FocusRing visible={focus.focused} radius={theme.radii.md} />
+        <FocusRing visible={focus.focused} radius={theme.radii.field} />
       </Pressable>
       <FieldMessage helper={helper} error={error} />
 

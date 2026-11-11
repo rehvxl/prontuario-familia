@@ -38,7 +38,7 @@ export function SearchField({
         styles.box,
         {
           minHeight: theme.layout.controlHeight,
-          borderRadius: theme.radii.md,
+          borderRadius: theme.layout.controlHeight / 2,
           backgroundColor: theme.colors.surface,
           borderColor: focused ? theme.colors.primary : theme.colors.borderStrong,
           borderWidth: focused ? 2 : 1,
