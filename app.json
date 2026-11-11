@@ -1,13 +1,18 @@
 {
   "expo": {
-    "name": "prontuario-tmp",
-    "slug": "prontuario-tmp",
-    "version": "1.0.0",
+    "name": "Prontuário da Família",
+    "slug": "prontuario-familia",
+    "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "br.com.prontuariofamilia.app",
+      "usesAppleSignIn": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -16,10 +21,35 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "br.com.prontuariofamilia.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-secure-store",
+      "expo-image",
+      "expo-web-browser",
+      "expo-font",
+      "expo-sharing",
+      "expo-localization",
+      "@react-native-community/datetimepicker",
+      "expo-apple-authentication",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O Prontuário da Família acessa suas fotos para você anexar exames, laudos e receitas.",
+          "cameraPermission": "O Prontuário da Família usa a câmera para fotografar exames, laudos e receitas.",
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "scheme": "prontuariofamilia",
+    "experiments": {
+      "typedRoutes": true
     }
   }
 }
