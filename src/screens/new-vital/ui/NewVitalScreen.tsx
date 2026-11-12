@@ -15,7 +15,7 @@ export function NewVitalScreen() {
   const hue = theme.personBoard(categoricalIndexFor(id));
   return (
     <HueProvider hue={hue}>
-      <Screen testID="new-vital-screen" presentation="sheet" heading={{ title: 'Novo sinal vital' }} contentContainerStyle={{ borderTopWidth: 4, borderTopColor: hue.tab }}>
+      <Screen testID="new-vital-screen" presentation="sheet" contentContainerStyle={{ borderTopWidth: 4, borderTopColor: hue.tab }}>
         {id ? (
           <VitalEntryForm memberId={id} kind={isVitalCode(kind) ? kind : undefined} onSaved={() => router.back()} />
         ) : (

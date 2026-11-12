@@ -49,7 +49,7 @@ export function Checkbox({ checked, onChange, label, description, error, disable
           style={[
             styles.box,
             {
-              borderRadius: Platform.OS === 'ios' ? 14 : 4,
+              borderRadius: theme.radii.sm,
               borderColor: boxColor,
               backgroundColor: checked ? boxColor : theme.colors.surface,
             },

@@ -17,21 +17,22 @@ export function EditMemberScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const memberId = typeof id === 'string' ? id : undefined;
   const member = useMember(memberId);
+  // A divisória vem do id da rota, então carregando e erro já aparecem na cor da pessoa (sem salto de cor).
+  const hue = theme.personBoard(categoricalIndexFor(memberId ?? ''));
   const update = useUpdateMember();
   const remove = useRemoveMember();
   const [confirming, setConfirming] = useState(false);
 
-  if (member.isPending || remove.isSuccess) return <Screen scroll={false}><Spinner fill label="Carregando" /></Screen>;
-  if (member.isError) return <Screen scroll={false}><LoadErrorState onRetry={() => member.refetch()} /></Screen>;
+  if (member.isPending || remove.isSuccess) return <Screen scroll={false} board={hue}><Spinner fill label="Carregando" /></Screen>;
+  if (member.isError) return <Screen scroll={false} board={hue}><LoadErrorState onRetry={() => member.refetch()} /></Screen>;
   if (!member.data) {
     return (
-      <Screen scroll={false}>
+      <Screen scroll={false} board={hue}>
         <EmptyState tone="error" title="Pessoa não encontrada" message="Ela pode ter sido removida da família." action={{ label: 'Voltar', onPress: () => router.back() }} />
       </Screen>
     );
   }
   const m = member.data;
-  const hue = theme.personBoard(categoricalIndexFor(m.id));
 
   return (
     <Screen testID="edit-member-screen" board={hue}>

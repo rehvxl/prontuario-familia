@@ -59,7 +59,7 @@ beforeEach(() => jest.clearAllMocks());
 describe('NewMedicationScreen (spec F4.3, F4.5)', () => {
   it('F4.3: exige nome e a escolha de duração; nada começa escolhido', async () => {
     const db = await setup();
-    expect(screen.getByText('Novo medicamento')).toBeTruthy();
+    expect(screen.getByTestId('new-medication-screen')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Início: 11 de novembro de 2026' })).toBeTruthy();
     for (const label of ['Uso contínuo', 'Até uma data', 'Por um número de dias']) {
       expect(screen.getByRole('radio', { name: label })).not.toBeChecked();

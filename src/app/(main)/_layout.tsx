@@ -12,7 +12,7 @@ import { sheetScreenOptions } from '@/shared/ui/navigation';
  * <Screen presentation="sheet"> (raiz sem fundo nem testID; DESIGN_SYSTEM §13.1/§13.2).
  */
 
-/** Rotas empilhadas da pessoa (spec §9): título curto no cabeçalho; o título serifado vai no conteúdo. */
+/** Rotas empilhadas da pessoa (spec §9): título curto no cabeçalho; o título completo vai no conteúdo. */
 const MEMBER_PAGES = [
   ['member/[id]/exams/index', 'Exames'],
   ['member/[id]/exams/[series]', 'Exame'],

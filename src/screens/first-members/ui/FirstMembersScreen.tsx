@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { View } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useMyFamily } from '@/entities/family';
 import { MemberListItem, useMembers } from '@/entities/member';
 import { useAddMember } from '@/features/manage-members';
 import { MemberForm } from '@/widgets/member-form';
-import { Button, ListSection, LoadErrorState, Screen, SectionHeader, Spinner, TabRail, Text, categoricalIndexFor, headerOptions, useTheme } from '@/shared/ui';
+import { Button, ListSection, LoadErrorState, Screen, SectionHeader, Spinner, TabRail, Text, categoricalIndexFor, useTheme } from '@/shared/ui';
 
 /**
  * Segundo passo do setup: cadastrar as primeiras pessoas. Depois da primeira, dá para concluir.
@@ -36,6 +36,7 @@ export function FirstMembersScreen() {
     <Screen
       testID="first-members-screen"
       board="ultramar"
+      edges={['top', 'left', 'right', 'bottom']}
       rail={
         <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" testID="first-members-rail">
           <TabRail items={tabs} onSelect={() => undefined} />
@@ -44,7 +45,6 @@ export function FirstMembersScreen() {
       heading={{ title: `Quem faz parte da ${family.name}?` }}
       footer={members.length > 0 ? <Button label="Concluir" onPress={finish} fullWidth testID="finish-setup" /> : undefined}
     >
-      <Stack.Screen options={headerOptions(theme, { board: 'ultramar' })} />
       <StatusBar style={theme.hues.family.statusBar} />
       <Text color="secondary" style={{ marginBottom: theme.space[6] }}>
         Adicione quem terá o histórico de saúde guardado aqui. Você pode incluir mais pessoas depois.

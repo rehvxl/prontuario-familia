@@ -38,7 +38,7 @@ beforeEach(() => jest.clearAllMocks());
 describe('NewVitalScreen', () => {
   it('abre no tipo da rota, salva para a pessoa da rota e fecha a folha', async () => {
     await renderScreen({ memberId: 'm1', kind: 'bp' });
-    expect(screen.getByText('Novo sinal vital')).toBeOnTheScreen();
+    expect(screen.getByTestId('new-vital-screen')).toBeOnTheScreen();
     await screen.findByText('O app não avalia estes valores. Mostre a sequência ao profissional que acompanha Carlos.');
     expect(screen.getByRole('button', { name: 'Sinal vital: Pressão arterial' })).toBeOnTheScreen();
     await fireEvent.changeText(screen.getByTestId('vital-systolic'), '130');

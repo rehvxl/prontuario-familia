@@ -2,9 +2,9 @@ import { Stack } from 'expo-router';
 import { headerOptions, useTheme } from '@/shared/ui';
 
 /**
- * Stack da aba "Ajustes": tela-raiz com o título serifado no conteúdo (`Screen heading`). O cabeçalho nativo
+ * Stack da aba "Ajustes": tela-raiz com o título no conteúdo (`Screen heading`). O cabeçalho nativo
  * nasce já sem título grande e transparente (vidro do sistema no iOS 26): ligar o título grande aqui e
- * desligar na tela deixava o espaço dele reservado acima do título serifado (A2).
+ * desligar na tela deixava o espaço dele reservado acima do título (A2).
  */
 export default function SettingsLayout() {
   const theme = useTheme();

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { FAMILY_NAME_MAX, useCreateFamily } from '@/features/create-family';
-import { Button, Screen, Text, TextField, errorMessage, headerOptions, useTheme } from '@/shared/ui';
+import { Button, Screen, Text, TextField, errorMessage, useTheme } from '@/shared/ui';
 
 /**
  * Primeiro passo do setup: dar nome à família. Em seguida, adicionar as primeiras pessoas.
@@ -20,10 +20,10 @@ export function CreateFamilyScreen() {
     <Screen
       testID="create-family-screen"
       board="ultramar"
+      edges={['top', 'left', 'right', 'bottom']}
       heading={{ title: 'Como se chama a sua família?' }}
       footer={<Button label="Criar família" onPress={submit} loading={create.isPending} disabled={name.trim() === ''} fullWidth />}
     >
-      <Stack.Screen options={headerOptions(theme, { board: 'ultramar' })} />
       <StatusBar style={theme.hues.family.statusBar} />
       <Text color="secondary" style={{ marginBottom: theme.space[6] }}>
         Será o nome da sua pasta. Pode ser o sobrenome ou algo simples.

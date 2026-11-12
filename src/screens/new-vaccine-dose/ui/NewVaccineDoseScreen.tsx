@@ -27,7 +27,7 @@ export function NewVaccineDoseScreen() {
 
   return (
     <HueProvider hue={hue}>
-      <Screen testID="new-vaccine-dose-screen" presentation="sheet" heading={{ title }} contentContainerStyle={{ borderTopWidth: 4, borderTopColor: hue.tab }}>
+      <Screen testID="new-vaccine-dose-screen" presentation="sheet" contentContainerStyle={{ borderTopWidth: 4, borderTopColor: hue.tab }}>
         {doseId ? <Stack.Screen options={{ title }} /> : null}
         {body}
       </Screen>
