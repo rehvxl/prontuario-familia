@@ -19,7 +19,7 @@ Detalhes no [README](README.md#como-rodar). Sem `.env`, o app abre no modo demon
 
 ## Regras do projeto
 
-- **Dependências:** instale com `npx expo install <pacote>`, que escolhe a versão compatível com o SDK. Prefira os módulos do Expo a bibliotecas de terceiros.
+- **Dependências:** instale com `npx expo install <pacote>`, que escolhe a versão compatível com o SDK. Prefira os módulos do Expo a bibliotecas de terceiros. Os pacotes que o SDK fixa (`expo*`, `react`, `react-native*`) sobem só com `npx expo install --fix`; o Dependabot não abre PR para eles.
 - **Nativo:** as pastas `ios/` e `android/` são geradas (Continuous Native Generation). Não as edite; configure o comportamento nativo em `app.json` ou num config plugin.
 - **Arquitetura:** o código segue Feature-Sliced Design (`app → screens → widgets → features → entities → shared`). Uma camada só importa as de baixo, e de fora de um slice só pela API pública (`index.ts`). O lint aponta as violações. Veja [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 - **Rotas:** ficam em `src/app/` (Expo Router). Componentes, hooks e lógica ficam fora dessa pasta.

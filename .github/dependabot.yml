@@ -1,7 +1,5 @@
 version: 2
 updates:
-  # Pacotes do Expo/React Native: só patch e minor automáticos. Saltos de SDK
-  # (expo, react-native) se fazem à mão com `npx expo install --fix`.
   - package-ecosystem: npm
     directory: /
     schedule:
@@ -9,15 +7,24 @@ updates:
     open-pull-requests-limit: 5
     labels: [dependências]
     ignore:
+      # O Expo SDK fixa a versão destes pacotes (expo/bundledNativeModules.json); fora dela o app
+      # quebra em execução mesmo com a CI verde (ex.: react precisa bater com o renderer do RN).
+      # Eles sobem juntos, com o SDK, via `npx expo install --fix`.
       - dependency-name: "expo"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "expo-*"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
-      - dependency-name: "react-native"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@expo/*"
+      - dependency-name: "jest-expo"
+      - dependency-name: "eslint-config-expo"
       - dependency-name: "react"
-        update-types: ["version-update:semver-major"]
       - dependency-name: "react-dom"
+      - dependency-name: "react-native"
+      - dependency-name: "react-native-*"
+      - dependency-name: "@react-native-async-storage/*"
+      - dependency-name: "@react-native-community/*"
+      # Saltos maiores de ferramentas dependem do ecossistema do Expo (eslint-config-expo, typescript-eslint).
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint"
         update-types: ["version-update:semver-major"]
     groups:
       dev-dependencies:
