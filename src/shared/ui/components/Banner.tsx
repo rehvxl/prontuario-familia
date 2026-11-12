@@ -2,7 +2,6 @@ import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import type { ColorTokens } from '../tokens';
 import { useTheme } from '../theme';
 import { Button } from './Button';
-import { GlassSurface } from './GlassSurface';
 import { Icon, type IconName } from './Icon';
 import { IconButton } from './IconButton';
 import { Text } from './Text';
@@ -17,7 +16,8 @@ export interface BannerProps {
   action?: { label: string; onPress: () => void };
   /**
    * 'inline' (padrão): bloco suave no fluxo da tela.
-   * 'floating': pílula de vidro que flutua sobre o conteúdo (offline, sincronizando). Só `message` curta;
+   * 'floating': pílula sólida `surfaceRaised` com sombra "Flutuante" (v3, sem vidro) sobre o conteúdo
+   * (offline, sincronizando). Só `message` curta;
    * `title` é ignorado. Posicione no pai (ex.: absoluta acima da barra de abas).
    */
   appearance?: 'inline' | 'floating';
@@ -45,16 +45,24 @@ export function Banner({ message, title, tone = 'info', icon, action, appearance
         accessibilityRole={tone === 'danger' ? 'alert' : 'summary'}
         accessibilityLiveRegion="polite"
         testID={testID}
+        // A faixa externa tem a largura da tela: sem isto ela rouba o toque da linha que está por baixo (A3).
+        pointerEvents="box-none"
         style={[styles.floatWrap, style]}
       >
-        <GlassSurface shape="capsule" style={[styles.pill, { paddingLeft: theme.space[4], paddingRight: action || onDismiss ? theme.space[1] : theme.space[4], gap: theme.space[2] }]}>
+        <View
+          style={[
+            styles.pill,
+            { backgroundColor: theme.colors.surfaceRaised, borderRadius: theme.radii.control, paddingLeft: theme.space[4], paddingRight: action || onDismiss ? theme.space[1] : theme.space[4], gap: theme.space[2] },
+            theme.elevation(2),
+          ]}
+        >
           <Icon name={icon ?? t.icon} size={18} weight="semibold" color={fg} />
           <Text variant="subheadline" numberOfLines={2} style={styles.shrink}>
             {message}
           </Text>
           {action ? <Button label={action.label} variant="plain" size="sm" onPress={action.onPress} /> : null}
           {onDismiss ? <IconButton icon="close" iconSize={18} color="textSecondary" accessibilityLabel="Fechar aviso" onPress={onDismiss} /> : null}
-        </GlassSurface>
+        </View>
       </View>
     );
   }

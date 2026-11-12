@@ -1,11 +1,17 @@
-import type {
-  Attachment,
-  AttachmentStorage,
-  HealthRecord,
-  HealthRecordRepository,
-  LocalFile,
+import { LOCAL_COLLECTIONS } from '@/shared/lib';
+import { createMemoryDb } from '@/shared/lib/testing';
+import {
+  createLocalHealthRecordRepository,
+  type Attachment,
+  type AttachmentStorage,
+  type HealthRecord,
+  type HealthRecordRepository,
+  type LocalFile,
 } from '@/entities/health-record';
-import { addRecord, validateNewRecord, type AddRecordInput } from './add-record';
+import { createLocalMeasurementRepository, type MeasurementRepository } from '@/entities/measurement';
+import { createLocalMedicationRepository, type MedicationRepository } from '@/entities/medication';
+import { createLocalVaccineDoseRepository, type VaccineDoseRepository } from '@/entities/vaccine';
+import { addRecord, validateNewRecord, type AddRecordInput, type HealthDataInput } from './add-record';
 
 const now = new Date(2026, 10, 11);
 
@@ -68,6 +74,21 @@ function fakes(opts: { failUploadAt?: number; failMetadataAt?: number; failRemov
   return { repo, storage, records, files };
 }
 
+/** Portas de saúde que não devem ser chamadas (casos sem `healthData`). */
+const untouched = () => {
+  const fail = jest.fn(async () => {
+    throw new Error('não deveria gravar itens de saúde');
+  });
+  return {
+    measurements: { createMany: fail } as unknown as MeasurementRepository,
+    vaccineDoses: { createMany: fail } as unknown as VaccineDoseRepository,
+    medications: { createMany: fail } as unknown as MedicationRepository,
+    fail,
+  };
+};
+
+const deps = (f: ReturnType<typeof fakes>) => ({ records: f.repo, storage: f.storage, ...untouched() });
+
 describe('validateNewRecord', () => {
   it('normaliza título e transforma opcionais vazios em null', () => {
     const r = validateNewRecord(input({ title: '  Hemograma   completo ', location: '  ', professional: ' Dra. Ana ', notes: undefined }), now);
@@ -96,14 +117,14 @@ describe('validateNewRecord', () => {
 describe('addRecord', () => {
   it('cria o registro sem anexos', async () => {
     const f = fakes();
-    const record = await addRecord({ records: f.repo, storage: f.storage }, input(), now);
+    const record = await addRecord(deps(f), input(), now);
     expect(record).toMatchObject({ id: 'r1', title: 'Hemograma', attachments: [] });
     expect(f.records.size).toBe(1);
   });
 
   it('envia cada anexo e registra os metadados, devolvendo o registro completo', async () => {
     const f = fakes();
-    const record = await addRecord({ records: f.repo, storage: f.storage }, input({ files: [pdf('a.pdf'), pdf('b.pdf')] }), now);
+    const record = await addRecord(deps(f), input({ files: [pdf('a.pdf'), pdf('b.pdf')] }), now);
     expect(record.attachments.map((a) => a.fileName)).toEqual(['a.pdf', 'b.pdf']);
     expect(record.attachments[0]?.storagePath).toBe('f1/r1/a1.pdf');
     expect(f.files.size).toBe(2);
@@ -113,7 +134,7 @@ describe('addRecord', () => {
   it('valida anexos ANTES de criar qualquer coisa', async () => {
     const f = fakes();
     await expect(
-      addRecord({ records: f.repo, storage: f.storage }, input({ files: [pdf('ok.pdf'), pdf('grande.pdf', { sizeBytes: 21 * 1024 * 1024 })] }), now),
+      addRecord(deps(f), input({ files: [pdf('ok.pdf'), pdf('grande.pdf', { sizeBytes: 21 * 1024 * 1024 })] }), now),
     ).rejects.toMatchObject({ code: 'attachment/too-large' });
     expect(f.records.size).toBe(0);
     expect(f.files.size).toBe(0);
@@ -121,13 +142,13 @@ describe('addRecord', () => {
 
   it('dados inválidos não criam nada', async () => {
     const f = fakes();
-    await expect(addRecord({ records: f.repo, storage: f.storage }, input({ date: '2999-01-01' }), now)).rejects.toMatchObject({ code: 'record/future-date' });
+    await expect(addRecord(deps(f), input({ date: '2999-01-01' }), now)).rejects.toMatchObject({ code: 'record/future-date' });
     expect(f.records.size).toBe(0);
   });
 
   it('se o 2º upload falha, apaga o 1º arquivo e o registro, e informa qual anexo falhou', async () => {
     const f = fakes({ failUploadAt: 2 });
-    const run = addRecord({ records: f.repo, storage: f.storage }, input({ files: [pdf('a.pdf'), pdf('b.pdf'), pdf('c.pdf')] }), now);
+    const run = addRecord(deps(f), input({ files: [pdf('a.pdf'), pdf('b.pdf'), pdf('c.pdf')] }), now);
     await expect(run).rejects.toMatchObject({ code: 'record/upload-failed', message: expect.stringContaining('"b.pdf"') });
     expect(f.files.size).toBe(0);
     expect(f.records.size).toBe(0);
@@ -136,7 +157,7 @@ describe('addRecord', () => {
   it('se o registro do metadado falha, apaga também o arquivo que acabou de subir', async () => {
     const f = fakes({ failMetadataAt: 2 });
     await expect(
-      addRecord({ records: f.repo, storage: f.storage }, input({ files: [pdf('a.pdf'), pdf('b.pdf')] }), now),
+      addRecord(deps(f), input({ files: [pdf('a.pdf'), pdf('b.pdf')] }), now),
     ).rejects.toMatchObject({ code: 'record/upload-failed' });
     expect(f.files.size).toBe(0);
     expect(f.records.size).toBe(0);
@@ -144,7 +165,7 @@ describe('addRecord', () => {
 
   it('a falha original é a informada mesmo se a limpeza também falhar, e preserva a causa', async () => {
     const f = fakes({ failUploadAt: 2, failRemoveStorage: true });
-    const error = await addRecord({ records: f.repo, storage: f.storage }, input({ files: [pdf('a.pdf'), pdf('b.pdf')] }), now).catch((e) => e);
+    const error = await addRecord(deps(f), input({ files: [pdf('a.pdf'), pdf('b.pdf')] }), now).catch((e) => e);
     expect(error).toMatchObject({ code: 'record/upload-failed' });
     expect((error as Error).cause).toEqual(new Error('rede caiu'));
     expect(f.records.size).toBe(0);
@@ -153,8 +174,112 @@ describe('addRecord', () => {
   it('se o primeiro upload falha, não tenta apagar arquivos (nenhum subiu)', async () => {
     const f = fakes({ failUploadAt: 1 });
     const removeSpy = jest.spyOn(f.storage, 'remove');
-    await expect(addRecord({ records: f.repo, storage: f.storage }, input({ files: [pdf('a.pdf')] }), now)).rejects.toMatchObject({ code: 'record/upload-failed' });
+    await expect(addRecord(deps(f), input({ files: [pdf('a.pdf')] }), now)).rejects.toMatchObject({ code: 'record/upload-failed' });
     expect(removeSpy).not.toHaveBeenCalled();
+    expect(f.records.size).toBe(0);
+  });
+});
+
+describe('addRecord com healthData (itens confirmados na revisão do OCR)', () => {
+  const healthData = (over: Partial<HealthDataInput> = {}): HealthDataInput => ({
+    measurements: [
+      {
+        kind: 'lab', code: 'hba1c', label: 'Hemoglobina glicada (HbA1c)', value: 7.4, value2: null, unit: '%',
+        referenceLow: 4, referenceHigh: 5.6, referenceText: null, takenOn: '2026-11-01', takenAt: null, context: null, note: null,
+      },
+    ],
+    vaccineDoses: [
+      { vaccineCode: 'influenza', vaccineName: null, doseKey: 'ANUAL', doseLabel: 'Anual', appliedOn: '2026-04-15', lot: 'FLU26A0412', location: null },
+    ],
+    medications: [
+      { name: 'Amoxicilina', dosage: '500 mg', instructions: 'Tomar 1 cápsula de 8 em 8 horas por 7 dias.', startOn: '2026-11-01', endOn: '2026-11-07' },
+    ],
+    ...over,
+  });
+
+  /** Modo demo de verdade: as portas locais conferem pessoa e documento, e o registro apaga os itens em cascata. */
+  async function local() {
+    const db = createMemoryDb();
+    await db.put(LOCAL_COLLECTIONS.members, 'm1', { id: 'm1', familyId: 'f1', fullName: 'Carlos Souza' });
+    const f = fakes();
+    const ports = {
+      records: createLocalHealthRecordRepository(db),
+      storage: f.storage,
+      measurements: createLocalMeasurementRepository(db),
+      vaccineDoses: createLocalVaccineDoseRepository(db),
+      medications: createLocalMedicationRepository(db),
+    };
+    return { db, files: f.files, ports };
+  }
+
+  it('grava o registro e cada item com sourceRecordId do registro, origin ocr e a pessoa e família do formulário', async () => {
+    const { ports } = await local();
+    const record = await addRecord(ports, input({ healthData: healthData() }), now);
+
+    const [measurements, doses, medications] = await Promise.all([
+      ports.measurements.listBySourceRecord(record.id),
+      ports.vaccineDoses.listBySourceRecord(record.id),
+      ports.medications.listBySourceRecord(record.id),
+    ]);
+    const link = { familyId: 'f1', memberId: 'm1', sourceRecordId: record.id, origin: 'ocr' };
+    expect(measurements).toEqual([expect.objectContaining({ ...link, code: 'hba1c', value: 7.4 })]);
+    expect(doses).toEqual([expect.objectContaining({ ...link, vaccineCode: 'influenza', lot: 'FLU26A0412' })]);
+    expect(medications).toEqual([expect.objectContaining({ ...link, name: 'Amoxicilina', endOn: '2026-11-07' })]);
+  });
+
+  it('listas vazias não chamam createMany', async () => {
+    const f = fakes();
+    const health = untouched();
+    const empty = { measurements: [], vaccineDoses: [], medications: [] };
+    await addRecord({ records: f.repo, storage: f.storage, ...health }, input({ healthData: empty }), now);
+    expect(health.fail).not.toHaveBeenCalled();
+    expect(f.records.size).toBe(1);
+  });
+
+  it('sem healthData, o comportamento é o do MVP: nenhuma porta de saúde é chamada', async () => {
+    const f = fakes();
+    const health = untouched();
+    const record = await addRecord({ records: f.repo, storage: f.storage, ...health }, input({ files: [pdf('a.pdf')] }), now);
+    expect(record.attachments).toHaveLength(1);
+    expect(health.fail).not.toHaveBeenCalled();
+  });
+
+  it('se as doses falham depois das medições, apaga anexos e registro, e a cascata leva as medições já gravadas', async () => {
+    const { db, files, ports } = await local();
+    // 'other' sem nome é recusado pela porta, como o check do banco.
+    const badDose = { ...healthData().vaccineDoses[0]!, vaccineCode: 'other', vaccineName: null };
+    const error = await addRecord(ports, input({ files: [pdf('a.pdf')], healthData: healthData({ vaccineDoses: [badDose] }) }), now).catch((e) => e);
+
+    expect(error).toMatchObject({
+      code: 'record/health-data-failed',
+      message: 'Não foi possível salvar os dados lidos. O registro não foi salvo; tente novamente.',
+    });
+    expect((error as Error).cause).toMatchObject({ code: 'vaccine/invalid-dose' });
+    expect(await db.list(LOCAL_COLLECTIONS.records)).toEqual([]);
+    expect(await db.list(LOCAL_COLLECTIONS.measurements)).toEqual([]);
+    expect(await db.list(LOCAL_COLLECTIONS.vaccineDoses)).toEqual([]);
+    expect(await db.list(LOCAL_COLLECTIONS.medications)).toEqual([]);
+    expect(files.size).toBe(0);
+  });
+
+  it('falha nos medicamentos também desfaz tudo e informa record/health-data-failed', async () => {
+    const { db, ports } = await local();
+    const endBeforeStart = { ...healthData().medications[0]!, endOn: '2026-10-01' };
+    await expect(addRecord(ports, input({ healthData: healthData({ medications: [endBeforeStart] }) }), now)).rejects.toMatchObject({
+      code: 'record/health-data-failed',
+    });
+    expect(await db.list(LOCAL_COLLECTIONS.records)).toEqual([]);
+    expect(await db.list(LOCAL_COLLECTIONS.measurements)).toEqual([]);
+    expect(await db.list(LOCAL_COLLECTIONS.vaccineDoses)).toEqual([]);
+  });
+
+  it('falha de envio de anexo continua record/upload-failed e não chega a gravar itens', async () => {
+    const f = fakes({ failUploadAt: 1 });
+    const health = untouched();
+    await expect(
+      addRecord({ records: f.repo, storage: f.storage, ...health }, input({ files: [pdf('a.pdf')], healthData: healthData() }), now),
+    ).rejects.toMatchObject({ code: 'record/upload-failed' });
+    expect(health.fail).not.toHaveBeenCalled();
     expect(f.records.size).toBe(0);
   });
 });

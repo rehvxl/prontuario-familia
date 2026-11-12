@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useMember } from '@/entities/member';
 import { useRemoveMember, useUpdateMember } from '@/features/manage-members';
 import { MemberForm } from '@/widgets/member-form';
-import { Banner, ConfirmSheet, EmptyState, Screen, Spinner, errorMessage, useTheme } from '@/shared/ui';
+import { TOOLBAR_ICONS } from '@/shared/ui/navigation';
+import { Banner, ConfirmSheet, EmptyState, LoadErrorState, Screen, Spinner, categoricalIndexFor, errorMessage, headerOptions, useTheme } from '@/shared/ui';
 
-/** Editar ou remover uma pessoa. Remover apaga também os registros e anexos dela (com confirmação). */
+/**
+ * Editar ou remover uma pessoa. Remover apaga também os registros e anexos dela (com confirmação).
+ * v4: continua na divisória da pessoa (cabeçalho e fundo na cor dela), como a tela de onde se veio.
+ */
 export function EditMemberScreen() {
   const theme = useTheme();
   const router = useRouter();
@@ -17,7 +22,8 @@ export function EditMemberScreen() {
   const [confirming, setConfirming] = useState(false);
 
   if (member.isPending || remove.isSuccess) return <Screen scroll={false}><Spinner fill label="Carregando" /></Screen>;
-  if (member.isError || !member.data) {
+  if (member.isError) return <Screen scroll={false}><LoadErrorState onRetry={() => member.refetch()} /></Screen>;
+  if (!member.data) {
     return (
       <Screen scroll={false}>
         <EmptyState tone="error" title="Pessoa não encontrada" message="Ela pode ter sido removida da família." action={{ label: 'Voltar', onPress: () => router.back() }} />
@@ -25,11 +31,14 @@ export function EditMemberScreen() {
     );
   }
   const m = member.data;
+  const hue = theme.personBoard(categoricalIndexFor(m.id));
 
   return (
-    <Screen testID="edit-member-screen">
+    <Screen testID="edit-member-screen" board={hue}>
+      <Stack.Screen options={headerOptions(theme, { board: hue })} />
+      <StatusBar style={hue.statusBar} />
       <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Menu icon="ellipsis" title="Mais ações" accessibilityLabel="Mais ações">
+        <Stack.Toolbar.Menu icon={TOOLBAR_ICONS.more} title="Mais ações" accessibilityLabel="Mais ações">
           <Stack.Toolbar.MenuAction icon="trash" destructive onPress={() => setConfirming(true)}>
             Remover pessoa
           </Stack.Toolbar.MenuAction>
@@ -37,6 +46,7 @@ export function EditMemberScreen() {
       </Stack.Toolbar>
       <MemberForm
         initial={{ fullName: m.fullName, birthDate: m.birthDate, relationship: m.relationship, sex: m.sex }}
+        avatarId={m.id}
         submitLabel="Salvar alterações"
         submitting={update.isPending}
         error={update.error}

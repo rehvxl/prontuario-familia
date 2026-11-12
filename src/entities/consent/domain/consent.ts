@@ -1,5 +1,8 @@
-/** Versão atual do Termo de Uso + Política de Privacidade. Incrementar exige novo aceite. */
-export const CURRENT_TERMS_VERSION = '2026-11-v1';
+/**
+ * Versão atual do Termo de Uso + Política de Privacidade. Incrementar exige novo aceite.
+ * v2 (v0.2, spec P1): valores de exames, vacinas, medicamentos e sinais vitais como dado sensível estruturado.
+ */
+export const CURRENT_TERMS_VERSION = '2026-11-v2';
 
 export type ConsentPurpose = 'terms_and_privacy' | 'health_data_processing';
 

@@ -6,6 +6,10 @@ export const LOCAL_COLLECTIONS = {
   members: 'members',
   records: 'records',
   consents: 'consents',
+  measurements: 'measurements',
+  vaccineDoses: 'vaccineDoses',
+  medications: 'medications',
+  vaccineRuleDismissals: 'vaccineRuleDismissals',
 } as const;
 
 export type Dump = Record<string, Record<string, unknown>>;

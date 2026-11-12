@@ -10,10 +10,17 @@ export interface ListItemProps {
   title: string;
   /** Segunda linha (ex.: "Laboratório Fleury · Dr. Paulo"). */
   subtitle?: string;
-  /** Texto curto à direita (ex.: data). */
+  /** Texto curto à direita (ex.: data), em números tabulares. */
   meta?: string;
-  /** Avatar, ícone ou marcador à esquerda. */
+  /** Avatar, ícone ou marcador à esquerda. Para ícone, use `IconTile` (36 pt, raio 10). */
   leading?: ReactNode;
+  /**
+   * v3: valor à direita dentro da linha (ex.: `MetricValue`). Faz parte do elemento de acessibilidade
+   * da linha: inclua o que ele diz em `accessibilityLabel`.
+   */
+  value?: ReactNode;
+  /** v3: 'headline' para títulos de linha em destaque (ex.: "Para acompanhar"). Padrão 'body'. */
+  titleVariant?: 'body' | 'headline';
   /**
    * Conteúdo à direita (badge, switch, botão de menu). Substitui o chevron. Fica fora do elemento de
    * acessibilidade da linha: o VoiceOver/TalkBack lê a linha e depois chega ao controle da direita.
@@ -33,14 +40,16 @@ export interface ListItemProps {
 }
 
 /**
- * Linha de lista. Dentro de `ListSection` vira célula de lista agrupada (recuo 16, separador fino);
- * fora dela, linha de tela cheia com margem 20 (v1).
+ * Linha de lista. Dentro de `ListSection` (v4) vira linha da folha: alinhada à coluna de texto, sem recuo
+ * próprio, fio fino embaixo; fora dela, linha de tela cheia com margem 20 (v1).
  */
 export function ListItem({
   title,
   subtitle,
   meta,
   leading,
+  value,
+  titleVariant = 'body',
   trailing,
   onPress,
   chevron = !!onPress,
@@ -68,7 +77,7 @@ export function ListItem({
     <>
       {leading ? <View>{leading}</View> : null}
       <View style={styles.texts}>
-        <Text variant="body" color={disabled ? 'disabled' : destructive ? 'danger' : 'primary'}>
+        <Text variant={titleVariant} color={disabled ? 'disabled' : destructive ? 'danger' : 'primary'}>
           {title}
         </Text>
         {subtitle ? (
@@ -77,14 +86,16 @@ export function ListItem({
           </Text>
         ) : null}
         {stacked ? metaText : null}
+        {stacked && value ? <View style={{ marginTop: theme.space[1] }}>{value}</View> : null}
       </View>
       {stacked ? null : metaText}
+      {!stacked && value ? <View style={styles.value}>{value}</View> : null}
     </>
   );
 
-  const padH = inSection ? theme.space[4] : theme.layout.screenGutter;
-  const minHeight = subtitle ? 64 : 52;
-  const gap = theme.space[3];
+  const padH = inSection ? 0 : theme.layout.screenGutter;
+  const minHeight = subtitle ? 64 : theme.layout.rowMinHeight;
+  const gap = inSection ? theme.space[2] : theme.space[3];
   const rowStyle = [styles.row, { minHeight, paddingHorizontal: padH, paddingVertical: theme.space[3], gap }];
   const pressedBg = { backgroundColor: theme.colors.surfaceSunken };
 
@@ -194,6 +205,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center' },
   texts: { flex: 1 },
   meta: { flexShrink: 0, maxWidth: '40%' },
+  value: { flexShrink: 0, maxWidth: '50%', alignItems: 'flex-end' },
   main: { flex: 1, alignSelf: 'stretch' },
   trailing: { justifyContent: 'center' },
 });

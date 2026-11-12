@@ -4,7 +4,7 @@ import { DarkTheme, DefaultTheme, Redirect, Stack, ThemeProvider, useSegments, t
 import { StatusBar } from "expo-status-bar";
 import {
   AppProviders,
-  STEP_ENTRY_ROUTE,
+  entryRouteFor,
   isRouteInStep,
   useSessionState,
   type NextStep,
@@ -47,7 +47,7 @@ function SessionGate() {
 
   return (
     <>
-      {outOfStep ? <Redirect href={STEP_ENTRY_ROUTE[step] as Href} /> : null}
+      {outOfStep ? <Redirect href={entryRouteFor(step, session.user !== null) as Href} /> : null}
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Protected guard={step === "consent"}>
           <Stack.Screen name="(onboarding)" />

@@ -1,0 +1,5 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": { "modules": ["DocumentTextModule"] },
+  "android": { "modules": ["expo.modules.documenttext.DocumentTextModule"] }
+}

@@ -1,4 +1,4 @@
-export { STEP_ENTRY_ROUTE, STEP_ROUTE_GROUP, isRouteInStep, resolveNextStep } from './next-step';
+export { STEP_ENTRY_ROUTE, STEP_ROUTE_GROUP, entryRouteFor, isRouteInStep, resolveNextStep } from './next-step';
 export type { NextStep, NextStepInput } from './next-step';
 export { hasDeviceConsent, useDeviceConsentStore } from './device-consent';
 export { useSessionState } from './use-session-state';

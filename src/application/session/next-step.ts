@@ -36,6 +36,14 @@ export const STEP_ENTRY_ROUTE: Readonly<Record<NextStep, string>> = {
   main: '/(main)',
 };
 
+/**
+ * Rota de entrada da etapa para quem está (ou não) logado. Quem já tem sessão e volta ao consentimento
+ * (revogou, ou os termos mudaram) já viu o onboarding: vai direto à tela de consentimento, sem repetir
+ * as três telas de boas-vindas (BUG-09).
+ */
+export const entryRouteFor = (step: NextStep, signedIn: boolean): string =>
+  step === 'consent' && signedIn ? '/(onboarding)/consent' : STEP_ENTRY_ROUTE[step];
+
 /** `true` se o primeiro segmento da rota atual pertence à etapa; senão a guarda redireciona para `STEP_ENTRY_ROUTE`. */
 export const isRouteInStep = (step: NextStep, firstSegment: string | undefined): boolean =>
   firstSegment !== undefined && STEP_ROUTE_GROUP[step].includes(firstSegment);

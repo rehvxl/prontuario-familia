@@ -62,11 +62,9 @@ export function GlassSurface({
     <View
       style={[
         shapeStyle,
-        {
-          backgroundColor: theme.colors.surfaceRaised,
-          borderWidth: StyleSheet.hairlineWidth,
-          borderColor: theme.colors.border,
-        },
+        { backgroundColor: theme.colors.surfaceRaised },
+        // Fio ou sombra, nunca os dois (v3): sombra "Flutuante" no claro, fio no escuro (onde não há sombra).
+        theme.scheme === 'dark' && { borderWidth: StyleSheet.hairlineWidth, borderColor: theme.colors.border },
         theme.elevation(2),
         // overflow hidden corta a sombra no iOS; a sombra fica no wrapper só fora do iOS.
         Platform.OS === 'ios' && { overflow: 'visible' },

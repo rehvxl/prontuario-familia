@@ -1,12 +1,21 @@
 import { useState } from 'react';
-import { Platform, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { DEMO_OTP_CODE, useAuthProviders } from '@/entities/session';
 import { isAuthCancelled, useRequestEmailCode, useSignInWithApple, useSignInWithGoogle } from '@/features/auth';
-import { Banner, Button, Chip, Screen, Text, TextField, errorMessage, useTheme } from '@/shared/ui';
+import { Banner, Button, Divider, Screen, Text, TextField, errorMessage, useTheme } from '@/shared/ui';
+import { GoogleSignInButton } from './GoogleSignInButton';
 
-/** Login sem senha: e-mail → código. Apple (só iOS) e Google aparecem quando o aparelho/ambiente oferece. `demo` mostra o código de teste. */
+/** Altura dos botões de provedor: a mesma dos botões do app (52 pt), para alinhar com "Enviar código". */
+const PROVIDER_HEIGHT = 52;
+
+/**
+ * Login sem senha: e-mail → código. Apple (botão do sistema, só iOS) e Google (botão de marca) aparecem quando o
+ * aparelho/ambiente oferece. `demo` mostra o selo discreto com o código de teste.
+ * v4: sem cabeçalho, a folha começa logo abaixo da barra de status, sobre a capa ultramar.
+ */
 export function SignInScreen({ demo }: { demo: boolean }) {
   const theme = useTheme();
   const router = useRouter();
@@ -21,6 +30,7 @@ export function SignInScreen({ demo }: { demo: boolean }) {
 
   const socialError = [apple.error, google.error].find((e) => e && !isAuthCancelled(e));
   const emailError = requestCode.error ? errorMessage(requestCode.error, 'Não foi possível enviar o código. Tente novamente.') : null;
+  const radius = PROVIDER_HEIGHT / 2;
 
   const sendCode = () =>
     requestCode.mutate(email, {
@@ -30,20 +40,18 @@ export function SignInScreen({ demo }: { demo: boolean }) {
   return (
     <Screen
       testID="sign-in-screen"
-      edges={["top", "left", "right", "bottom"]}
+      board="ultramar"
+      edges={['top', 'left', 'right', 'bottom']}
+      heading={{ title: 'Entrar' }}
       footer={
         <Button label="Enviar código" onPress={sendCode} loading={requestCode.isPending} disabled={email.trim() === '' || busy} fullWidth />
       }
     >
-      <Text variant="title1">Entrar</Text>
-      <Text color="secondary" style={{ marginTop: theme.space[2], marginBottom: theme.space[6] }}>
+      <StatusBar style={theme.hues.family.statusBar} />
+      {demo ? <DemoSeal /> : null}
+      <Text color="secondary" style={{ marginBottom: theme.space[6] }}>
         Vamos enviar um código de 6 dígitos para o seu e-mail. Sem senha para lembrar.
       </Text>
-      {demo ? (
-        <View style={{ alignSelf: 'flex-start', marginBottom: theme.space[4] }} testID="demo-banner">
-          <Chip icon="flask" label={`Modo demonstração · código ${DEMO_OTP_CODE}`} />
-        </View>
-      ) : null}
       <TextField
         label="E-mail"
         value={email}
@@ -57,26 +65,58 @@ export function SignInScreen({ demo }: { demo: boolean }) {
         onSubmitEditing={sendCode}
         error={emailError}
         disabled={busy}
+        autoFocus
         testID="email-input"
       />
       {showApple || showGoogle ? (
         <View style={{ marginTop: theme.space[8], gap: theme.space[3] }}>
-          <Text variant="footnote" color="secondary" align="center">
-            ou continue com
-          </Text>
+          <View style={[styles.or, { gap: theme.space[3] }]}>
+            <View style={styles.flex}><Divider /></View>
+            <Text variant="footnote" color="secondary">
+              ou continue com
+            </Text>
+            <View style={styles.flex}><Divider /></View>
+          </View>
           {showApple ? (
             <AppleAuthentication.AppleAuthenticationButton
               buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
               buttonStyle={theme.scheme === 'dark' ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-              cornerRadius={theme.radii.md}
-              style={{ height: 52 }}
+              cornerRadius={radius}
+              style={{ height: PROVIDER_HEIGHT }}
               onPress={() => apple.mutate()}
             />
           ) : null}
-          {showGoogle ? <Button label="Continuar com o Google" variant="bordered" onPress={() => google.mutate()} disabled={busy} fullWidth /> : null}
+          {showGoogle ? (
+            <GoogleSignInButton onPress={() => google.mutate()} disabled={busy} loading={google.isPending} cornerRadius={radius} height={PROVIDER_HEIGHT} />
+          ) : null}
           {socialError ? <Banner tone="danger" message={errorMessage(socialError, 'Não foi possível entrar. Tente novamente.')} /> : null}
         </View>
       ) : null}
     </Screen>
   );
 }
+
+/**
+ * Selo do modo demonstração, no fluxo abaixo do título: cápsula `caption` no `soft` da divisória. Quebra linha
+ * em vez de cortar (o código de teste precisa ficar legível com texto grande), por isso não é o `Badge`.
+ */
+function DemoSeal() {
+  const theme = useTheme();
+  return (
+    <View
+      testID="demo-banner"
+      accessible
+      style={[styles.seal, { backgroundColor: theme.colors.primarySoft, borderRadius: theme.radii.control, paddingHorizontal: theme.space[3], paddingVertical: theme.space[1], marginBottom: theme.space[4] }]}
+    >
+      <Text variant="caption" color="onPrimarySoft" tabular>
+        {`Modo demonstração · código ${DEMO_OTP_CODE}`}
+      </Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  or: { flexDirection: 'row', alignItems: 'center' },
+  flex: { flex: 1 },
+  seal: { alignSelf: 'flex-start' },
+});

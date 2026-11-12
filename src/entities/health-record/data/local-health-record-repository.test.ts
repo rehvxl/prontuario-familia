@@ -1,5 +1,5 @@
 import { createMemoryDb } from '@/shared/lib/testing';
-import type { LocalDb } from '@/shared/lib';
+import { LOCAL_COLLECTIONS, type LocalDb } from '@/shared/lib';
 import type { HealthRecordRepository, NewHealthRecord } from '../domain/health-record';
 import { createLocalHealthRecordRepository } from './local-health-record-repository';
 
@@ -76,5 +76,22 @@ describe('createLocalHealthRecordRepository', () => {
     await repo.remove(r.id);
     await repo.remove(r.id);
     expect(await repo.getById(r.id)).toBeNull();
+  });
+
+  it('remover o registro apaga em cascata as medições, doses e medicamentos ligados a ele, e preserva os outros', async () => {
+    const r = await repo.create(base());
+    const other = await repo.create(base({ title: 'Outro laudo' }));
+    const linked = [LOCAL_COLLECTIONS.measurements, LOCAL_COLLECTIONS.vaccineDoses, LOCAL_COLLECTIONS.medications];
+    for (const c of linked) {
+      await db.put(c, `${c}-ligado`, { id: `${c}-ligado`, memberId: 'm1', sourceRecordId: r.id });
+      await db.put(c, `${c}-outro`, { id: `${c}-outro`, memberId: 'm1', sourceRecordId: other.id });
+      await db.put(c, `${c}-manual`, { id: `${c}-manual`, memberId: 'm1', sourceRecordId: null });
+    }
+
+    await repo.remove(r.id);
+
+    for (const c of linked) {
+      expect((await db.list<{ id: string }>(c)).map((d) => d.id).sort()).toEqual([`${c}-manual`, `${c}-outro`]);
+    }
   });
 });

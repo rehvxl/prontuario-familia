@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { isDomainError } from '@/shared/lib';
-import { Banner, Button, DateField, Select, TextField, errorMessage, toISODate, useTheme } from '@/shared/ui';
+import { Avatar, Banner, Icon, Button, DateField, Select, Text, TextField, errorMessage, getInitials, toISODate, useTheme } from '@/shared/ui';
 import { RELATIONSHIPS, RELATIONSHIP_LABELS, SEXES, SEX_LABELS, type Relationship, type Sex } from '@/entities/member';
 
 export interface MemberFormValues {
@@ -18,6 +18,11 @@ export interface MemberFormProps {
   /** Erro da última tentativa (mutation): erros de campo vão no campo, o resto num banner. */
   error?: unknown;
   onSubmit: (values: MemberFormValues) => void;
+  /**
+   * Id da pessoa na edição: a prévia sai na cor da divisória dela. Sem id (nova), a prévia fica neutra: a cor
+   * sai do id criado ao salvar, e mostrar outra antes seria prometer a divisória errada.
+   */
+  avatarId?: string;
 }
 
 const relationshipOptions = RELATIONSHIPS.map((value) => ({ value, label: RELATIONSHIP_LABELS[value] }));
@@ -26,8 +31,14 @@ const sexOptions = SEXES.map((value) => ({ value, label: SEX_LABELS[value] }));
 const NAME_CODES = ['member/invalid-name'];
 const BIRTH_CODES = ['member/invalid-birth-date', 'member/future-birth-date'];
 
-/** Campos de uma pessoa da família (nova ou edição). Valida ao enviar; as regras finais são as do caso de uso. */
-export function MemberForm({ initial, submitLabel, submitting = false, error, onSubmit }: MemberFormProps) {
+/** Dica da data de nascimento (DESIGN_SYSTEM.md §7.13): na v0.2 ela calcula o calendário de vacinas (spec F3, R13). */
+export const BIRTH_DATE_HINT = 'Usada para o calendário de vacinas';
+
+/**
+ * Campos de uma pessoa da família (nova ou edição). Valida ao enviar; as regras finais são as do caso de uso.
+ * A capa da pessoa com as iniciais aparece ao digitar o nome.
+ */
+export function MemberForm({ initial, submitLabel, submitting = false, error, onSubmit, avatarId }: MemberFormProps) {
   const theme = useTheme();
   const [fullName, setFullName] = useState(initial?.fullName ?? '');
   const [birthDate, setBirthDate] = useState<string | null>(initial?.birthDate ?? null);
@@ -35,6 +46,7 @@ export function MemberForm({ initial, submitLabel, submitting = false, error, on
   const [sex, setSex] = useState<Sex>(initial?.sex ?? 'unspecified');
   const [attempted, setAttempted] = useState(false);
 
+  const preview = fullName.trim();
   const code = isDomainError(error) ? error.code : null;
   const nameError = attempted && fullName.trim().length < 2 ? 'Informe o nome da pessoa.' : code && NAME_CODES.includes(code) ? errorMessage(error) : undefined;
   const birthError = code && BIRTH_CODES.includes(code) ? errorMessage(error) : undefined;
@@ -50,6 +62,26 @@ export function MemberForm({ initial, submitLabel, submitting = false, error, on
   return (
     <View style={{ gap: theme.layout.fieldGap }}>
       {bannerError ? <Banner tone="danger" message={bannerError} /> : null}
+      {/* Prévia sempre presente (sem empurrar o campo ao digitar); decorativa: o nome já está no campo. */}
+      <View style={[styles.preview, { gap: theme.space[3] }]} testID="member-avatar-preview" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        {preview && avatarId ? (
+          <Avatar name={preview} id={avatarId} size="lg" />
+        ) : (
+          // Capa ainda sem divisória, no mesmo recorte do `Avatar` lg (cantos de aba à direita).
+          <View style={[styles.placeholder, { backgroundColor: theme.colors.surfaceSunken }]}>
+            {preview ? (
+              <Text allowFontScaling={false} color="secondary" style={styles.initials}>
+                {getInitials(preview)}
+              </Text>
+            ) : (
+              <Icon name="person" size={26} color="textSecondary" />
+            )}
+          </View>
+        )}
+        <Text variant="title3" color={preview ? 'primary' : 'secondary'} style={styles.flex}>
+          {preview || 'Nova pessoa'}
+        </Text>
+      </View>
       <TextField
         label="Nome"
         value={fullName}
@@ -65,6 +97,7 @@ export function MemberForm({ initial, submitLabel, submitting = false, error, on
         label="Data de nascimento"
         optional
         clearable
+        helper={BIRTH_DATE_HINT}
         value={birthDate}
         onChange={setBirthDate}
         maximumDate={toISODate(new Date())}
@@ -77,3 +110,19 @@ export function MemberForm({ initial, submitLabel, submitting = false, error, on
   );
 }
 
+const styles = StyleSheet.create({
+  preview: { flexDirection: 'row', alignItems: 'center' },
+  placeholder: {
+    width: 56,
+    height: 56,
+    borderTopLeftRadius: 6,
+    borderBottomLeftRadius: 6,
+    borderTopRightRadius: 16,
+    borderBottomRightRadius: 16,
+    borderCurve: 'continuous',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  initials: { fontSize: 22, lineHeight: 26, fontWeight: '700' },
+  flex: { flex: 1 },
+});

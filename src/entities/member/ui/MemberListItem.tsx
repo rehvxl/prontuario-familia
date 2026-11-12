@@ -6,7 +6,7 @@ import type { Member } from '../domain/member';
 
 export interface MemberListItemProps {
   member: Member;
-  /** Texto extra no fim do subtítulo (ex.: "8 registros"). */
+  /** Texto extra no fim do subtítulo (ex.: "8 documentos"). */
   extra?: string;
   onPress?: () => void;
   trailing?: ReactNode;
@@ -14,10 +14,10 @@ export interface MemberListItemProps {
 
 /** Pessoa da família em lista: avatar na cor estável da pessoa, parentesco e idade. */
 export function MemberListItem({ member, extra, onPress, trailing }: MemberListItemProps) {
-  const subtitle = [relationshipLabel(member.relationship), formatAge(member.birthDate), extra].filter(Boolean).join(' · ');
+  const subtitle = [relationshipLabel(member.relationship, member.sex), formatAge(member.birthDate), extra].filter(Boolean).join(' · ');
   return (
     <ListItem
-      leading={<Avatar name={member.fullName} id={member.id} />}
+      leading={<Avatar name={member.fullName} id={member.id} ring />}
       title={member.fullName}
       subtitle={subtitle}
       onPress={onPress}

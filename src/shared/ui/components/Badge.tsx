@@ -4,12 +4,23 @@ import { useTheme } from '../theme';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 
-export type BadgeTone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+/** v3: tons clínicos para status (prefira `StateChip` para estado de faixa do laudo). */
+export type BadgeTone =
+  | 'neutral'
+  | 'primary'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  | 'clinicalIn'
+  | 'clinicalHigh'
+  | 'clinicalLow'
+  | 'clinicalNone';
 
 export interface BadgeProps {
   label: string;
   tone?: BadgeTone;
-  /** Usa a paleta categórica em vez de um tom semântico (ex.: tipo de registro). */
+  /** Usa a paleta categórica em vez de um tom semântico (0..6 pessoa, 7 neutro). */
   colorIndex?: CategoricalIndex;
   icon?: IconName;
   testID?: string;
@@ -22,6 +33,10 @@ const TONES: Record<BadgeTone, [keyof ColorTokens, keyof ColorTokens]> = {
   warning: ['warningSoft', 'onWarningSoft'],
   danger: ['dangerSoft', 'onDangerSoft'],
   info: ['infoSoft', 'onInfoSoft'],
+  clinicalIn: ['clinicalInSoft', 'onClinicalInSoft'],
+  clinicalHigh: ['clinicalHighSoft', 'onClinicalHighSoft'],
+  clinicalLow: ['clinicalLowSoft', 'onClinicalLowSoft'],
+  clinicalNone: ['clinicalNoneSoft', 'onClinicalNoneSoft'],
 };
 
 export function Badge({ label, tone = 'neutral', colorIndex, icon, testID }: BadgeProps) {
@@ -31,13 +46,27 @@ export function Badge({ label, tone = 'neutral', colorIndex, icon, testID }: Bad
   const bg = cat?.soft ?? theme.colors[bgKey];
   const fg = cat?.main ?? theme.colors[fgKey];
   return (
-    <View style={[styles.badge, { backgroundColor: bg, borderRadius: theme.radii.full, paddingHorizontal: theme.space[2] + 2, gap: theme.space[1] }]} testID={testID}>
-      {icon ? <Icon name={icon} size={14} color={fg} /> : null}
-      <Text variant="caption" style={{ color: fg, fontWeight: '600' }} numberOfLines={1}>
+    <View style={[styles.badge, { backgroundColor: bg, borderRadius: theme.radii.full, paddingHorizontal: 9, gap: theme.space[1] }]} testID={testID}>
+      {icon ? <Icon name={icon} size={15} color={fg} /> : null}
+      <Text variant="caption" style={{ color: fg, fontWeight: '600', flexShrink: 1 }}>
         {label}
       </Text>
     </View>
   );
+}
+
+export interface DemoBadgeProps {
+  /** Padrão "Modo demonstração". */
+  label?: string;
+  testID?: string;
+}
+
+/**
+ * Aviso de modo demonstração no fluxo da tela: cápsula `caption` no `soft` da divisória, logo abaixo do
+ * título (DESIGN_SYSTEM §7.1). Não flutua, então não cobre a lista nem rouba toques.
+ */
+export function DemoBadge({ label = 'Modo demonstração', testID = 'demo-badge' }: DemoBadgeProps) {
+  return <Badge label={label} tone="primary" icon="flask" testID={testID} />;
 }
 
 const styles = StyleSheet.create({

@@ -9,11 +9,23 @@ import {
   type LocalFile,
   type NewHealthRecord,
 } from '@/entities/health-record';
+import type { MeasurementRepository, NewMeasurement } from '@/entities/measurement';
+import type { MedicationRepository, NewMedication } from '@/entities/medication';
+import type { NewVaccineDose, VaccineDoseRepository } from '@/entities/vaccine';
 
 export const RECORD_TITLE_MAX = 120;
 export const RECORD_FIELD_MAX = 120;
 export const RECORD_NOTES_MAX = 2000;
 const MIN_RECORD_DATE = '1900-01-01';
+
+type FromRecord = 'familyId' | 'memberId' | 'sourceRecordId' | 'origin';
+
+/** Itens confirmados na revisão do OCR. Pessoa, família, documento de origem e `origin: 'ocr'` vêm do registro. */
+export interface HealthDataInput {
+  measurements: Omit<NewMeasurement, FromRecord>[];
+  vaccineDoses: Omit<NewVaccineDose, FromRecord>[];
+  medications: Omit<NewMedication, FromRecord>[];
+}
 
 /** Registro novo + arquivos locais a anexar. Campos opcionais vazios viram `null`. */
 export interface AddRecordInput extends Omit<NewHealthRecord, 'location' | 'professional' | 'notes'> {
@@ -21,9 +33,17 @@ export interface AddRecordInput extends Omit<NewHealthRecord, 'location' | 'prof
   professional?: string | null;
   notes?: string | null;
   files: LocalFile[];
+  /** Sem `healthData`, o comportamento é o do MVP. */
+  healthData?: HealthDataInput;
 }
 
-type Deps = { records: HealthRecordRepository; storage: AttachmentStorage };
+type Deps = {
+  records: HealthRecordRepository;
+  storage: AttachmentStorage;
+  measurements: MeasurementRepository;
+  vaccineDoses: VaccineDoseRepository;
+  medications: MedicationRepository;
+};
 
 function optional(value: string | null | undefined, max: number, label: string): string | null {
   const text = (value ?? '').trim();
@@ -57,17 +77,33 @@ export function validateNewRecord(input: AddRecordInput, now: Date = new Date())
   };
 }
 
+/** Grava os itens ligados ao registro, uma porta por vez (cada `createMany` é tudo ou nada). */
+async function saveHealthData(deps: Deps, record: HealthRecord, data: HealthDataInput): Promise<void> {
+  const link = { familyId: record.familyId, memberId: record.memberId, sourceRecordId: record.id, origin: 'ocr' as const };
+  if (data.measurements.length > 0) await deps.measurements.createMany(data.measurements.map((m) => ({ ...m, ...link })));
+  if (data.vaccineDoses.length > 0) await deps.vaccineDoses.createMany(data.vaccineDoses.map((d) => ({ ...d, ...link })));
+  if (data.medications.length > 0) await deps.medications.createMany(data.medications.map((m) => ({ ...m, ...link })));
+}
+
 /**
- * Cria o registro, envia os anexos e registra seus metadados.
- * Tudo ou nada: se um envio falhar, apaga o que já subiu e o próprio registro, e lança `record/upload-failed`.
+ * Cria o registro, envia os anexos, registra seus metadados e grava os itens de saúde confirmados.
+ * Tudo ou nada: se algo falhar, apaga os arquivos e o próprio registro (a cascata leva os itens já gravados)
+ * e lança `record/upload-failed` ou `record/health-data-failed`.
  */
-export async function addRecord({ records, storage }: Deps, input: AddRecordInput, now: Date = new Date()): Promise<HealthRecord> {
+export async function addRecord(deps: Deps, input: AddRecordInput, now: Date = new Date()): Promise<HealthRecord> {
+  const { records, storage } = deps;
   const newRecord = validateNewRecord(input, now);
   input.files.forEach(validateAttachment);
 
   const record = await records.create(newRecord);
   const uploadedPaths: string[] = [];
   const attachments: Attachment[] = [];
+  // Desfazer é "melhor esforço": a falha original é a que importa para o usuário.
+  const undo = async () => {
+    if (uploadedPaths.length > 0) await storage.remove(uploadedPaths).catch(() => undefined);
+    await records.remove(record.id).catch(() => undefined);
+  };
+
   let currentFile = '';
   try {
     for (const file of input.files) {
@@ -77,14 +113,25 @@ export async function addRecord({ records, storage }: Deps, input: AddRecordInpu
       attachments.push(await records.addAttachment(record.id, stored));
     }
   } catch (cause) {
-    // Desfazer é "melhor esforço": a falha original é a que importa para o usuário.
-    if (uploadedPaths.length > 0) await storage.remove(uploadedPaths).catch(() => undefined);
-    await records.remove(record.id).catch(() => undefined);
+    await undo();
     throw new DomainError(
       'record/upload-failed',
       `Não foi possível enviar o anexo "${currentFile}". O registro não foi salvo; verifique a conexão e tente novamente.`,
       { cause },
     );
+  }
+
+  if (input.healthData) {
+    try {
+      await saveHealthData(deps, record, input.healthData);
+    } catch (cause) {
+      await undo();
+      throw new DomainError(
+        'record/health-data-failed',
+        'Não foi possível salvar os dados lidos. O registro não foi salvo; tente novamente.',
+        { cause },
+      );
+    }
   }
   return { ...record, attachments };
 }

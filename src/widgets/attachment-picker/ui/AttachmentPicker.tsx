@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { ActionSheet, Banner, Button, FieldLabel, Icon, IconButton, ListItem, ListSection, Text, errorMessage, useTheme } from '@/shared/ui';
+import { ActionSheet, Banner, Button, FieldLabel, IconButton, IconTile, ListItem, ListSection, Text, errorMessage, useTheme } from '@/shared/ui';
 import { validateAttachment, type LocalFile } from '@/entities/health-record';
 import { pickDocuments, pickFromLibrary, takePhoto } from '../lib/pick-attachments';
 
@@ -52,7 +52,7 @@ export function AttachmentPicker({ files, onChange, disabled = false }: Attachme
           {files.map((file, index) => (
             <ListItem
               key={`${file.uri}-${index}`}
-              leading={<Icon name={file.mimeType === 'application/pdf' ? 'fileText' : 'gallery'} color="textSecondary" />}
+              leading={<IconTile icon={file.mimeType === 'application/pdf' ? 'fileText' : 'gallery'} />}
               title={file.fileName}
               subtitle={formatSize(file.sizeBytes)}
               trailing={

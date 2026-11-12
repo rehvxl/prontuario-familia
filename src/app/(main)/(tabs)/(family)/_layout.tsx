@@ -1,9 +1,15 @@
 import { Stack } from 'expo-router';
+import { headerOptions, useTheme } from '@/shared/ui';
 
-/** Stack da aba "Família": cabeçalho nativo com título grande (sem cor fixa: o iOS 26 aplica o vidro). */
+/**
+ * Stack da aba "Família": tela-raiz com o título serifado no conteúdo (`Screen heading`). O cabeçalho nativo
+ * nasce já sem título grande e transparente (vidro do sistema no iOS 26): ligar o título grande aqui e
+ * desligar na tela deixava o espaço dele reservado acima do título serifado (A2).
+ */
 export default function FamilyLayout() {
+  const theme = useTheme();
   return (
-    <Stack screenOptions={{ headerLargeTitle: true, headerLargeTitleShadowVisible: false, headerTransparent: process.env.EXPO_OS === 'ios' }}>
+    <Stack screenOptions={headerOptions(theme, { contentTitle: true })}>
       <Stack.Screen name="index" options={{ title: 'Família' }} />
     </Stack>
   );

@@ -17,10 +17,14 @@ export function createLocalDataExportGateway(db: LocalDb): DataExportGateway {
       const families = (await db.list<OwnedDoc>(LOCAL_COLLECTIONS.families)).filter((f) => f.ownerId === userId);
       const familyIds = new Set(families.map((f) => f.id));
       const inMyFamilies = (d: OwnedDoc) => d.familyId !== undefined && familyIds.has(d.familyId);
-      const [members, records, consents] = await Promise.all([
+      const [members, records, consents, measurements, vaccineDoses, medications, vaccineRuleDismissals] = await Promise.all([
         db.list<OwnedDoc>(LOCAL_COLLECTIONS.members),
         db.list<OwnedDoc>(LOCAL_COLLECTIONS.records),
         db.list<OwnedDoc>(LOCAL_COLLECTIONS.consents),
+        db.list<OwnedDoc>(LOCAL_COLLECTIONS.measurements),
+        db.list<OwnedDoc>(LOCAL_COLLECTIONS.vaccineDoses),
+        db.list<OwnedDoc>(LOCAL_COLLECTIONS.medications),
+        db.list<OwnedDoc>(LOCAL_COLLECTIONS.vaccineRuleDismissals),
       ]);
       return JSON.stringify(
         {
@@ -31,6 +35,11 @@ export function createLocalDataExportGateway(db: LocalDb): DataExportGateway {
           families,
           members: members.filter(inMyFamilies),
           records: records.filter(inMyFamilies),
+          // Itens no nível de cima, como na Edge Function (spec P6): os manuais não têm documento de origem.
+          measurements: measurements.filter(inMyFamilies),
+          vaccineDoses: vaccineDoses.filter(inMyFamilies),
+          medications: medications.filter(inMyFamilies),
+          vaccineRuleDismissals: vaccineRuleDismissals.filter(inMyFamilies),
         },
         null,
         2,

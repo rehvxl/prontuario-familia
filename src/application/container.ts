@@ -15,6 +15,15 @@ import {
   type HealthRecordRepository,
 } from '@/entities/health-record';
 import { createLocalConsentRepository, type ConsentRepository } from '@/entities/consent';
+import { createLocalMeasurementRepository, type MeasurementRepository } from '@/entities/measurement';
+import { createLocalVaccineDoseRepository, type VaccineDoseRepository } from '@/entities/vaccine';
+import { createLocalMedicationRepository, type MedicationRepository } from '@/entities/medication';
+import {
+  createDemoDocumentTextExtractor,
+  createDeviceDocumentTextExtractor,
+  unavailableDocumentTextExtractor,
+  type DocumentTextExtractor,
+} from '@/features/read-document';
 import { createSupabasePorts } from './supabase-ports';
 
 /** Implementações concretas das portas do domínio (docs/ARCHITECTURE.md §3). */
@@ -26,13 +35,21 @@ export interface AppPorts {
   storage: AttachmentStorage;
   consents: ConsentRepository;
   dataExport: DataExportGateway;
+  measurements: MeasurementRepository;
+  vaccineDoses: VaccineDoseRepository;
+  medications: MedicationRepository;
+  /** Leitor de documentos; não depende do backend (ocr-tecnico.md §b.4). */
+  documentText: DocumentTextExtractor;
 }
+
+/** Portas que dependem do backend escolhido. */
+export type BackendPorts = Omit<AppPorts, 'documentText'>;
 
 export interface AppContainer extends AppPorts {
   mode: BackendMode;
 }
 
-function createLocalPorts(): AppPorts {
+function createLocalPorts(): BackendPorts {
   const db = createLocalDb();
   return {
     auth: createLocalAuthGateway(db),
@@ -42,7 +59,18 @@ function createLocalPorts(): AppPorts {
     storage: createLocalAttachmentStorage(),
     consents: createLocalConsentRepository(db),
     dataExport: createLocalDataExportGateway(db),
+    measurements: createLocalMeasurementRepository(db),
+    vaccineDoses: createLocalVaccineDoseRepository(db),
+    medications: createLocalMedicationRepository(db),
   };
+}
+
+/**
+ * Leitor de documentos (ocr-tecnico.md §b.4): módulo nativo no binário → nativo, inclusive no modo demo
+ * (senão o OCR real nunca seria testado no dev build); sem módulo, demo → texto simulado; Supabase → indisponível.
+ */
+function createDocumentTextExtractor(mode: BackendMode): DocumentTextExtractor {
+  return createDeviceDocumentTextExtractor() ?? (mode === 'demo' ? createDemoDocumentTextExtractor() : unavailableDocumentTextExtractor);
 }
 
 /**
@@ -51,7 +79,7 @@ function createLocalPorts(): AppPorts {
  */
 export function createContainer(env: AppEnv, overrides: Partial<AppPorts> = {}): AppContainer {
   const ports = env.backendMode === 'supabase' ? createSupabasePorts() : createLocalPorts();
-  return { mode: env.backendMode, ...ports, ...overrides };
+  return { mode: env.backendMode, ...ports, documentText: createDocumentTextExtractor(env.backendMode), ...overrides };
 }
 
 /** Mapa chave → porta no formato do DI genérico de `@/shared/lib` (`DependencyProvider`). */
@@ -64,5 +92,9 @@ export function containerDependencies(container: AppContainer): Record<string, u
     [DEPENDENCY_KEYS.storage]: container.storage,
     [DEPENDENCY_KEYS.consents]: container.consents,
     [DEPENDENCY_KEYS.dataExport]: container.dataExport,
+    [DEPENDENCY_KEYS.measurements]: container.measurements,
+    [DEPENDENCY_KEYS.vaccineDoses]: container.vaccineDoses,
+    [DEPENDENCY_KEYS.medications]: container.medications,
+    [DEPENDENCY_KEYS.documentText]: container.documentText,
   };
 }

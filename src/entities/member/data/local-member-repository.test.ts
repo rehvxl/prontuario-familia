@@ -63,4 +63,25 @@ describe('createLocalMemberRepository', () => {
   it('remover pessoa inexistente falha', async () => {
     await expect(repo.remove('nada')).rejects.toMatchObject({ code: 'member/not-found' });
   });
+
+  it('remover a pessoa apaga em cascata medições, doses, medicamentos e dispensas dela, preservando os dos outros', async () => {
+    const ana = await repo.create(input());
+    const bia = await repo.create(input({ fullName: 'Bia' }));
+    const health = [
+      LOCAL_COLLECTIONS.measurements,
+      LOCAL_COLLECTIONS.vaccineDoses,
+      LOCAL_COLLECTIONS.medications,
+      LOCAL_COLLECTIONS.vaccineRuleDismissals,
+    ];
+    for (const c of health) {
+      await db.put(c, `${c}-ana`, { id: `${c}-ana`, familyId: 'f1', memberId: ana.id });
+      await db.put(c, `${c}-bia`, { id: `${c}-bia`, familyId: 'f1', memberId: bia.id });
+    }
+
+    await repo.remove(ana.id);
+
+    for (const c of health) {
+      expect((await db.list<{ id: string }>(c)).map((d) => d.id)).toEqual([`${c}-bia`]);
+    }
+  });
 });

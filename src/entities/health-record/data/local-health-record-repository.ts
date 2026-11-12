@@ -2,6 +2,13 @@ import { DomainError, LOCAL_COLLECTIONS, newId, normalizeSearchText, removeLocal
 import type { Attachment, HealthRecord, HealthRecordRepository, RecordQuery } from '../domain/health-record';
 import { filterByTypes, sortRecords } from '../domain/timeline';
 
+/** Coleções com `sourceRecordId` (FK para o registro, com cascata no banco). */
+const LINKED_COLLECTIONS = [LOCAL_COLLECTIONS.measurements, LOCAL_COLLECTIONS.vaccineDoses, LOCAL_COLLECTIONS.medications];
+interface LinkedDoc {
+  id: string;
+  sourceRecordId: string | null;
+}
+
 function matchesText(record: HealthRecord, text: string): boolean {
   const haystack = normalizeSearchText([record.title, record.location, record.professional, record.notes].filter(Boolean).join(' '));
   return normalizeSearchText(text)
@@ -40,6 +47,11 @@ export function createLocalHealthRecordRepository(db: LocalDb): HealthRecordRepo
       if (!record) return;
       removeLocalFiles(record.attachments.map((a) => a.storagePath));
       await db.remove(LOCAL_COLLECTIONS.records, id);
+      // Imita o `on delete cascade` de source_record_id: os itens de saúde ligados ao documento saem junto (A15).
+      for (const collection of LINKED_COLLECTIONS) {
+        const linked = (await db.list<LinkedDoc>(collection)).filter((d) => d.sourceRecordId === id);
+        for (const d of linked) await db.remove(collection, d.id);
+      }
     },
 
     async addAttachment(recordId, attachment) {

@@ -1,6 +1,5 @@
 import { useState, type Ref } from 'react';
 import { StyleSheet, TextInput, View, type StyleProp, type TextInputInstance, type TextInputProps, type ViewStyle } from 'react-native';
-import { fontFamily } from '../tokens';
 import { useTheme } from '../theme';
 import { Icon } from './Icon';
 import { IconButton } from './IconButton';
@@ -74,7 +73,7 @@ export function SearchField({
           setFocused(false);
           inputProps.onBlur?.(e);
         }}
-        style={[styles.input, { fontFamily, fontSize: t.fontSize, color: theme.colors.textPrimary }]}
+        style={[styles.input, { fontFamily: theme.font('400'), fontSize: t.fontSize, color: theme.colors.textPrimary }]}
       />
       {value.length > 0 ? (
         <IconButton

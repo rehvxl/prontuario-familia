@@ -1,6 +1,6 @@
 import { RELATIONSHIPS } from './member';
 import { calculateAge, formatAge } from './age';
-import { RELATIONSHIP_LABELS } from './labels';
+import { RELATIONSHIP_LABELS, relationshipLabel } from './labels';
 
 const today = new Date(2026, 10, 11); // 11/11/2026
 
@@ -36,4 +36,17 @@ describe('formatAge', () => {
 it('rotula todos os parentescos', () => {
   expect(RELATIONSHIPS.every((r) => RELATIONSHIP_LABELS[r].length > 0)).toBe(true);
   expect(RELATIONSHIP_LABELS.self).toBe('Eu');
+});
+
+it('rotula o parentesco pelo sexo quando informado e usa o neutro quando não', () => {
+  expect(relationshipLabel('child', 'female')).toBe('Filha');
+  expect(relationshipLabel('child', 'male')).toBe('Filho');
+  expect(relationshipLabel('parent', 'female')).toBe('Mãe');
+  expect(relationshipLabel('parent', 'male')).toBe('Pai');
+  expect(relationshipLabel('sibling', 'female')).toBe('Irmã');
+  expect(relationshipLabel('grandparent', 'male')).toBe('Avô');
+  expect(relationshipLabel('spouse', 'female')).toBe('Cônjuge');
+  expect(relationshipLabel('child', 'unspecified')).toBe('Filho(a)');
+  expect(relationshipLabel('parent', 'other')).toBe('Pai/Mãe');
+  expect(relationshipLabel('sibling')).toBe('Irmão/Irmã');
 });

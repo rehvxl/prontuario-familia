@@ -8,6 +8,13 @@ interface RecordDoc {
   attachments: { storagePath: string }[];
 }
 
+const HEALTH_COLLECTIONS = [
+  LOCAL_COLLECTIONS.measurements,
+  LOCAL_COLLECTIONS.vaccineDoses,
+  LOCAL_COLLECTIONS.medications,
+  LOCAL_COLLECTIONS.vaccineRuleDismissals,
+];
+
 export function createLocalMemberRepository(db: LocalDb): MemberRepository {
   const requireMember = async (id: string): Promise<Member> => {
     const member = await db.get<Member>(LOCAL_COLLECTIONS.members, id);
@@ -40,6 +47,11 @@ export function createLocalMemberRepository(db: LocalDb): MemberRepository {
       const records = (await db.list<RecordDoc>(LOCAL_COLLECTIONS.records)).filter((r) => r.memberId === id);
       removeLocalFiles(records.flatMap((r) => r.attachments.map((a) => a.storagePath)));
       for (const r of records) await db.remove(LOCAL_COLLECTIONS.records, r.id);
+      // Imita o `on delete cascade` da FK (member_id, family_id) nas tabelas de saúde.
+      for (const collection of HEALTH_COLLECTIONS) {
+        const owned = (await db.list<{ id: string; memberId: string }>(collection)).filter((d) => d.memberId === id);
+        for (const d of owned) await db.remove(collection, d.id);
+      }
       await db.remove(LOCAL_COLLECTIONS.members, id);
     },
   };
