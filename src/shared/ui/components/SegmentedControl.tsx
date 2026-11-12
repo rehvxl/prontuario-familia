@@ -21,20 +21,19 @@ export interface SegmentedControlProps<T extends string> {
 }
 
 /**
- * Android/web: botões segmentados do Material 3 (cápsula contornada, segmento escolhido em
- * secondary container com marca). iOS: SegmentedControl.ios.tsx usa o Picker segmentado do sistema.
+ * Android/web (v3): trilho `surfaceSunken`, segmento escolhido em `surface` com sombra de segmento e
+ * marca (não depende só da cor). iOS: SegmentedControl.ios.tsx usa o Picker segmentado do sistema.
  */
 export function SegmentedControl<T extends string>({ options, value, onChange, accessibilityLabel, disabled = false, testID }: SegmentedControlProps<T>) {
   const theme = useTheme();
-  const outline = disabled ? theme.colors.border : theme.colors.borderStrong;
   return (
     <View
       accessibilityRole="radiogroup"
       accessibilityLabel={accessibilityLabel}
       testID={testID}
-      style={[styles.track, { borderColor: outline, borderRadius: 999 }]}
+      style={[styles.track, { backgroundColor: theme.colors.surfaceSunken, borderRadius: theme.radii.control, padding: 2, gap: 2 }]}
     >
-      {options.map((opt, i) => {
+      {options.map((opt) => {
         const selected = opt.value === value;
         return (
           <Pressable
@@ -54,16 +53,17 @@ export function SegmentedControl<T extends string>({ options, value, onChange, a
               {
                 minHeight: theme.minTouchTarget,
                 paddingHorizontal: theme.space[3],
-                backgroundColor: selected ? theme.colors.primarySoft : 'transparent',
-                borderLeftWidth: i === 0 ? 0 : 1,
-                borderLeftColor: outline,
+                borderRadius: theme.radii.control,
+                backgroundColor: selected ? theme.colors.surface : 'transparent',
               },
+              selected && styles.selectedShadow,
+              selected && { borderColor: theme.colors.border },
             ]}
           >
-            {selected ? <Icon name="check" size={18} color={disabled ? 'textDisabled' : 'onPrimarySoft'} /> : null}
+            {selected ? <Icon name="check" size={18} color={disabled ? 'textDisabled' : 'primary'} /> : null}
             <Text
               variant={selected ? 'bodyStrong' : 'body'}
-              color={disabled ? 'disabled' : selected ? 'onPrimarySoft' : 'primary'}
+              color={disabled ? 'disabled' : 'primary'}
               align="center"
               numberOfLines={2}
               style={styles.shrink}
@@ -78,7 +78,9 @@ export function SegmentedControl<T extends string>({ options, value, onChange, a
 }
 
 const styles = StyleSheet.create({
-  track: { flexDirection: 'row', borderWidth: 1, overflow: 'hidden' },
+  track: { flexDirection: 'row', overflow: 'hidden' },
+  // Sombra de segmento do DESIGN.md (0 1 3 rgba(20,28,24,.12) + fio 0,5 pt).
+  selectedShadow: { boxShadow: '0 1px 3px rgba(20, 25, 70, 0.12)', borderWidth: StyleSheet.hairlineWidth },
   segment: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 6 },
   shrink: { flexShrink: 1 },
 });

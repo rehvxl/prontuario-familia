@@ -7,16 +7,16 @@ import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 import { useScreenHorizontalInset } from './Screen';
 
-const CHIP_HEIGHT = 40;
+const CHIP_HEIGHT = 36;
 
 export interface ChipProps {
   label: string;
   /** Sem onPress o chip é só informativo. */
   onPress?: () => void;
-  /** Estado de seleção (FilterChip). Selecionado mostra ✓ — não depende só da cor. */
+  /** Estado de seleção (FilterChip). Selecionado: `primarySoft` + ✓, sem contorno — não depende só da cor. */
   selected?: boolean;
   icon?: IconName;
-  /** Marcador colorido da paleta categórica (a "aba" do tipo de documento). */
+  /** Marcador da paleta categórica (0..6 pessoa, 7 neutro — tipos de registro são neutros na v4). */
   colorIndex?: CategoricalIndex;
   disabled?: boolean;
   accessibilityLabel?: string;
@@ -28,9 +28,10 @@ export function Chip({ label, onPress, selected, icon, colorIndex, disabled = fa
   const focus = useFocusState();
   const cat = colorIndex !== undefined ? theme.categorical[colorIndex] : undefined;
   const isSelected = !!selected;
-  const bg = isSelected ? (cat?.soft ?? theme.colors.primarySoft) : theme.colors.surface;
-  const fgColor = isSelected ? (cat?.main ?? theme.colors.onPrimarySoft) : theme.colors.textPrimary;
-  const border = isSelected ? (cat?.main ?? theme.colors.primary) : theme.colors.borderStrong;
+  // Não selecionado = contorno `borderStrong`; selecionado = `soft` da divisória + ✓, sem contorno.
+  const bg = isSelected ? theme.colors.primarySoft : theme.colors.surface;
+  const fgColor = isSelected ? theme.colors.onPrimarySoft : theme.colors.textPrimary;
+  const border = isSelected ? 'transparent' : theme.colors.borderStrong;
   const slop = Math.max(0, (theme.minTouchTarget - CHIP_HEIGHT) / 2);
   const radius = theme.radii.full;
 
@@ -52,7 +53,6 @@ export function Chip({ label, onPress, selected, icon, colorIndex, disabled = fa
   const containerStyle: StyleProp<ViewStyle> = [
     styles.chip,
     { minHeight: CHIP_HEIGHT, borderRadius: radius, backgroundColor: bg, borderColor: border, paddingHorizontal: theme.space[3] + 2, gap: theme.space[1] + 2 },
-    isSelected && { borderWidth: 1.5 },
   ];
 
   if (!onPress) {

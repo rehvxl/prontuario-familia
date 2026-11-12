@@ -127,8 +127,8 @@ describe('Cor do título do cabeçalho', () => {
     const theme = createTheme('light');
     const opts = headerOptions(theme) as Record<string, unknown>;
     expect(opts.headerTintColor).toBe(theme.colors.primary);
-    expect(opts.headerTitleStyle).toEqual({ color: theme.native.label });
-    expect(opts.headerLargeTitleStyle).toEqual({ color: theme.native.label });
+    expect(opts.headerTitleStyle).toEqual({ color: theme.native.label, fontFamily: 'ArchivoSC-SemiBold' });
+    expect(opts.headerLargeTitleStyle).toEqual({ color: theme.native.label, fontFamily: 'ArchivoSC-Bold' });
     expect(headerTitleColors(theme).headerLargeTitleStyle.color).not.toBe(theme.colors.primary);
   });
 

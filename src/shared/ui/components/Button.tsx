@@ -105,7 +105,8 @@ export function Button({
     >
       <View style={[styles.content, { gap: theme.space[2] }]}>
         {leading}
-        <Text variant="label" color={fg} align="center" style={styles.label}>
+        {/* Cor direta do token: em <Text>, color="primary" é o texto principal (preto), não o `care`. */}
+        <Text variant="label" align="center" style={[styles.label, { color: theme.colors[fg] }]}>
           {label}
         </Text>
         {trailing}

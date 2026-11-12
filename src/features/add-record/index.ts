@@ -5,5 +5,5 @@ export {
   addRecord,
   validateNewRecord,
 } from './domain/add-record';
-export type { AddRecordInput } from './domain/add-record';
+export type { AddRecordInput, HealthDataInput } from './domain/add-record';
 export { useAddRecord } from './model/hooks';

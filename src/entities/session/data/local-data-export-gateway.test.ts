@@ -32,4 +32,29 @@ describe('createLocalDataExportGateway', () => {
     expect(json).not.toContain('Estranho');
     expect(json).not.toContain('Alheio');
   });
+
+  it('exporta as 4 coleções de saúde da família do usuário, no nível de cima (spec P6)', async () => {
+    const db = createMemoryDb();
+    const me = await createLocalAuthGateway(db).verifyEmailOtp('ana@exemplo.com', '123456');
+    await db.put(LOCAL_COLLECTIONS.families, 'f1', { id: 'f1', name: 'Silva', ownerId: me.id });
+    await db.put(LOCAL_COLLECTIONS.families, 'f2', { id: 'f2', name: 'Outra', ownerId: 'outro' });
+    const collections = {
+      measurements: LOCAL_COLLECTIONS.measurements,
+      vaccineDoses: LOCAL_COLLECTIONS.vaccineDoses,
+      medications: LOCAL_COLLECTIONS.medications,
+      vaccineRuleDismissals: LOCAL_COLLECTIONS.vaccineRuleDismissals,
+    };
+    for (const c of Object.values(collections)) {
+      await db.put(c, `${c}-meu`, { id: `${c}-meu`, familyId: 'f1', memberId: 'm1' });
+      await db.put(c, `${c}-alheio`, { id: `${c}-alheio`, familyId: 'f2', memberId: 'm2' });
+    }
+
+    const json = await createLocalDataExportGateway(db).exportMyData();
+    const data = JSON.parse(json);
+
+    for (const [key, c] of Object.entries(collections)) {
+      expect(data[key].map((d: { id: string }) => d.id)).toEqual([`${c}-meu`]);
+    }
+    expect(json).not.toContain('alheio');
+  });
 });

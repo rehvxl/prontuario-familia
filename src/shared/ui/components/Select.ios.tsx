@@ -1,4 +1,6 @@
-import { MenuView } from '@expo/ui/community/menu';
+import { Host, Menu, RNHostView, Section, Toggle } from '@expo/ui/swift-ui';
+import { accessibilityHint, accessibilityLabel, accessibilityValue } from '@expo/ui/swift-ui/modifiers';
+import type { ReactElement } from 'react';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme';
@@ -57,10 +59,14 @@ export function Select<T extends string>(props: SelectProps<T>) {
         {disabled || width === undefined ? (
           <View testID={testID}>{field}</View>
         ) : (
-          <MenuView
+          <SelectMenu
             title={label}
             testID={testID}
-            actions={options.map((o) => ({ id: o.value, title: o.label, state: o.value === value ? 'on' : 'off' }))}
+            options={options}
+            value={value}
+            a11yLabel={`${label}${optional ? ', opcional' : ''}`}
+            a11yValue={current ? current.label : 'nenhum selecionado'}
+            a11yHint={fieldAccessibilityHint(helper, error) ?? 'Abre a lista de opções'}
             onPressAction={({ nativeEvent }) => {
               const next = options.find((o) => o.value === nativeEvent.event);
               if (!next) return;
@@ -69,11 +75,55 @@ export function Select<T extends string>(props: SelectProps<T>) {
             }}
           >
             <View style={{ width }}>{field}</View>
-          </MenuView>
+          </SelectMenu>
         )}
       </View>
       <FieldMessage helper={helper} error={error} />
     </View>
+  );
+}
+
+interface SelectMenuProps<T extends string> {
+  title: string;
+  options: SelectProps<T>['options'];
+  value: T | null | undefined;
+  a11yLabel: string;
+  a11yValue: string;
+  a11yHint: string;
+  /** Mesma assinatura do `MenuView` do @expo/ui (e dos testes que disparam `pressAction`). */
+  onPressAction: (e: { nativeEvent: { event: string } }) => void;
+  testID?: string;
+  children: ReactElement;
+}
+
+/**
+ * Menu SwiftUI do Select. Igual ao `MenuView` do @expo/ui, mas com nome, valor e dica no próprio `Menu`.
+ * O `Menu` vira um único `AXPopUpButton` e esconde o campo RN que está dentro do rótulo. Sem esses
+ * modificadores, o VoiceOver lia o seletor sem nome nem valor (BUG-04).
+ */
+function SelectMenu<T extends string>({ title, options, value, a11yLabel, a11yValue, a11yHint, onPressAction, testID, children }: SelectMenuProps<T>) {
+  return (
+    <Host testID={testID} ignoreSafeArea="all">
+      <Menu
+        label={
+          <RNHostView matchContents boundedByHost>
+            {children}
+          </RNHostView>
+        }
+        modifiers={[accessibilityLabel(a11yLabel), accessibilityValue(a11yValue), accessibilityHint(a11yHint)]}
+      >
+        <Section title={title}>
+          {options.map((o) => (
+            <Toggle
+              key={o.value}
+              label={o.label}
+              isOn={o.value === value}
+              onIsOnChange={() => onPressAction({ nativeEvent: { event: o.value } })}
+            />
+          ))}
+        </Section>
+      </Menu>
+    </Host>
   );
 }
 

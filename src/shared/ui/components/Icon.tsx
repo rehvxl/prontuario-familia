@@ -1,11 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SymbolView, type AndroidSymbol, type SFSymbol, type SymbolWeight } from 'expo-symbols';
-import { Platform } from 'react-native';
+import { Platform, useWindowDimensions } from 'react-native';
 import type { ColorTokens } from '../tokens';
 import { useTheme } from '../theme';
+import { useIconScale } from '../lib/a11y';
 
 /**
- * Ícones v2: SF Symbols no iOS, Material Symbols no Android (via expo-symbols).
+ * Ícones: SF Symbols no iOS, Material Symbols Outlined no Android (via expo-symbols), peso regular.
  * Use sempre um nome semântico (`'add'`, `'record.exam'`); o mapa decide o glifo de cada plataforma.
  */
 export interface NativeIconSpec {
@@ -77,6 +78,22 @@ export const ICON_MAP = {
   pill: spec('pills', 'medication'),
   shot: spec('syringe', 'vaccines'),
   medical: spec('cross.case', 'medical_services'),
+  // v3 (DESIGN.md › Iconography)
+  trend: spec('chart.xyaxis.line', 'monitoring'),
+  bloodPressure: spec('heart', 'ecg_heart'),
+  glucose: spec('drop', 'water_drop'),
+  weight: spec('scalemass', 'monitor_weight'),
+  height: spec('ruler', 'height'),
+  pills: spec('pills', 'medication'),
+  scanDocument: spec('doc.text.viewfinder', 'document_scanner'),
+  stateIn: spec('checkmark.circle', 'check_circle'),
+  // v4: setas soltas (como no esboço da pasta); o círculo fica para "dentro" e "sem faixa".
+  stateHigh: spec('arrow.up', 'arrow_upward'),
+  stateLow: spec('arrow.down', 'arrow_downward'),
+  stateNone: spec('minus.circle', 'do_not_disturb_on'),
+  privacy: spec('lock', 'lock'),
+  // v4
+  clock: spec('clock', 'schedule'),
 } as const satisfies Record<string, NativeIconSpec>;
 
 export type SemanticIconName = keyof typeof ICON_MAP;
@@ -157,6 +174,11 @@ export interface IconProps {
   filled?: boolean;
   /** Se informado, o ícone é anunciado como imagem. Sem rótulo, é decorativo e fica oculto do leitor de tela. */
   accessibilityLabel?: string;
+  /**
+   * Ícone ao lado de texto (estado, legenda): `size` cresce com o tamanho de texto do sistema, até 2×
+   * (`useIconScale`). Deixe false em botões e caixas de tamanho fixo.
+   */
+  scaleWithText?: boolean;
   testID?: string;
 }
 
@@ -188,14 +210,18 @@ export function nativeIcon(
 
 export function Icon({
   name,
-  size = 22,
+  size: baseSize = 22,
   color = 'textPrimary',
   weight = 'regular',
   filled = false,
   accessibilityLabel,
+  scaleWithText = false,
   testID,
 }: IconProps) {
   const theme = useTheme();
+  const iconScale = useIconScale();
+  const { fontScale } = useWindowDimensions();
+  const size = scaleWithText ? Math.round(baseSize * iconScale) : baseSize;
   const decorative = !accessibilityLabel;
   const tint = resolveColor(theme.colors, color);
   const a11y = {
@@ -214,10 +240,15 @@ export function Icon({
     );
   }
   const sf = filled && resolved.sfSelected ? resolved.sfSelected : resolved.sf;
+  // expo-symbols no Android desenha o glifo como <Text fontSize={size}> numa caixa size×size sem desligar a
+  // escala de fonte do sistema: em AX o glifo dobra e é cortado (FAB vazio, relógio em cunha). Compensa a escala
+  // no tamanho do glifo e mantém a caixa no tamanho pedido.
+  const glyph = Platform.OS === 'android' ? size / fontScale : size;
   return (
     <SymbolView
       name={{ ios: sf, android: resolved.md, web: resolved.md }}
-      size={size}
+      size={glyph}
+      style={Platform.OS === 'android' ? { width: size, height: size } : undefined}
       tintColor={tint}
       weight={Platform.OS === 'ios' ? weight : undefined}
       resizeMode="scaleAspectFit"

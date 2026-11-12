@@ -1,4 +1,5 @@
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native';
+import type { ColorTokens } from '../tokens';
 import type { IconName } from './Icon';
 
 /**
@@ -60,3 +61,16 @@ export function resolveButtonStyle(variant: ButtonVariant, role: ButtonRole = 'd
 
 /** Evento sintético para chamadas vindas do nativo/acessibilidade (onPress mantém a assinatura v1). */
 export const syntheticPress = { nativeEvent: {} } as unknown as GestureResponderEvent;
+
+/** Estilos SwiftUI "proeminentes": fundo cheio no tint, rótulo sobre ele. */
+export type SwiftProminentStyle = 'glassProminent' | 'borderedProminent';
+
+/**
+ * Cor do rótulo de um botão SwiftUI proeminente (`glassProminent`/`borderedProminent`).
+ * O SwiftUI pinta o rótulo de branco por padrão, sem olhar o tint. No escuro o `primary` (#6E9EFF)
+ * é claro, e o vidro ainda o clareia (medido: #7BAEFF), então o branco fica com ~2,2:1 (BUG-05).
+ * O rótulo usa o token "on" da cor de fundo, como no Android: `onPrimary`/`onDanger` (≥ 4,5:1 nos dois temas).
+ */
+export function prominentForeground(colors: ColorTokens, role: ButtonRole = 'default'): string {
+  return role === 'destructive' ? colors.onDanger : colors.onPrimary;
+}

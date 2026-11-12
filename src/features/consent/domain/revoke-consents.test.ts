@@ -1,10 +1,10 @@
-import { hasValidConsent, type Consent, type ConsentPurpose, type ConsentRepository } from '@/entities/consent';
+import { CURRENT_TERMS_VERSION, hasValidConsent, type Consent, type ConsentPurpose, type ConsentRepository } from '@/entities/consent';
 import { revokeConsents } from './revoke-consents';
 
 function fakeRepo(): ConsentRepository {
   const list: Consent[] = (['terms_and_privacy', 'health_data_processing'] as ConsentPurpose[]).map((purpose) => ({
     purpose,
-    version: '2026-11-v1',
+    version: CURRENT_TERMS_VERSION,
     acceptedAt: 'x',
     revokedAt: null,
   }));

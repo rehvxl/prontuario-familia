@@ -1,44 +1,62 @@
 import { useState } from 'react';
 import { View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useMyFamily } from '@/entities/family';
 import { MemberListItem, useMembers } from '@/entities/member';
 import { useAddMember } from '@/features/manage-members';
 import { MemberForm } from '@/widgets/member-form';
-import { Button, ListSection, Screen, Spinner, Text, useTheme } from '@/shared/ui';
+import { Button, ListSection, LoadErrorState, Screen, SectionHeader, Spinner, TabRail, Text, categoricalIndexFor, headerOptions, useTheme } from '@/shared/ui';
 
-/** Segundo passo do setup: cadastrar as primeiras pessoas. Depois da primeira, dá para concluir. */
+/**
+ * Segundo passo do setup: cadastrar as primeiras pessoas. Depois da primeira, dá para concluir.
+ * v4: na capa da família, cada pessoa ganha a sua divisória ao ser adicionada: a aba dela surge na régua, na cor
+ * que terá no app. A régua aqui é só a prévia da pasta (decorativa); quem informa é a lista "Já adicionadas".
+ */
 export function FirstMembersScreen() {
   const theme = useTheme();
   const router = useRouter();
-  const family = useMyFamily().data ?? null;
+  const familyQuery = useMyFamily();
+  const family = familyQuery.data ?? null;
   const members = useMembers(family?.id).data ?? [];
   const addMember = useAddMember();
   const [formKey, setFormKey] = useState(0);
 
   const finish = () => router.replace('/(main)/(tabs)/(family)');
 
-  if (!family) return <Screen scroll={false}><Spinner fill label="Carregando" /></Screen>;
+  if (familyQuery.isError) return <Screen scroll={false} board="ultramar"><LoadErrorState onRetry={() => familyQuery.refetch()} /></Screen>;
+  if (!family) return <Screen scroll={false} board="ultramar"><Spinner fill label="Carregando" /></Screen>;
+
+  const tabs = [
+    { id: 'family', label: 'Família', hue: 'ultramar' as const, selected: true },
+    ...members.map((m) => ({ id: m.id, label: m.fullName.trim().split(/\s+/)[0] ?? m.fullName, hue: theme.personBoard(categoricalIndexFor(m.id)) })),
+  ];
 
   return (
     <Screen
       testID="first-members-screen"
+      board="ultramar"
+      rail={
+        <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" testID="first-members-rail">
+          <TabRail items={tabs} onSelect={() => undefined} />
+        </View>
+      }
+      heading={{ title: `Quem faz parte da ${family.name}?` }}
       footer={members.length > 0 ? <Button label="Concluir" onPress={finish} fullWidth testID="finish-setup" /> : undefined}
     >
-      <Text variant="title1">Quem faz parte da {family.name}?</Text>
-      <Text color="secondary" style={{ marginTop: theme.space[2], marginBottom: theme.space[6] }}>
+      <Stack.Screen options={headerOptions(theme, { board: 'ultramar' })} />
+      <StatusBar style={theme.hues.family.statusBar} />
+      <Text color="secondary" style={{ marginBottom: theme.space[6] }}>
         Adicione quem terá o histórico de saúde guardado aqui. Você pode incluir mais pessoas depois.
       </Text>
       {members.length > 0 ? (
-        <View style={{ marginBottom: theme.space[6], gap: theme.space[6] }}>
+        <View style={{ marginBottom: theme.space[2] }}>
           <ListSection header="Já adicionadas">
             {members.map((m) => (
               <MemberListItem key={m.id} member={m} />
             ))}
           </ListSection>
-          <Text variant="headline" accessibilityRole="header">
-            Adicionar outra pessoa
-          </Text>
+          <SectionHeader title="Adicionar outra pessoa" />
         </View>
       ) : null}
       <MemberForm

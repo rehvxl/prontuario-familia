@@ -1,0 +1,28 @@
+name: Sugestão
+description: Proponha uma funcionalidade ou melhoria.
+labels: [sugestão]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Qual problema isso resolve
+      description: Quem passa por isso e em que situação (ex.: a cuidadora na sala de espera).
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: O que você propõe
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas que você considerou
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Segurança clínica
+      options:
+        - label: A proposta não faz o app diagnosticar nem recomendar tratamento.
+          required: true

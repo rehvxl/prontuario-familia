@@ -26,8 +26,8 @@ describe('ScreenTitle / LargeTitle (Stack.Title com as cores do DS)', () => {
     const props = captured.at(-1)!;
     expect(props.large).toBe(true);
     expect(props.children).toBe('Família Silva');
-    expect(props.style).toEqual({ color: theme.native.label });
-    expect(props.largeStyle).toEqual({ color: theme.native.label });
+    expect(props.style).toEqual({ color: theme.native.label, fontFamily: 'ArchivoSC-SemiBold' });
+    expect(props.largeStyle).toEqual({ color: theme.native.label, fontFamily: 'ArchivoSC-Bold' });
     expect((props.largeStyle as { color: unknown }).color).not.toBe(theme.colors.primary);
   });
 
@@ -38,9 +38,9 @@ describe('ScreenTitle / LargeTitle (Stack.Title com as cores do DS)', () => {
 
   it('estilo do chamador vence (fonte e cor intencional)', () => {
     const theme = createTheme('light');
-    const props = screenTitleProps(theme, { children: 'X', style: { fontFamily: 'Serif' }, largeStyle: [{ color: 'red' }] });
-    expect(props.style).toEqual({ color: theme.native.label, fontFamily: 'Serif' });
-    expect(props.largeStyle).toEqual({ color: 'red' });
+    const props = screenTitleProps(theme, { children: 'X', style: { fontFamily: 'Outra' }, largeStyle: [{ color: 'red' }] });
+    expect(props.style).toEqual({ color: theme.native.label, fontFamily: 'Outra' });
+    expect(props.largeStyle).toEqual({ color: 'red', fontFamily: 'ArchivoSC-Bold' });
   });
 
   it('asChild repassa o componente', async () => {

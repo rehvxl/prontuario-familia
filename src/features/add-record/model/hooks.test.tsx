@@ -7,19 +7,27 @@ import {
   recordKeys,
   useMemberTimeline,
 } from '@/entities/health-record';
+import { createLocalMeasurementRepository, measurementKeys } from '@/entities/measurement';
+import { createLocalMedicationRepository, medicationKeys } from '@/entities/medication';
+import { createLocalVaccineDoseRepository, vaccineKeys } from '@/entities/vaccine';
 import { useAddRecord } from './hooks';
 
 async function setup() {
   clearLocalFiles();
   const db = createMemoryDb();
   await db.put<LocalSessionDoc>(LOCAL_COLLECTIONS.session, LOCAL_SESSION_ID, { userId: 'u1' });
+  await db.put(LOCAL_COLLECTIONS.members, 'm1', { id: 'm1', familyId: 'f1', fullName: 'Carlos Souza' });
   const records = createLocalHealthRecordRepository(db);
   const storage = createLocalAttachmentStorage();
+  const measurements = createLocalMeasurementRepository(db);
   const { wrapper, queryClient } = renderWithDependencies({
     [DEPENDENCY_KEYS.records]: records,
     [DEPENDENCY_KEYS.storage]: storage,
+    [DEPENDENCY_KEYS.measurements]: measurements,
+    [DEPENDENCY_KEYS.vaccineDoses]: createLocalVaccineDoseRepository(db),
+    [DEPENDENCY_KEYS.medications]: createLocalMedicationRepository(db),
   });
-  return { wrapper, queryClient, records };
+  return { wrapper, queryClient, records, measurements };
 }
 
 const input = (over = {}) => ({
@@ -75,5 +83,40 @@ describe('useAddRecord', () => {
     expect(await records.list('f1')).toEqual([]);
     expect(queryClient.getQueryState(recordKeys.timeline('f1', 'm1'))?.isInvalidated).toBe(false);
     await waitFor(() => expect(result.current.error).toMatchObject({ code: 'record/missing-title' }));
+  });
+
+  it('com healthData, grava os itens e invalida medições, vacinas e medicamentos', async () => {
+    const { wrapper, queryClient, measurements } = await setup();
+    const keys = [measurementKeys.byMember('m1'), vaccineKeys.byMember('m1'), medicationKeys.byMember('m1')];
+    for (const key of keys) queryClient.setQueryData(key, []);
+    const { result } = await renderHook(() => useAddRecord(), { wrapper });
+
+    const healthData = {
+      measurements: [
+        {
+          kind: 'lab' as const, code: 'hba1c', label: 'Hemoglobina glicada (HbA1c)', value: 7.4, value2: null, unit: '%',
+          referenceLow: 4, referenceHigh: 5.6, referenceText: null, takenOn: '2026-10-01', takenAt: null, context: null, note: null,
+        },
+      ],
+      vaccineDoses: [],
+      medications: [],
+    };
+    let recordId = '';
+    await act(async () => {
+      recordId = (await result.current.mutateAsync(input({ healthData }))).id;
+    });
+
+    expect(await measurements.listBySourceRecord(recordId)).toEqual([expect.objectContaining({ code: 'hba1c', origin: 'ocr' })]);
+    for (const key of keys) expect(queryClient.getQueryState(key)?.isInvalidated).toBe(true);
+  });
+
+  it('sem healthData, não invalida as consultas de saúde', async () => {
+    const { wrapper, queryClient } = await setup();
+    queryClient.setQueryData(measurementKeys.byMember('m1'), []);
+    const { result } = await renderHook(() => useAddRecord(), { wrapper });
+    await act(async () => {
+      await result.current.mutateAsync(input());
+    });
+    expect(queryClient.getQueryState(measurementKeys.byMember('m1'))?.isInvalidated).toBe(false);
   });
 });

@@ -1,9 +1,10 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AccessibilityInfo, useColorScheme } from 'react-native';
 import { isGlassEffectAPIAvailable } from 'expo-glass-effect';
+import { useFonts } from 'expo-font';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import type { ColorScheme } from '../tokens';
-import { createTheme, type Theme } from './theme';
+import { ARCHIVO, type ColorScheme, type HueName, type HueTokens } from '../tokens';
+import { createTheme, onLeaf, withHue, type Theme } from './theme';
 
 const ThemeContext = createContext<Theme | null>(null);
 
@@ -19,6 +20,8 @@ export interface ThemeProviderProps {
   reduceTransparency?: boolean;
   /** Força a disponibilidade do Liquid Glass (testes). Por padrão `isGlassEffectAPIAvailable()`. */
   glassAvailable?: boolean;
+  /** A Archivo está disponível. Padrão true (o build embute as fontes pelo plugin do expo-font). */
+  fontsLoaded?: boolean;
 }
 
 export function ThemeProvider({
@@ -27,6 +30,7 @@ export function ThemeProvider({
   reducedMotion,
   reduceTransparency,
   glassAvailable,
+  fontsLoaded = true,
 }: ThemeProviderProps) {
   const system = useColorScheme();
   const systemReduced = useAccessibilityFlag('reduceMotion', reducedMotion === undefined);
@@ -36,8 +40,8 @@ export function ThemeProvider({
   const transparency = reduceTransparency ?? systemTransparency;
   const available = glassAvailable ?? safeGlassAvailable();
   const theme = useMemo(
-    () => createTheme(resolved, { reducedMotion: reduced, reduceTransparency: transparency, glassAvailable: available }),
-    [resolved, reduced, transparency, available],
+    () => createTheme(resolved, { reducedMotion: reduced, reduceTransparency: transparency, glassAvailable: available, fontsLoaded }),
+    [resolved, reduced, transparency, available, fontsLoaded],
   );
   return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>;
 }
@@ -49,11 +53,47 @@ export function useTheme(): Theme {
   return theme;
 }
 
-/** Providers de UI do app: safe area + tema. Coloque no _layout raiz. */
-export function UiProvider({ children, ...themeProps }: ThemeProviderProps) {
+export interface HueProviderProps {
+  /** A divisória (nome do matiz ou tokens de `theme.personBoard(i)`). */
+  hue: HueName | HueTokens;
+  /** v4: os filhos estão na folha (`Leaf`): `colors.background` vira `hue.leaf`. */
+  leaf?: boolean;
+  children: ReactNode;
+}
+
+/**
+ * v4: tudo abaixo passa a usar a tinta da divisória `hue` (`theme.hue`, `colors.primary*`, `focusRing`,
+ * `rangeBand`): botão cheio, FAB, links, gráfico e a faixa do laudo ficam na cor da pessoa.
+ * `DividerBoard` e `Screen board` já envolvem o conteúdo com ele.
+ */
+export function HueProvider({ hue, leaf = false, children }: HueProviderProps) {
+  const theme = useTheme();
+  const key = typeof hue === 'string' ? hue : hue.name;
+  const value = useMemo(() => (leaf ? onLeaf(withHue(theme, key)) : withHue(theme, key)), [theme, key, leaf]);
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+}
+
+/** Os 4 cortes da Archivo SemiCondensed (OFL, assets/fonts/Archivo-OFL.txt). */
+const FONT_MAP = {
+  [ARCHIVO['400']]: require('../../../../assets/fonts/ArchivoSC-Regular.ttf'),
+  [ARCHIVO['500']]: require('../../../../assets/fonts/ArchivoSC-Medium.ttf'),
+  [ARCHIVO['600']]: require('../../../../assets/fonts/ArchivoSC-SemiBold.ttf'),
+  [ARCHIVO['700']]: require('../../../../assets/fonts/ArchivoSC-Bold.ttf'),
+};
+
+/**
+ * Providers de UI do app: safe area + tema. Coloque no _layout raiz.
+ * Fontes: o build já embute a Archivo (plugin do expo-font no app.json), então `useFonts` responde "carregada"
+ * na hora. No Expo Go, `useFonts` carrega em tempo de execução; até lá, e se falhar, o texto usa a fonte do
+ * sistema. Nunca bloqueia a renderização.
+ */
+export function UiProvider({ children, fontsLoaded, ...themeProps }: ThemeProviderProps) {
+  const [loaded] = useFonts(FONT_MAP);
   return (
     <SafeAreaProvider>
-      <ThemeProvider {...themeProps}>{children}</ThemeProvider>
+      <ThemeProvider {...themeProps} fontsLoaded={fontsLoaded ?? loaded}>
+        {children}
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

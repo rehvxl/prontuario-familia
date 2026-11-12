@@ -1,2 +1,2 @@
-export { FloatingActions } from './ui/FloatingActions';
+export { FloatingActions, floatingFooterOf } from './ui/FloatingActions';
 export type { FloatingActionsProps } from './ui/FloatingActions';

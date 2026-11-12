@@ -36,7 +36,8 @@ export function Checkbox({ checked, onChange, label, description, error, disable
         accessibilityRole="checkbox"
         accessibilityLabel={label}
         accessibilityHint={error ? `Erro: ${error}` : description}
-        accessibilityState={{ checked, disabled }}
+        // Sempre booleano: sem `checked` explícito o VoiceOver lê a linha desmarcada sem estado (A8).
+        accessibilityState={{ checked: checked === true, disabled }}
         testID={testID}
         style={({ pressed }) => [
           styles.row,

@@ -28,3 +28,16 @@ export const spring = {
   snappy: { damping: 22, stiffness: 320, mass: 1 },
   smooth: { damping: 26, stiffness: 200, mass: 1 },
 } as const;
+
+/**
+ * v3: a única animação autoral do sistema. O marcador da RangeBar assenta do centro da faixa até o
+ * valor na primeira vez que aparece. Com "Reduzir movimento", aparece no lugar.
+ */
+export const rangeSettle = { duration: duration.slow, easing: easing.out } as const;
+
+/**
+ * v4: a troca de divisória. A capa, o papel e o conteúdo trocam no mesmo quadro (nunca um quadro com a cor nova
+ * e o conteúdo antigo). O movimento fica na aba, que sai de trás da folha em `tab` ms, e no conteúdo da folha,
+ * que entra em `content` ms de opacidade. Com "Reduzir movimento", os dois são instantâneos.
+ */
+export const boardSwap = { tab: 120, content: 150 } as const;

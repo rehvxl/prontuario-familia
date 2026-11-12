@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Platform, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import type { CategoricalIndex, ElevationLevel } from '../tokens';
 import { useTheme } from '../theme';
@@ -11,15 +11,17 @@ export interface CardProps {
   accessibilityLabel?: string;
   accessibilityHint?: string;
   /**
-   * Acento categórico: a "aba da pasta", uma cápsula curta na cor da categoria no topo do cartão.
-   * Sempre acompanhe com texto/ícone — a cor sozinha não informa.
+   * @deprecated v3 — no-op. A pílula de acento no topo do cartão saiu do design (DESIGN.md › Shapes).
+   * Mostre a categoria com ícone + rótulo (ex.: `Badge colorIndex`).
    */
   accent?: CategoricalIndex;
-  /** @deprecated v1 — use `accent`. */
+  /** @deprecated v1 — no-op desde a v3, como `accent`. */
   tab?: CategoricalIndex;
+  /** v3: 'tinted' usa `surfaceTinted` (cartão de "agora" que destaca sem cor). Padrão 'default'. */
+  tone?: 'default' | 'tinted';
   /**
-   * Padrão 0 (v2): cartão claro sobre o fundo agrupado, sem sombra, como as células do iOS.
-   * Use 1+ só para algo que flutua sobre conteúdo.
+   * Padrão 0: folha `surface` com fio de 1 pt, sem sombra (v3). Use 2 só para algo que flutua sobre
+   * conteúdo (sombra, sem fio).
    */
   elevation?: ElevationLevel;
   /** Padrão true (16 pt). */
@@ -28,7 +30,9 @@ export interface CardProps {
   testID?: string;
 }
 
-/** Cartão de conteúdo (raio 20, concêntrico ao container 26). Nunca use vidro em cartão de conteúdo. */
+let warnedAccent = false;
+
+/** Cartão de conteúdo (raio 16, fio `border`). Nunca use vidro em cartão de conteúdo nem aninhe cartões. */
 export function Card({
   children,
   onPress,
@@ -36,6 +40,7 @@ export function Card({
   accessibilityHint,
   accent,
   tab,
+  tone = 'default',
   elevation = 0,
   padded = true,
   style,
@@ -44,29 +49,27 @@ export function Card({
   const theme = useTheme();
   const focus = useFocusState();
   const radius = theme.radii.card;
-  const accentIndex = accent ?? tab;
+  const deprecatedAccent = (accent ?? tab) !== undefined;
+  useEffect(() => {
+    if (!__DEV__ || !deprecatedAccent || warnedAccent) return;
+    warnedAccent = true;
+    console.warn('Card: `accent`/`tab` não tem efeito desde o design system v3. Use ícone + rótulo.');
+  }, [deprecatedAccent]);
+  const bg =
+    tone === 'tinted'
+      ? theme.colors.surfaceTinted
+      : theme.scheme === 'dark' && elevation > 1
+        ? theme.colors.surfaceRaised
+        : theme.colors.surface;
   const base: StyleProp<ViewStyle> = [
-    {
-      backgroundColor: theme.scheme === 'dark' && elevation > 0 ? theme.colors.surfaceRaised : theme.colors.surface,
-      borderRadius: radius,
-      borderCurve: 'continuous',
-    },
+    { backgroundColor: bg, borderRadius: radius, borderCurve: 'continuous' },
     padded && { padding: theme.space[4] },
-    accentIndex !== undefined && padded && { paddingTop: theme.space[4] + 10 },
     theme.elevation(elevation),
   ];
-  const accentEl =
-    accentIndex !== undefined ? (
-      <View
-        pointerEvents="none"
-        style={[styles.accent, { backgroundColor: theme.categorical[accentIndex]?.main, left: theme.space[4] }]}
-      />
-    ) : null;
 
   if (!onPress) {
     return (
       <View style={[base, style]} testID={testID}>
-        {accentEl}
         {children}
       </View>
     );
@@ -88,7 +91,6 @@ export function Card({
         style,
       ]}
     >
-      {accentEl}
       {children}
       <FocusRing visible={focus.focused} radius={radius} />
     </Pressable>
@@ -96,6 +98,5 @@ export function Card({
 }
 
 const styles = StyleSheet.create({
-  accent: { position: 'absolute', top: 12, width: 28, height: 4, borderRadius: 2 },
   clip: { overflow: Platform.OS === 'android' ? 'hidden' : 'visible' },
 });

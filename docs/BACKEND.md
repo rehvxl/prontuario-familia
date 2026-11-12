@@ -1,6 +1,6 @@
 # Backend — Supabase
 
-> v0.1.2 · dono: Backend Prontuário. Mudou o esquema, as políticas ou as funções? Atualize este arquivo no mesmo commit.
+> v0.2 (11/11/2026: dados de acompanhamento de saúde) · dono: Backend Prontuário. Mudou o esquema, as políticas ou as funções? Atualize este arquivo no mesmo commit.
 
 O backend é 100% Supabase (Auth, Postgres, Storage privado e duas Edge Functions). **Nada aqui depende de conta externa para rodar localmente.** O projeto real (sa-east-1) ainda não existe — ver [§9](#9-criar-o-projeto-real-sa-east-1).
 
@@ -11,7 +11,8 @@ supabase/
     20261111000001_core_schema.sql   # tabelas, índices, triggers, busca
     20261111000002_rls.sql           # RLS, grants por coluna, RPCs, auditoria
     20261111000003_storage.sql       # bucket health-files + políticas de storage.objects
-  tests/                   # pgTAP (118 testes)
+    20261111000004_health_data.sql   # medições, doses de vacina, "Não se aplica", medicamentos (v0.2)
+  tests/                   # pgTAP (157 testes)
   templates/               # e-mail do código OTP em pt-BR
   functions/               # delete-account, export-my-data (+ _shared)
 src/shared/api/            # cliente Supabase do app (anon key) + utilitários
@@ -25,6 +26,12 @@ auth.users ──1:1── profiles
 auth.users ──1:n── consents
 families ──1:n── family_memberships ──n:1── auth.users        (role: owner | editor)
 families ──1:n── members ──1:n── health_records ──1:n── attachments
+                   │                │
+                   │                └─(source_record_id, member_id, family_id)─┐  on delete cascade
+                   ├─1:n── measurements             (kind lab | vital) ◄────────┤
+                   ├─1:n── vaccine_doses                               ◄────────┤
+                   ├─1:n── medications                                 ◄────────┘
+                   └─1:n── vaccine_rule_dismissals  ("Não se aplica")
 audit_events  (sem FKs: o histórico sobrevive à troca de dono/membros)
 ```
 
@@ -38,6 +45,24 @@ audit_events  (sem FKs: o histórico sobrevive à troca de dono/membros)
 | `attachments` | Só metadado; o arquivo fica no Storage. `id` é gerado pelo app (precisa estar no caminho). `storage_path` tem CHECK de formato `{family_id}/{record_id}/{id}.{ext}`. MIME restrito aos 6 tipos aceitos; ≤ 20 MiB. |
 | `consents` | Histórico preservado (nada é apagado ao revogar). Índice único parcial: **um consentimento ativo por usuário/finalidade**. |
 | `audit_events` | `action`, `entity`, `entity_id`, `actor_id`, `family_id`. **Nunca grava conteúdo de saúde**, só ids. |
+| `measurements` | Exames (`kind = 'lab'`, manual ou lido por OCR) e sinais vitais (`kind = 'vital'`, só manual). `value`/`value2` são `numeric` (PostgREST devolve número JSON); `value2` (diastólica) existe **se e só se** `code = 'bp'`. Faixa do laudo em `reference_low`/`reference_high`/`reference_text` (`low <= high`). `taken_at` (hora), `context` (`fasting`, `post_meal`, `other`, só em `glucose_capillary`) e `note` (≤ 140). O `flag` (fora da faixa) **não é gravado**: o app calcula. |
+| `vaccine_doses` | `vaccine_code` do calendário ou `other` (aí `vaccine_name` é obrigatório). `dose_key` ∈ `D1`, `D2`, `D3`, `R1`, `R2`, `R`, `DU`, `ANUAL`, `PERIODICA`, `OUTRA`; `dose_label` ≤ 40 é o texto exibido. `applied_on` nulo = "Não sei a data". |
+| `vaccine_rule_dismissals` | "Não se aplica" numa regra do calendário (`rule_id`, `reason` ∈ `had_disease`, `professional_advice`, `other`, `note` ≤ 140). Única por `(member_id, rule_id)`. Sem update: desfazer apaga a linha. |
+| `medications` | `start_on` obrigatório; `end_on` nulo = uso contínuo, e `end_on >= start_on`. "Em uso" é calculado no app no dia local, nunca com `current_date` do servidor (UTC). |
+
+Nas quatro tabelas novas: `family_id` desnormalizado, FK composta `(member_id, family_id) → members` com `on delete cascade`, `origin` ∈ `ocr`, `manual`, `created_by` com default `auth.uid()` e sem grant de escrita, `updated_at` por trigger (exceto em `vaccine_rule_dismissals`, que não muda). Em medições, doses e medicamentos, `source_record_id` liga o item ao documento de origem por FK composta `(source_record_id, member_id, family_id) → health_records(id, member_id, family_id)` com `on delete cascade`: o item é sempre da mesma pessoa e família do documento, e **apagar o documento apaga todos os itens ligados a ele**, inclusive os manuais em que a pessoa escolheu o documento (a UI avisa antes, A15). Para isso `health_records` ganhou `unique (id, member_id, family_id)`; a chave é estável porque `member_id` não tem grant de update.
+
+O banco não conhece os catálogos: código existente, unidade compatível e data não futura são validados no app.
+
+Índices das tabelas novas:
+
+| Índice | Para quê |
+| --- | --- |
+| `measurements (member_id, code, taken_on desc)` | série de um analito por pessoa (gráfico e tendência) |
+| `measurements (family_id, taken_on desc)`, `vaccine_doses (family_id, applied_on desc)`, `medications (member_id, start_on desc)`, `medications (family_id, start_on desc)`, `vaccine_rule_dismissals (family_id)` | visões por pessoa e da família |
+| único `measurements (source_record_id, code)` onde `source_record_id` não é nulo e `code <> 'other'` | reler o mesmo laudo não duplica um analito do catálogo; vários `other` no mesmo laudo são permitidos |
+| único `vaccine_doses (member_id, vaccine_code, dose_key, applied_on)` | mesma dose na mesma data não duplica; doses sem data não colidem (null distinto) |
+| `(source_record_id)` parcial nas três tabelas com documento de origem | cascata e "itens deste documento" |
 
 `updated_at` é mantido por trigger (`set_updated_at`). Todas as funções têm `search_path` fixo.
 
@@ -49,7 +74,7 @@ A RPC `search_health_records(p_family_id, p_text, p_member_id, p_types)` (`secur
 
 ## 2. Row Level Security
 
-RLS está **habilitada em todas as 8 tabelas** (teste pgTAP falha se alguma ficar sem). Princípios:
+RLS está **habilitada em todas as 12 tabelas** (teste pgTAP falha se alguma ficar sem). Princípios:
 
 - `anon` não tem **nenhum** grant. Sem login, nada é lido nem escrito (erro `42501`).
 - `authenticated` recebe **grants por coluna**: o app não consegue escrever `created_by`, `search`, `created_at`, etc.
@@ -65,16 +90,21 @@ RLS está **habilitada em todas as 8 tabelas** (teste pgTAP falha se alguma fica
 | `attachments` | membros | membros | — | membros |
 | `consents` | próprio | — (RPC) | — (RPC) | — |
 | `audit_events` | **owner** da família | — (triggers) | — | — |
+| `measurements` | membros | membros | membros (valores, faixa, data, hora, momento, nota) | membros |
+| `vaccine_doses` | membros | membros | membros (vacina, dose, data, lote, local) | membros |
+| `medications` | membros | membros | membros (nome, dosagem, instruções, início, término) | membros |
+| `vaccine_rule_dismissals` | membros | membros | — (desfazer apaga) | membros |
 
 Notas:
 
-- No MVP `editor` pode tudo em membros/registros/anexos; só renomear a família e ler a auditoria é do `owner`. (Convites para outros responsáveis ainda não existem — ver [§10](#10-limitações-conhecidas-e-próximos-passos).)
+- Nas tabelas de saúde, `member_id`, `family_id`, `kind`, `code`, `source_record_id` e `origin` não são atualizáveis pela API (`42501`): para trocar de pessoa, apaga e cria.
+- No MVP `editor` pode tudo em membros/registros/anexos e nos dados de saúde; só renomear a família e ler a auditoria é do `owner`. (Convites para outros responsáveis ainda não existem — ver [§10](#10-limitações-conhecidas-e-próximos-passos).)
 - **RPCs** (todas `authenticated`; `anon` e `public` sem execute):
   - `create_family(p_name)` — cria a família e torna o chamador `owner`. Uma família própria por conta: repetir dá `P0001 family_already_exists`; nome inválido dá `22023`.
   - `accept_consent(p_purpose, p_version)` / `revoke_consent(p_purpose)` — gravam o histórico de consentimento.
   - `log_data_export()` — registra a exportação na auditoria.
   - `search_health_records(...)` — busca (acima).
-- **Auditoria**: triggers `audit_row_change` em `members`, `health_records` e `attachments` registram quem fez o quê (insert/update/delete) sem conteúdo.
+- **Auditoria**: triggers `audit_row_change` em `members`, `health_records`, `attachments`, `measurements`, `vaccine_doses`, `medications` e `vaccine_rule_dismissals` registram quem fez o quê (insert/update/delete) sem conteúdo.
 
 ### Testes (pgTAP)
 
@@ -88,6 +118,7 @@ npm run db:test    # roda supabase/tests/*.test.sql
 | --- | --- |
 | `01_schema.test.sql` | RLS ligada em todas as tabelas, conjunto esperado de tabelas, nenhum grant a `anon`, toda tabela tem política, bucket privado/limite/MIMEs, `search_path` das funções `security definer`, índice GIN, trigger de perfil, CHECKs, FK composta, tsvector com unaccent. |
 | `02_rls_isolation.test.sql` | Usuário A **não lê, não insere, não altera e não apaga** nada da família de B em cada tabela; owner × editor; anônimo negado em tudo; histórico de consentimentos; auditoria; integridade e cascatas. |
+| `04_health_data.test.sql` | Tabelas de saúde (39): inserção na própria família pela RLS; item lido precisa ser da mesma pessoa do documento; um analito por documento; sinal vital não vem do OCR; `value2` só em `bp`; faixa invertida e término antes do início rejeitados; dose duplicada rejeitada e doses sem data aceitas; `vaccine_name` em `other`; `context` só na glicemia capilar; "Não se aplica" único, sem update e desfeito por delete; `member_id` e `created_by` fora da API; A não lê, não altera e não apaga nada de B; anônimo negado; auditoria; apagar o documento apaga os itens ligados e mantém os manuais; apagar a família apaga tudo. |
 | `03_storage_search.test.sql` | Políticas do Storage (insert/select/update/delete na própria e em outra família, anon, caminhos inválidos) e a busca (prefixo, acento, AND, caracteres especiais, texto de injeção, filtros, ordem, RLS, anon). |
 
 ## 3. Storage
@@ -131,7 +162,12 @@ Idempotente: se qualquer passo antes do 5 falhar, o usuário continua existente 
 
 ### `export-my-data` — portabilidade (LGPD art. 18, II e V)
 
-Roda com o **JWT do usuário** (sem service role): a RLS decide o que sai. Devolve JSON `{ exported_at, format_version, profile, families, family_memberships, members, health_records[ { ..., attachments[ { ..., download_url } ] } ], consents }`. As `download_url` são assinadas e expiram em 60 min. Registra a exportação via `log_data_export()`.
+Roda com o **JWT do usuário** (sem service role): a RLS decide o que sai. Devolve JSON `{ exported_at, format_version: 2, profile, families, family_memberships, members, health_records[ { ..., attachments[ { ..., download_url } ] } ], consents, measurements, vaccine_doses, medications, vaccine_rule_dismissals }`. As `download_url` são assinadas e expiram em 60 min. Registra a exportação via `log_data_export()`.
+
+- `format_version` 2 (v0.2) acrescentou as quatro coleções de saúde no nível de cima, não aninhadas em `health_records`, porque medições e medicamentos manuais não têm documento; `source_record_id` liga ao registro quando há. O `flag` não é exportado (é derivado); a faixa e o texto da referência são.
+- O log da função só tem a mensagem técnica do erro, nunca valor de saúde.
+
+`delete-account` não mudou na v0.2: apagar a família cascateia `members` → medições, doses, medicamentos e "Não se aplica", e o passo que apaga `audit_events` por `family_id` já cobre a auditoria das tabelas novas (testado em `04_health_data.test.sql`).
 
 ### Rodar localmente
 
@@ -233,3 +269,5 @@ npm start
 - **Atualização de registro** (`updateRecord`) ainda não está na porta `HealthRecordRepository`; as políticas e as colunas liberadas para `update` já existem.
 - **Retenção da auditoria**: hoje ela é apagada junto com a conta; definir com jurídico se algum evento precisa ser retido.
 - **Rate limiting** de buscas e exportações (hoje só o do Auth).
+- **Busca por analito ou medicamento**: `search_health_records` só olha os registros. Juntar medições e medicamentos (join ou tsvector próprio) fica para depois da v0.2.
+- **Texto lido pelo OCR não é guardado** (minimização). O desenho de `extracted_texts` com opt-in está em `docs/features/dados-saude-backend.md` §5, se a busca dentro dos documentos for pedida.

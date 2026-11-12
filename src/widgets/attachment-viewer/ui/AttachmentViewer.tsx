@@ -3,7 +3,7 @@ import { Modal, Platform, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, EmptyState, IconButton, Spinner, Text, errorMessage, useTheme } from '@/shared/ui';
+import { Button, EmptyState, GlassSurface, IconButton, Spinner, Text, errorMessage, useTheme } from '@/shared/ui';
 import { useAttachmentUrl, type Attachment } from '@/entities/health-record';
 import { openPdfOnAndroid } from '../lib/open-pdf-android';
 
@@ -49,6 +49,8 @@ function Viewer({ attachment, onClose }: { attachment: Attachment; onClose: () =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [androidPdf, uri, attachment.fileName]);
 
+  // v3: vidro só sobre imagem (DESIGN_SYSTEM.md §4.2); no PDF e nos estados, superfície sólida.
+  const overImage = !isPdf(attachment) && !!uri && !url.isError;
   let body;
   if (url.isError || androidError) {
     body = (
@@ -91,14 +93,26 @@ function Viewer({ attachment, onClose }: { attachment: Attachment; onClose: () =
 
   return (
     <Modal visible animationType="slide" presentationStyle="fullScreen" onRequestClose={onClose} statusBarTranslucent>
-      <View style={[styles.root, { backgroundColor: theme.colors.surfaceSunken }]}>
+      <View style={[styles.root, { backgroundColor: theme.colors.surfaceSunken }]} accessibilityViewIsModal>
         <View style={[styles.header, { paddingTop: insets.top + theme.space[2], paddingHorizontal: theme.layout.screenGutter }]}>
-          <Text variant="headline" numberOfLines={1} style={{ flex: 1 }}>
-            {attachment.fileName}
-          </Text>
-          <IconButton icon="close" variant="tonal" accessibilityLabel="Fechar arquivo" onPress={onClose} testID="viewer-close" />
+          {overImage ? (
+            // Sobre a imagem, o nome vai numa cápsula de vidro (fallback sólido sem vidro) para continuar legível.
+            <View style={styles.flex}>
+              <GlassSurface shape="capsule" style={[styles.namePill, { paddingHorizontal: theme.space[4], minHeight: theme.minTouchTarget }]}>
+                <Text variant="headline" numberOfLines={1}>
+                  {attachment.fileName}
+                </Text>
+              </GlassSurface>
+            </View>
+          ) : (
+            <Text variant="headline" numberOfLines={1} style={styles.flex}>
+              {attachment.fileName}
+            </Text>
+          )}
+          <IconButton icon="close" variant={overImage ? 'glass' : 'tonal'} accessibilityLabel="Fechar arquivo" onPress={onClose} testID="viewer-close" />
         </View>
-        <View style={styles.body}>{body}</View>
+        {/* Imagem em tela cheia por baixo do cabeçalho: é sobre ela que o vidro faz sentido. */}
+        <View style={overImage ? StyleSheet.absoluteFill : styles.body}>{body}</View>
         {isPdf(attachment) && Platform.OS === 'ios' ? (
           <View style={{ paddingBottom: insets.bottom + theme.space[2], paddingHorizontal: theme.layout.screenGutter }}>
             <Button label="Fechar" variant="bordered" onPress={onClose} fullWidth />
@@ -113,4 +127,6 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingBottom: 8, zIndex: 2 },
   body: { flex: 1 },
+  flex: { flex: 1 },
+  namePill: { alignSelf: 'flex-start', maxWidth: '100%', justifyContent: 'center' },
 });

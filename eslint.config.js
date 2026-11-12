@@ -105,6 +105,11 @@ module.exports = defineConfig([
       ],
     },
   },
+  // OCR: o texto lido é dado de saúde e nunca vai para log (spec F1.15, ocr-tecnico.md, privacy.test.ts).
+  {
+    files: ['src/features/read-document/**/*.{ts,tsx}', 'modules/document-text/src/**/*.{ts,tsx}'],
+    rules: { 'no-console': 'error' },
+  },
   {
     files: ['**/*.test.{ts,tsx}', 'jest.setup.ts'],
     languageOptions: { globals: { jest: 'readonly', describe: 'readonly', it: 'readonly', expect: 'readonly', beforeEach: 'readonly', afterEach: 'readonly' } },

@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuidado sereno · v3</title>
+<meta name="description" content="Protótipo estático do Design System v3 do Prontuário da Família: telas principais em claro e escuro, com dados de demonstração.">
+<style>
+:root{--page:#ECE9E2;--pageInk:#1E2420;--pageSub:#4F5752;--pageLine:#D9D4C9;--serif:ui-serif,"New York",Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:#0D0F0E;--pageInk:#ECEEE9;--pageSub:#B4BAB3;--pageLine:#2D332E}}
+:root[data-theme="dark"]{--page:#0D0F0E;--pageInk:#ECEEE9;--pageSub:#B4BAB3;--pageLine:#2D332E}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--page);color:var(--pageInk);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1280px;margin:0 auto;padding:40px 16px 64px}
+.top h1{font-family:var(--serif);font-weight:600;font-size:34px;letter-spacing:-.01em;line-height:1.1}
+.top p{color:var(--pageSub);font-size:16px;line-height:1.5;max-width:70ch;margin-top:10px}
+.top .meta{font-size:14px;margin-top:6px}
+.pair{margin-top:48px;border-top:1px solid var(--pageLine);padding-top:24px}
+.pair h2{font-family:var(--serif);font-weight:600;font-size:24px}
+.pair > p{color:var(--pageSub);font-size:15px;line-height:1.5;margin:6px 0 20px;max-width:70ch}
+.frames{display:flex;gap:28px;flex-wrap:wrap}
+figure{display:flex;flex-direction:column;gap:10px}
+figcaption{font-size:13px;color:var(--pageSub)}
+.phone{--bg:#F6F4EF;--surface:#FFFEFB;--sunken:#EEEBE4;--raised:#FFFFFF;--tinted:#EEF3EF;--t1:#1E2420;--t2:#4F5752;--t3:#646B66;--tdis:#A4A79F;--border:#E3DFD6;--borderStrong:#8A8E86;--focus:#1F6B5C;--primary:#1F6B5C;--primaryPressed:#17564A;--onPrimary:#FFFFFF;--primarySoft:#E2EEE9;--onPrimarySoft:#175246;--in:#2E6B4A;--inSoft:#E5EFE8;--onInSoft:#255A3D;--high:#875A10;--highSoft:#F6ECDA;--onHighSoft:#734C0C;--low:#3B5A8C;--lowSoft:#E6ECF5;--onLowSoft:#324D78;--none:#5D625D;--noneSoft:#ECEAE4;--onNoneSoft:#4D524D;--band:#D3E3D9;--track:#E9E6DF;--danger:#A8322A;--c0:#2F6B57;--c0s:#E3EEE8;--c0o:#FFFFFF;--c1:#2D5E86;--c1s:#E4ECF3;--c1o:#FFFFFF;--c2:#56692C;--c2s:#ECEFE0;--c2o:#FFFFFF;--c3:#8A5C12;--c3s:#F5ECDA;--c3o:#FFFFFF;--c4:#9C4A35;--c4s:#F6E8E2;--c4o:#FFFFFF;--c5:#6E4B83;--c5s:#EFE8F3;--c5o:#FFFFFF;--c6:#56606B;--c6s:#EBEDEF;--c6o:#FFFFFF;position:relative;width:390px;height:844px;border-radius:48px;overflow:hidden;background:var(--bg);color:var(--t1);box-shadow:0 0 0 1px var(--pageLine),0 18px 40px rgba(20,28,24,.12);font-family:var(--sans);font-size:17px;line-height:22px;flex:none}
+.phone.dark{--bg:#121513;--surface:#1A1E1B;--sunken:#242925;--raised:#222724;--tinted:#1C2621;--t1:#ECEEE9;--t2:#B4BAB3;--t3:#9AA199;--tdis:#5E645D;--border:#2D332E;--borderStrong:#737A72;--focus:#7CC4AE;--primary:#7CC4AE;--primaryPressed:#9DD5C3;--onPrimary:#0C2620;--primarySoft:#1C3430;--onPrimarySoft:#BFE3D6;--in:#8CC7A0;--inSoft:#1C3024;--onInSoft:#B6DFC3;--high:#E2B66A;--highSoft:#372B16;--onHighSoft:#F0D29E;--low:#A3B9E6;--lowSoft:#1D2840;--onLowSoft:#C9D6F2;--none:#AEB3AB;--noneSoft:#2A2E2A;--onNoneSoft:#CDD1CA;--band:#2A4637;--track:#2C312D;--danger:#F0958B;--c0:#86CBB2;--c0s:#1B3229;--c0o:#0B1F18;--c1:#97B9DE;--c1s:#1B2A3A;--c1o:#0C1826;--c2:#B5C784;--c2s:#272E18;--c2o:#161B0A;--c3:#E2B66A;--c3s:#372B16;--c3o:#221805;--c4:#EBA28E;--c4s:#3A231C;--c4o:#2A110A;--c5:#C9A9DC;--c5s:#2E2337;--c5o:#1E1426;--c6:#B0B9C3;--c6s:#262B30;--c6o:#14181C;}
+@media (max-width:430px){.phone{transform:scale(.86);transform-origin:top left;margin-bottom:-118px;margin-right:-55px}}
+.i{display:inline-block;vertical-align:middle;flex:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.num{white-space:nowrap;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+.serif{font-family:var(--serif);font-weight:600;letter-spacing:0}
+.sb{position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 30px 0 42px;z-index:9;color:var(--t1);font-weight:600;font-size:17px;pointer-events:none}
+.sb-r{display:flex;gap:7px;align-items:center}
+.island{position:absolute;left:50%;top:11px;width:124px;height:36px;margin-left:-62px;background:#000;border-radius:20px}
+.scroll{position:absolute;inset:0;overflow-y:auto;padding:54px 0 0;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.pad-tab{padding-bottom:110px}
+.spacer{height:110px}
+.nav{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 8px}
+.nav-root{justify-content:flex-end;padding:0 12px}
+.nav-btn{width:44px;height:44px;border-radius:22px;display:grid;place-items:center;color:var(--t1);background:color-mix(in srgb,var(--surface) 72%,transparent);box-shadow:0 0 0 .5px var(--border);backdrop-filter:blur(12px)}
+.nav-title{font-weight:600;font-size:17px}
+.nav-sp{width:44px}
+.hero{padding:4px 20px 8px}
+.hero h1{font-size:34px;line-height:40px}
+.hero.tight{padding-top:8px}
+.t1{font-size:28px;line-height:34px}
+.sub{color:var(--t2);font-size:15px;line-height:20px;margin-top:4px}
+.p-head{display:flex;gap:14px;align-items:center;padding:6px 20px 16px}
+.px{padding:0 20px}
+.sh{display:flex;align-items:baseline;justify-content:space-between;padding:28px 20px 10px}
+.sh h3{font-family:var(--serif);font-weight:600;font-size:20px;line-height:25px}
+.sh-link{color:var(--primary);font-size:15px;font-weight:500}
+.month{font-size:20px;line-height:25px;padding:24px 20px 10px}
+.group{margin:0 16px;background:var(--surface);border-radius:16px;box-shadow:0 0 0 1px var(--border);overflow:hidden}
+.row{display:flex;gap:12px;align-items:center;padding:13px 16px;min-height:52px;position:relative;color:inherit;text-decoration:none}
+.row + .row::before,.ocr + .ocr::before{content:"";position:absolute;top:0;left:16px;right:0;height:1px;background:var(--border)}
+.grow{flex:1;min-width:0}
+.r-title{font-weight:600;font-size:17px;line-height:22px}
+.r-sub{color:var(--t2);font-size:15px;line-height:20px;margin-top:2px}
+.r-mini{color:var(--t2);font-size:13px;line-height:18px;margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.chev{color:var(--t3)}
+.foot{color:var(--t2);font-size:13px;line-height:18px;padding:8px 32px 0}
+.av{border-radius:50%;display:grid;place-items:center;background:var(--acs);color:var(--ac);font-weight:600;flex:none;letter-spacing:.02em}
+.av.ring{box-shadow:inset 0 0 0 1.5px var(--ac)}
+.dot{width:8px;height:8px;border-radius:4px;display:inline-block;flex:none}
+.dot.st-in{background:var(--in)}.dot.st-high{background:var(--high)}.dot.st-low{background:var(--low)}.dot.st-care{background:var(--primary)}
+.att-ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:none}
+.att-ic.st-high{background:var(--highSoft);color:var(--high)}.att-ic.st-low{background:var(--lowSoft);color:var(--low)}.att-ic.st-care{background:var(--primarySoft);color:var(--primary)}
+.person{align-items:flex-start}.person .chev{align-self:center}
+.metric{display:block;padding:14px 16px}
+.m-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.m-label{font-size:15px;line-height:20px;color:var(--t2)}
+.m-val{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap}
+.m-val .num{font-size:22px;line-height:28px;font-weight:600}
+.m-val.big .num{font-size:28px;line-height:34px}
+.unit{font-size:15px;color:var(--t2)}
+.m-mid{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px}
+.m-meta{color:var(--t3);font-size:13px;line-height:18px;margin-top:8px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;line-height:18px;font-weight:600;padding:3px 9px 3px 6px;border-radius:999px;white-space:nowrap}
+.chip.st-in{background:var(--inSoft);color:var(--onInSoft)}.chip.st-high{background:var(--highSoft);color:var(--onHighSoft)}.chip.st-low{background:var(--lowSoft);color:var(--onLowSoft)}.chip.st-none{background:var(--noneSoft);color:var(--onNoneSoft)}
+.rb{position:relative;height:16px;flex:none}
+.rb::before{content:"";position:absolute;left:0;right:0;top:6px;height:4px;border-radius:2px;background:var(--track)}
+.rb-band{position:absolute;top:6px;height:4px;border-radius:2px;background:var(--band)}
+.rb-dot{position:absolute;top:2px;width:12px;height:12px;margin-left:-6px;border-radius:6px;box-shadow:0 0 0 2px var(--surface)}
+.rb-dot.st-in{background:var(--in)}.rb-dot.st-high{background:var(--high)}.rb-dot.st-low{background:var(--low)}
+.rb-none::before{background:repeating-linear-gradient(90deg,var(--track) 0 6px,transparent 6px 10px)}
+.vital{align-items:center}
+.v-ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--sunken);color:var(--t2);flex:none;align-self:flex-start;margin-top:2px}
+.v-ic.care{background:var(--primarySoft);color:var(--primary)}.v-ic.in{background:var(--inSoft);color:var(--in)}
+.spark .sp-a{fill:none;stroke:var(--primary);stroke-width:1.75;stroke-linejoin:round;stroke-linecap:round}
+.spark .sp-b{fill:none;stroke:var(--primary);stroke-width:1.75;stroke-opacity:.5;stroke-linejoin:round;stroke-linecap:round}
+.spark .sp-dot{fill:var(--primary)}.spark .sp-dot.b{fill:var(--surface);stroke:var(--primary);stroke-width:1.5}
+.seg{display:flex;background:var(--sunken);border-radius:999px;padding:3px;gap:2px}
+.seg span{flex:1;text-align:center;font-size:15px;line-height:20px;padding:7px 8px;border-radius:999px;color:var(--t1);font-weight:500}
+.seg span.on{background:var(--surface);box-shadow:0 1px 3px rgba(20,28,24,.12),0 0 0 .5px var(--border);font-weight:600}
+.dark .seg span.on{background:var(--raised);box-shadow:0 0 0 1px var(--borderStrong)}
+.now{padding:16px}
+.now-val .num{font-size:44px;line-height:48px;font-weight:600;letter-spacing:-.01em}
+.now-val .unit{font-size:20px;margin-left:4px}
+.now-st{margin:10px 0 12px}
+.now .r-sub{margin-top:10px}
+.chartbox{margin-top:12px;padding:12px 12px 14px}
+.chart{display:block;width:100%;height:auto}
+.chart .grid{stroke:var(--border);stroke-width:1}
+.chart .ax{fill:var(--t2);font-size:12px;font-family:var(--sans);font-variant-numeric:tabular-nums}
+.chart .band{fill:var(--band)}.chart .band-edge{stroke:var(--in);stroke-width:1;stroke-dasharray:3 3}
+.chart .band-l{fill:var(--onInSoft);font-size:12px;font-family:var(--sans)}
+.chart .ln{fill:none;stroke:var(--primary);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.tri{fill:var(--surface);stroke:var(--high);stroke-width:1.6;stroke-linejoin:round}.tri.last{fill:var(--high)}
+.chart .val-l{fill:var(--t1);font-size:15px;font-weight:600;font-family:var(--sans)}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--t2);padding:8px 4px 0;align-items:center}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.sw{width:14px;height:8px;border-radius:2px;display:inline-block}.band-sw{background:var(--band)}
+.summary{font-size:15px;line-height:21px;color:var(--t1);padding:10px 4px 0}
+.tbl{min-height:48px;padding:11px 16px}
+.tbl-d{width:118px;color:var(--t2);font-size:15px}
+.tbl-v{font-size:17px}.tbl-v .num{font-weight:600}
+.st-ic.st-high{color:var(--high)}
+.fab{position:absolute;right:20px;bottom:104px;height:52px;border-radius:26px;padding:0 20px 0 16px;display:flex;align-items:center;gap:8px;background:var(--primary);color:var(--onPrimary);font-weight:600;font-size:17px;box-shadow:0 6px 16px rgba(20,40,32,.22),0 1px 3px rgba(20,40,32,.2);z-index:5}
+.scroll ~ .fab:last-child{bottom:34px}
+.tabs{position:absolute;left:20px;right:20px;bottom:26px;height:62px;border-radius:31px;display:flex;justify-content:space-around;align-items:center;background:color-mix(in srgb,var(--surface) 70%,transparent);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 0 0 .5px var(--border),0 8px 24px rgba(20,28,24,.12);z-index:6}
+.tabs span{display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--t1);min-width:72px;padding:6px 0;border-radius:24px}
+.tabs span.on{color:var(--primary);background:color-mix(in srgb,var(--primary) 12%,transparent)}
+.tabs em{font-style:normal;font-size:11px;line-height:13px;font-weight:600}
+.sheet-bg{position:absolute;inset:0;background:var(--t1);opacity:.18}
+.sheet{position:absolute;left:0;right:0;top:62px;bottom:0;background:var(--bg);border-radius:34px 34px 0 0;overflow:hidden;box-shadow:0 -1px 0 var(--border)}
+.grab{width:36px;height:5px;border-radius:3px;background:var(--borderStrong);opacity:.5;margin:6px auto 0}
+.sheet-nav{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.sheet-title{font-weight:600}
+.txt-btn{color:var(--primary);font-size:17px;padding:10px 4px}.txt-btn.strong{font-weight:600}
+.in-sheet{top:59px;padding-top:4px}
+.note{display:flex;gap:10px;align-items:center;margin:4px 16px 0;padding:10px 14px;border-radius:12px;background:var(--primarySoft);color:var(--onPrimarySoft);font-size:15px;line-height:20px}
+.docthumb{margin:12px 16px 0;display:flex;align-items:flex-end;gap:12px}
+.paper{width:92px;height:122px;background:#FFFFFF;border-radius:6px;box-shadow:0 0 0 1px var(--border),0 2px 6px rgba(20,28,24,.08);padding:10px 9px;display:flex;flex-direction:column;gap:6px}
+.paper b{display:block;height:4px;border-radius:2px;background:#D9D6CF}
+.paper .p-h{height:7px;width:60%;background:#9CA39E}.paper .p-gap{height:2px;background:none}
+.paper .hl{background:#9FCBB9;box-shadow:0 0 0 2px #CFE6DC}
+.w50{width:50%}.w60{width:60%}.w70{width:70%}.w75{width:75%}.w80{width:80%}.w85{width:85%}.w90{width:90%}
+.pg{font-size:13px;line-height:18px;color:var(--t2);display:flex;flex-direction:column;gap:2px}
+.ocr{padding:12px 16px;position:relative}
+.ocr-top{display:flex;justify-content:space-between;align-items:center}
+.ocr-l{font-size:13px;line-height:18px;color:var(--t2);font-weight:500}
+.ocr-v{display:flex;justify-content:space-between;align-items:center;margin-top:2px;font-size:17px;line-height:22px}
+.ocr-v > span:first-child{display:inline-flex;gap:8px;align-items:center}
+.ocr-edit{color:var(--primary);width:44px;height:36px;display:grid;place-items:center;margin-right:-12px}
+.ocr-src{display:flex;gap:5px;align-items:center;color:var(--t3);font-size:13px;line-height:18px;margin-top:2px}
+.ocr.warn .ocr-v span:first-child{text-decoration:underline;text-decoration-color:var(--high);text-decoration-thickness:1.5px;text-underline-offset:4px}
+.conf,.conf-line{display:inline-flex;align-items:center;gap:3px;font-size:13px;line-height:18px;color:var(--t2)}
+.conf i,.conf-line i{width:5px;height:12px;border-radius:2px;background:var(--track);display:inline-block}
+.c-alta i{background:var(--primary)}
+.c-média i:nth-child(-n+2){background:var(--primary)}
+.c-baixa i:first-child{background:var(--high)}
+.c-baixa{color:var(--onHighSoft);font-weight:600}
+.conf i:last-of-type,.conf-line i:last-of-type{margin-right:5px}
+.c-user{color:var(--t2)}
+.ocr-m{align-items:flex-start}
+.cb{width:24px;height:24px;border-radius:12px;box-shadow:inset 0 0 0 1.5px var(--borderStrong);display:grid;place-items:center;flex:none;margin-top:1px}
+.cb.on{background:var(--primary);box-shadow:none;color:var(--onPrimary)}
+.ocr-m .r-sub{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.sheet-foot{position:absolute;left:0;right:0;bottom:0;padding:12px 20px 34px;background:linear-gradient(to top,var(--bg) 70%,transparent)}
+.btn{display:flex;align-items:center;justify-content:center;height:52px;border-radius:26px;background:var(--primary);color:var(--onPrimary);font-weight:600;font-size:17px}
+.tally{display:flex;background:var(--surface);border-radius:16px;box-shadow:0 0 0 1px var(--border);margin-top:4px}
+.tally div{flex:1;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.tally div + div{box-shadow:inset 1px 0 0 var(--border)}
+.tally .num{font-size:28px;line-height:34px;font-weight:600}
+.tally em{font-style:normal;font-size:13px;line-height:18px;color:var(--t2)}
+.pill-st{font-size:13px;line-height:18px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.pill-st.att{background:var(--highSoft);color:var(--onHighSoft)}.pill-st.neutral{background:var(--noneSoft);color:var(--onNoneSoft)}.pill-st.in{background:var(--inSoft);color:var(--onInSoft)}
+.v-ic.att{background:var(--highSoft);color:var(--high)}.v-ic.neutral{background:var(--noneSoft);color:var(--none)}
+.r-st{margin-top:6px;display:flex}
+.sug{font-size:13px;line-height:18px;font-weight:600;color:var(--onPrimarySoft);background:var(--primarySoft);padding:1px 8px;border-radius:999px}
+.trecho{font-size:13px;line-height:18px;color:var(--t3);margin-top:6px;font-family:ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:-.01em}
+.m-label.strong{color:var(--t1);font-weight:600;font-size:17px;line-height:22px}
+.r-sub.wrap{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:6px}
+.ocr-src{gap:8px}
+.pill-st.care{background:var(--primarySoft);color:var(--onPrimarySoft)}
+.vac{align-items:flex-start}.vac .chev,.vac .pill-st{align-self:center}
+.chips{display:flex;gap:8px;overflow:hidden;padding:14px 20px 0}
+.fchip{display:inline-flex;align-items:center;gap:5px;height:36px;padding:0 14px;border-radius:18px;box-shadow:inset 0 0 0 1px var(--borderStrong);font-size:15px;color:var(--t1);white-space:nowrap}
+.fchip.on{background:var(--primarySoft);color:var(--onPrimarySoft);box-shadow:none;font-weight:600}
+.tl{align-items:flex-start;gap:10px}
+.tl-d{width:54px;white-space:nowrap;color:var(--t2);font-size:15px;line-height:20px;padding-top:2px;flex:none}
+.tl-ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--tcs);color:var(--tc);flex:none}
+.tl-type{font-size:13px;line-height:18px;font-weight:600}
+.st-t-low{color:var(--low);font-weight:600}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-chev-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6l6 6-6 6"/></symbol><symbol id="i-chev-l" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5.5L8.5 12l6.5 6.5"/></symbol><symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol><symbol id="i-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="18" cy="12" r="1.3" fill="currentColor" stroke="none"/></symbol><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol><symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6l1.5 2.1 2.5-.7.7 2.5 2.1 1.5-1.1 2.4 1.1 2.4-2.1 1.5-.7 2.5-2.5-.7L12 20.4l-1.5-2.1-2.5.7-.7-2.5-2.1-1.5 1.1-2.4-1.1-2.4 2.1-1.5.7-2.5 2.5.7z"/><circle cx="12" cy="12" r="3"/></symbol><symbol id="i-family" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="16.8" cy="9.2" r="2.3"/><path d="M15.6 14.1c2.6-.2 4.5 1.4 4.9 4.4"/></symbol><symbol id="i-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 16V8.3M8.8 11.3L12 8.1l3.2 3.2"/></symbol><symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v7.7M8.8 12.7L12 15.9l3.2-3.2"/></symbol><symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.4 12.3l2.5 2.5 4.8-5"/></symbol><symbol id="i-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12h7"/></symbol><symbol id="i-syringe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 3.5l5 5M18 6l-8.5 8.5-3-3L15 3"/><path d="M11.5 8.5l1.5 1.5M9.5 10.5l1.5 1.5M8 16l-4.5 4.5"/></symbol><symbol id="i-pill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 20.3a4.5 4.5 0 0 1-6.4-6.4l9.6-9.6a4.5 4.5 0 0 1 6.4 6.4z"/><path d="M8.7 8.7l6.6 6.6"/></symbol><symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19.5s-7.5-4.4-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.6-7.5 10-7.5 10z"/><path d="M7.5 12h2.2l1.3-2 2 4 1.3-2h2.2"/></symbol><symbol id="i-drop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.8c3 3.7 5.5 6.8 5.5 9.9a5.5 5.5 0 0 1-11 0c0-3.1 2.5-6.2 5.5-9.9z"/></symbol><symbol id="i-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8.6 10a4.6 4.6 0 0 1 6.8 0M12 11.6l1.3-1.8"/></symbol><symbol id="i-flask" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5h5M10.5 3.5V9l-4.7 8.6a2 2 0 0 0 1.8 2.9h8.8a2 2 0 0 0 1.8-2.9L13.5 9V3.5M7.9 14.5h8.2"/></symbol><symbol id="i-steth" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5v5a4 4 0 0 0 8 0v-5M10 12.5V15a4.5 4.5 0 0 0 9 0v-2"/><circle cx="19" cy="11" r="2"/></symbol><symbol id="i-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4M9.5 12h6M9.5 15.5h6"/></symbol><symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M8 10h8M8 13h8M8 16h5"/></symbol><symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></symbol><symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="14.5" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></symbol><symbol id="i-trend" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16M5.5 15l4-4.5 3.5 3 5.5-6.5"/></symbol><symbol id="i-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5l4 4L9 19H5v-4z"/></symbol><symbol id="i-clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.5l-6.4 6.4a2.5 2.5 0 0 1-3.5-3.5l7.1-7.1a4 4 0 0 1 5.7 5.7l-7 7"/></symbol><symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol><symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/></symbol></svg>
+<main class="wrap">
+  <header class="top">
+    <h1>Cuidado sereno</h1>
+    <p>Protótipo estático do Design System v3 do Prontuário da Família. Cada par mostra a mesma tela em claro e escuro, 390 × 844 pt, com os tokens exatos do <code>DESIGN.md</code>. Os dados da família Souza são de demonstração (sintéticos).</p>
+    <p class="meta">Os títulos usam a serifa do sistema (New York no iOS; no navegador, Safari mostra New York e os demais caem para Georgia). Os ícones são desenhos de referência: no app, SF Symbols e Material Symbols.</p>
+  </header>
+  <section class="pair" id="familia" aria-labelledby="h-familia">
+    <h2 id="h-familia">Família</h2><p>Painel coletivo (F7): data de hoje, “Para acompanhar” (até 5 itens, ordem por tipo e data, nunca por pessoa), pessoas com mini-resumo em texto e últimos resultados. <strong>Revisão de 11/11/2026:</strong> o mini-resumo por pessoa, “Últimos resultados” e a linha “exames no acompanhamento” da linha do tempo ficaram fora da v0.2 (P2); vale o <code>docs/DESIGN_SYSTEM.md</code> §7.</p>
+    <div class="frames">
+      <figure><div class="phone" role="img" aria-label="Família, tema claro"><div class="sb" aria-hidden="true"><span class="sb-time">9:41</span><span class="island"></span><span class="sb-r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".45"/></svg></span></div><div class="scroll pad-tab">
+  <div class="nav nav-root"><span class="nav-sp"></span><span class="nav-btn"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-more"/></svg><span class="sr">Mais opções</span></span></div>
+  <header class="hero"><h1 class="serif">Família Souza</h1><p class="sub">Quarta-feira, 11 de novembro de 2026</p></header>
+
+  <div class="sh"><h3>Para acompanhar</h3><span class="sh-link">Ver todos (6)</span></div>
+  <div class="group">
+    <a class="row att"><span class="att-ic st-high"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-syringe"/></svg></span><div class="grow"><div class="r-title">Carlos · dT (reforço)</div><div class="r-sub">Atrasada pelo calendário · última dose em mai. de 2015</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row att"><span class="att-ic st-low"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-down"/></svg></span><div class="grow"><div class="r-title">Lia · Ferritina</div><div class="r-sub">Abaixo da faixa do laudo · <span class="num">18 ng/mL</span> · 12 de mar.</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row att"><span class="att-ic st-high"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-up"/></svg></span><div class="grow"><div class="r-title">Carlos · Glicemia de jejum</div><div class="r-sub">Acima da faixa do laudo · <span class="num">132 mg/dL</span> · 28 de out.</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row att"><span class="att-ic st-high"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-up"/></svg></span><div class="grow"><div class="r-title">Carlos · Hemoglobina glicada</div><div class="r-sub">Acima da faixa do laudo · <span class="num">7,4 %</span> · 28 de out.</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row att"><span class="att-ic st-care"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-syringe"/></svg></span><div class="grow"><div class="r-title">Dirce · Influenza de 2026</div><div class="r-sub">Pendente pelo calendário para 60 anos ou mais</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+  <p class="foot">Vacinas: 2 de 4 pessoas em dia com o calendário.<br>A faixa de referência é a impressa no laudo. Só o profissional de saúde pode interpretar o resultado.</p>
+
+  <div class="sh"><h3>Pessoas</h3></div>
+  <div class="group">
+    <a class="row person"><span class="av ring" style="--ac:var(--c0);--acs:var(--c0s);--aco:var(--c0o);width:44px;height:44px;font-size:17px" aria-hidden="true">AS</span><div class="grow"><div class="r-title">Ana Souza</div><div class="r-sub">Você · 38 anos</div><div class="r-mini">Em dia com o calendário · 14 documentos</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row person"><span class="av ring" style="--ac:var(--c1);--acs:var(--c1s);--aco:var(--c1o);width:44px;height:44px;font-size:17px" aria-hidden="true">CS</span><div class="grow"><div class="r-title">Carlos Souza</div><div class="r-sub">Cônjuge · 67 anos</div><div class="r-mini">2 resultados fora da faixa · 2 medicamentos em uso</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row person"><span class="av ring" style="--ac:var(--c4);--acs:var(--c4s);--aco:var(--c4o);width:44px;height:44px;font-size:17px" aria-hidden="true">LS</span><div class="grow"><div class="r-title">Lia Souza</div><div class="r-sub">Filha · 7 anos</div><div class="r-mini">1 resultado fora da faixa · em dia com o calendário</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row person"><span class="av ring" style="--ac:var(--c5);--acs:var(--c5s);--aco:var(--c5o);width:44px;height:44px;font-size:17px" aria-hidden="true">DA</span><div class="grow"><div class="r-title">Dirce Almeida</div><div class="r-sub">Mãe · 74 anos</div><div class="r-mini">2 vacinas pendentes · 1 medicamento em uso</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+
+  <div class="sh"><h3>Últimos resultados</h3><span class="sh-link">Ver todos</span></div>
+  <div class="group">
+    <a class="row metric" role="link" aria-label="Hemoglobina glicada · Carlos, 7,4 %, Acima da faixa do laudo, faixa inferior a 5,7 %. 28 de out. de 2026 · do laudo Laboratório Vida">
+    <div class="m-top"><span class="m-label">Hemoglobina glicada · Carlos</span><span class="m-val"><span class="num">7,4</span><span class="unit">%</span></span></div>
+    <div class="m-mid"><span class="chip st-high"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-up"/></svg>Acima da faixa</span><div class="rb" style="width:112px" aria-hidden="true"><i class="rb-band" style="left:0%;width:49.999999999999986%"></i><b class="rb-dot st-high" style="left:83.1384015594542%"></b></div></div>
+    <div class="m-meta">Faixa do laudo: inferior a 5,7 % · 28 de out. de 2026 · do laudo Laboratório Vida</div>
+  </a>
+    <a class="row metric" role="link" aria-label="TSH · Dirce, 3,1 mUI/L, Dentro da faixa do laudo, faixa 0,4–4 mUI/L. 19 de out. de 2026 · do laudo Clínica Viver">
+    <div class="m-top"><span class="m-label">TSH · Dirce</span><span class="m-val"><span class="num">3,1</span><span class="unit">mUI/L</span></span></div>
+    <div class="m-mid"><span class="chip st-in"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-check"/></svg>Dentro da faixa</span><div class="rb" style="width:112px" aria-hidden="true"><i class="rb-band" style="left:27.272727272727277%;width:45.45454545454545%"></i><b class="rb-dot st-in" style="left:61.36363636363637%"></b></div></div>
+    <div class="m-meta">Faixa do laudo: 0,4–4 mUI/L · 19 de out. de 2026 · do laudo Clínica Viver</div>
+  </a>
+  </div>
+  </div>
+  <span class="fab"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-plus"/></svg>Novo registro</span>
+  <nav class="tabs" aria-label="Seções"><span class="on"><svg class="i " width="24" height="24" aria-hidden="true"><use href="#i-family"/></svg><em>Família</em></span><span class=""><svg class="i " width="24" height="24" aria-hidden="true"><use href="#i-search"/></svg><em>Buscar</em></span><span class=""><svg class="i " width="24" height="24" aria-hidden="true"><use href="#i-gear"/></svg><em>Ajustes</em></span></nav></div><figcaption>Claro</figcaption></figure>
+      <figure><div class="phone dark" role="img" aria-label="Família, tema escuro"><div class="sb" aria-hidden="true"><span class="sb-time">9:41</span><span class="island"></span><span class="sb-r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".45"/></svg></span></div><div class="scroll pad-tab">
+  <div class="nav nav-root"><span class="nav-sp"></span><span class="nav-btn"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-more"/></svg><span class="sr">Mais opções</span></span></div>
+  <header class="hero"><h1 class="serif">Família Souza</h1><p class="sub">Quarta-feira, 11 de novembro de 2026</p></header>
+
+  <div class="sh"><h3>Para acompanhar</h3><span class="sh-link">Ver todos (6)</span></div>
+  <div class="group">
+    <a class="row att"><span class="att-ic st-high"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-syringe"/></svg></span><div class="grow"><div class="r-title">Carlos · dT (reforço)</div><div class="r-sub">Atrasada pelo calendário · última dose em mai. de 2015</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row att"><span class="att-ic st-low"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-down"/></svg></span><div class="grow"><div class="r-title">Lia · Ferritina</div><div class="r-sub">Abaixo da faixa do laudo · <span class="num">18 ng/mL</span> · 12 de mar.</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row att"><span class="att-ic st-high"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-up"/></svg></span><div class="grow"><div class="r-title">Carlos · Glicemia de jejum</div><div class="r-sub">Acima da faixa do laudo · <span class="num">132 mg/dL</span> · 28 de out.</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row att"><span class="att-ic st-high"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-up"/></svg></span><div class="grow"><div class="r-title">Carlos · Hemoglobina glicada</div><div class="r-sub">Acima da faixa do laudo · <span class="num">7,4 %</span> · 28 de out.</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row att"><span class="att-ic st-care"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-syringe"/></svg></span><div class="grow"><div class="r-title">Dirce · Influenza de 2026</div><div class="r-sub">Pendente pelo calendário para 60 anos ou mais</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+  <p class="foot">Vacinas: 2 de 4 pessoas em dia com o calendário.<br>A faixa de referência é a impressa no laudo. Só o profissional de saúde pode interpretar o resultado.</p>
+
+  <div class="sh"><h3>Pessoas</h3></div>
+  <div class="group">
+    <a class="row person"><span class="av ring" style="--ac:var(--c0);--acs:var(--c0s);--aco:var(--c0o);width:44px;height:44px;font-size:17px" aria-hidden="true">AS</span><div class="grow"><div class="r-title">Ana Souza</div><div class="r-sub">Você · 38 anos</div><div class="r-mini">Em dia com o calendário · 14 documentos</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row person"><span class="av ring" style="--ac:var(--c1);--acs:var(--c1s);--aco:var(--c1o);width:44px;height:44px;font-size:17px" aria-hidden="true">CS</span><div class="grow"><div class="r-title">Carlos Souza</div><div class="r-sub">Cônjuge · 67 anos</div><div class="r-mini">2 resultados fora da faixa · 2 medicamentos em uso</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row person"><span class="av ring" style="--ac:var(--c4);--acs:var(--c4s);--aco:var(--c4o);width:44px;height:44px;font-size:17px" aria-hidden="true">LS</span><div class="grow"><div class="r-title">Lia Souza</div><div class="r-sub">Filha · 7 anos</div><div class="r-mini">1 resultado fora da faixa · em dia com o calendário</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row person"><span class="av ring" style="--ac:var(--c5);--acs:var(--c5s);--aco:var(--c5o);width:44px;height:44px;font-size:17px" aria-hidden="true">DA</span><div class="grow"><div class="r-title">Dirce Almeida</div><div class="r-sub">Mãe · 74 anos</div><div class="r-mini">2 vacinas pendentes · 1 medicamento em uso</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+
+  <div class="sh"><h3>Últimos resultados</h3><span class="sh-link">Ver todos</span></div>
+  <div class="group">
+    <a class="row metric" role="link" aria-label="Hemoglobina glicada · Carlos, 7,4 %, Acima da faixa do laudo, faixa inferior a 5,7 %. 28 de out. de 2026 · do laudo Laboratório Vida">
+    <div class="m-top"><span class="m-label">Hemoglobina glicada · Carlos</span><span class="m-val"><span class="num">7,4</span><span class="unit">%</span></span></div>
+    <div class="m-mid"><span class="chip st-high"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-up"/></svg>Acima da faixa</span><div class="rb" style="width:112px" aria-hidden="true"><i class="rb-band" style="left:0%;width:49.999999999999986%"></i><b class="rb-dot st-high" style="left:83.1384015594542%"></b></div></div>
+    <div class="m-meta">Faixa do laudo: inferior a 5,7 % · 28 de out. de 2026 · do laudo Laboratório Vida</div>
+  </a>
+    <a class="row metric" role="link" aria-label="TSH · Dirce, 3,1 mUI/L, Dentro da faixa do laudo, faixa 0,4–4 mUI/L. 19 de out. de 2026 · do laudo Clínica Viver">
+    <div class="m-top"><span class="m-label">TSH · Dirce</span><span class="m-val"><span class="num">3,1</span><span class="unit">mUI/L</span></span></div>
+    <div class="m-mid"><span class="chip st-in"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-check"/></svg>Dentro da faixa</span><div class="rb" style="width:112px" aria-hidden="true"><i class="rb-band" style="left:27.272727272727277%;width:45.45454545454545%"></i><b class="rb-dot st-in" style="left:61.36363636363637%"></b></div></div>
+    <div class="m-meta">Faixa do laudo: 0,4–4 mUI/L · 19 de out. de 2026 · do laudo Clínica Viver</div>
+  </a>
+  </div>
+  </div>
+  <span class="fab"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-plus"/></svg>Novo registro</span>
+  <nav class="tabs" aria-label="Seções"><span class="on"><svg class="i " width="24" height="24" aria-hidden="true"><use href="#i-family"/></svg><em>Família</em></span><span class=""><svg class="i " width="24" height="24" aria-hidden="true"><use href="#i-search"/></svg><em>Buscar</em></span><span class=""><svg class="i " width="24" height="24" aria-hidden="true"><use href="#i-gear"/></svg><em>Ajustes</em></span></nav></div><figcaption>Escuro</figcaption></figure>
+    </div>
+  </section>
+<section class="pair" id="pessoa" aria-labelledby="h-pessoa">
+    <h2 id="h-pessoa">Pessoa · Resumo</h2><p>Resumo de saúde (F6), na ordem da spec: vacinas, exames recentes com a régua do laudo, medicamentos em uso e sinais vitais (sem faixa).</p>
+    <div class="frames">
+      <figure><div class="phone" role="img" aria-label="Pessoa · Resumo, tema claro"><div class="sb" aria-hidden="true"><span class="sb-time">9:41</span><span class="island"></span><span class="sb-r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".45"/></svg></span></div><div class="scroll">
+  <div class="nav"><span class="nav-btn"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-chev-l"/></svg><span class="sr">Voltar para Família</span></span><span class="nav-title"></span><span class="nav-btn"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-more"/></svg><span class="sr">Mais ações</span></span></div>
+  <header class="p-head"><span class="av ring" style="--ac:var(--c1);--acs:var(--c1s);--aco:var(--c1o);width:56px;height:56px;font-size:21px" aria-hidden="true">CS</span><div><h1 class="serif t1">Carlos Souza</h1><p class="sub">Cônjuge · 67 anos · 9 documentos</p></div></header>
+  <div class="px"><div class="seg" role="tablist"><span role="tab" aria-selected="true" class="on">Resumo</span><span role="tab" aria-selected="false" class="">Documentos</span></div></div>
+
+  <div class="sh"><h3>Vacinas</h3><span class="sh-link">Ver tudo</span></div>
+  <div class="group">
+    <a class="row vac"><span class="v-ic att"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-syringe"/></svg></span><div class="grow"><div class="r-title">1 pendência</div><div class="r-sub">dT (reforço), atrasada pelo calendário</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+
+  <div class="sh"><h3>Exames recentes</h3><span class="sh-link">Ver tudo</span></div>
+  <div class="group">
+    <a class="row metric" role="link" aria-label="Glicemia de jejum, 132 mg/dL, Acima da faixa do laudo, faixa 70–99 mg/dL. 28 de out. de 2026 · do laudo Laboratório Vida">
+    <div class="m-top"><span class="m-label">Glicemia de jejum</span><span class="m-val"><span class="num">132</span><span class="unit">mg/dL</span></span></div>
+    <div class="m-mid"><span class="chip st-high"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-up"/></svg>Acima da faixa</span><div class="rb" style="width:112px" aria-hidden="true"><i class="rb-band" style="left:20.590741266685594%;width:34.31790211114266%"></i><b class="rb-dot st-high" style="left:93.96004922843888%"></b></div></div>
+    <div class="m-meta">Faixa do laudo: 70–99 mg/dL · 28 de out. de 2026 · do laudo Laboratório Vida</div>
+  </a>
+    <a class="row metric" role="link" aria-label="Hemoglobina glicada, 7,4 %, Acima da faixa do laudo, faixa inferior a 5,7 %. 28 de out. de 2026 · do laudo Laboratório Vida">
+    <div class="m-top"><span class="m-label">Hemoglobina glicada</span><span class="m-val"><span class="num">7,4</span><span class="unit">%</span></span></div>
+    <div class="m-mid"><span class="chip st-high"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-up"/></svg>Acima da faixa</span><div class="rb" style="width:112px" aria-hidden="true"><i class="rb-band" style="left:0%;width:49.999999999999986%"></i><b class="rb-dot st-high" style="left:83.1384015594542%"></b></div></div>
+    <div class="m-meta">Faixa do laudo: inferior a 5,7 % · 28 de out. de 2026 · do laudo Laboratório Vida</div>
+  </a>
+    <a class="row metric" role="link" aria-label="Creatinina, 1,1 mg/dL, Dentro da faixa do laudo, faixa 0,7–1,3 mg/dL. 28 de out. de 2026 · do laudo Laboratório Vida">
+    <div class="m-top"><span class="m-label">Creatinina</span><span class="m-val"><span class="num">1,1</span><span class="unit">mg/dL</span></span></div>
+    <div class="m-mid"><span class="chip st-in"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-check"/></svg>Dentro da faixa</span><div class="rb" style="width:112px" aria-hidden="true"><i class="rb-band" style="left:27.27272727272727%;width:45.45454545454547%"></i><b class="rb-dot st-in" style="left:57.57575757575758%"></b></div></div>
+    <div class="m-meta">Faixa do laudo: 0,7–1,3 mg/dL · 28 de out. de 2026 · do laudo Laboratório Vida</div>
+  </a>
+    <a class="row metric" role="link" aria-label="Colesterol LDL, 118 mg/dL, Sem faixa numérica no laudo. 28 de out. de 2026">
+    <div class="m-top"><span class="m-label">Colesterol LDL</span><span class="m-val"><span class="num">118</span><span class="unit">mg/dL</span></span></div>
+    <div class="m-mid"><span class="chip st-none"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-minus"/></svg>Sem faixa</span><div class="rb rb-none" style="width:112px" aria-hidden="true"></div></div>
+    <div class="m-meta">Faixa do laudo: "Desejável: < 100" (texto do laudo) · 28 de out. de 2026</div>
+  </a>
+  </div>
+  <p class="foot">A faixa de referência é a impressa no laudo. Só o profissional de saúde pode interpretar o resultado.</p>
+
+  <div class="sh"><h3>Medicamentos em uso</h3><span class="sh-link">Ver tudo</span></div>
+  <div class="group">
+    <a class="row med"><span class="v-ic"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-pill"/></svg></span><div class="grow"><div class="r-title">Losartana 50 mg</div><div class="r-sub">1 comprimido pela manhã · uso contínuo</div><div class="r-mini">Do documento Receita cardiologia, 4 de mar. de 2024</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row med"><span class="v-ic"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-pill"/></svg></span><div class="grow"><div class="r-title">Metformina 850 mg</div><div class="r-sub">Após o almoço e o jantar · uso contínuo</div><div class="r-mini">Registrado por você</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+
+  <div class="sh"><h3>Sinais vitais</h3><span class="sh-link">Ver tudo</span></div>
+  <div class="group">
+    <a class="row vital"><span class="v-ic"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-heart"/></svg></span><div class="grow"><div class="r-sub">Pressão arterial</div><div class="m-val big"><span class="num">142/88</span><span class="unit">mmHg</span></div><div class="r-sub">10 de nov., 8h12</div></div><svg class="spark" width="116" height="40" viewBox="0 0 116 40" aria-hidden="true"><path d="M4.0 9.5 L25.6 6.3 L47.2 8.6 L68.8 7.7 L90.4 10.4 L112.0 7.7" class="sp-a"/><path d="M4.0 33.3 L25.6 31.4 L47.2 32.3 L68.8 32.3 L90.4 34.2 L112.0 32.3" class="sp-b"/><circle cx="112" cy="7.657142857142858" r="2.6" class="sp-dot"/><circle cx="112" cy="32.34285714285714" r="2.6" class="sp-dot b"/></svg></a>
+    <a class="row vital"><span class="v-ic"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-drop"/></svg></span><div class="grow"><div class="r-sub">Glicemia capilar · em jejum</div><div class="m-val big"><span class="num">128</span><span class="unit">mg/dL</span></div><div class="r-sub">10 de nov., 7h40</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row vital"><span class="v-ic"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-scale"/></svg></span><div class="grow"><div class="r-sub">Peso</div><div class="m-val big"><span class="num">82,4</span><span class="unit">kg</span></div><div class="r-sub">2 de nov.</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+  <p class="foot">O app não avalia estes valores. Mostre a sequência ao profissional que acompanha Carlos.</p>
+  <div class="spacer"></div>
+  </div>
+  <span class="fab"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-plus"/></svg>Novo registro</span></div><figcaption>Claro</figcaption></figure>
+      <figure><div class="phone dark" role="img" aria-label="Pessoa · Resumo, tema escuro"><div class="sb" aria-hidden="true"><span class="sb-time">9:41</span><span class="island"></span><span class="sb-r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".45"/></svg></span></div><div class="scroll">
+  <div class="nav"><span class="nav-btn"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-chev-l"/></svg><span class="sr">Voltar para Família</span></span><span class="nav-title"></span><span class="nav-btn"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-more"/></svg><span class="sr">Mais ações</span></span></div>
+  <header class="p-head"><span class="av ring" style="--ac:var(--c1);--acs:var(--c1s);--aco:var(--c1o);width:56px;height:56px;font-size:21px" aria-hidden="true">CS</span><div><h1 class="serif t1">Carlos Souza</h1><p class="sub">Cônjuge · 67 anos · 9 documentos</p></div></header>
+  <div class="px"><div class="seg" role="tablist"><span role="tab" aria-selected="true" class="on">Resumo</span><span role="tab" aria-selected="false" class="">Documentos</span></div></div>
+
+  <div class="sh"><h3>Vacinas</h3><span class="sh-link">Ver tudo</span></div>
+  <div class="group">
+    <a class="row vac"><span class="v-ic att"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-syringe"/></svg></span><div class="grow"><div class="r-title">1 pendência</div><div class="r-sub">dT (reforço), atrasada pelo calendário</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+
+  <div class="sh"><h3>Exames recentes</h3><span class="sh-link">Ver tudo</span></div>
+  <div class="group">
+    <a class="row metric" role="link" aria-label="Glicemia de jejum, 132 mg/dL, Acima da faixa do laudo, faixa 70–99 mg/dL. 28 de out. de 2026 · do laudo Laboratório Vida">
+    <div class="m-top"><span class="m-label">Glicemia de jejum</span><span class="m-val"><span class="num">132</span><span class="unit">mg/dL</span></span></div>
+    <div class="m-mid"><span class="chip st-high"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-up"/></svg>Acima da faixa</span><div class="rb" style="width:112px" aria-hidden="true"><i class="rb-band" style="left:20.590741266685594%;width:34.31790211114266%"></i><b class="rb-dot st-high" style="left:93.96004922843888%"></b></div></div>
+    <div class="m-meta">Faixa do laudo: 70–99 mg/dL · 28 de out. de 2026 · do laudo Laboratório Vida</div>
+  </a>
+    <a class="row metric" role="link" aria-label="Hemoglobina glicada, 7,4 %, Acima da faixa do laudo, faixa inferior a 5,7 %. 28 de out. de 2026 · do laudo Laboratório Vida">
+    <div class="m-top"><span class="m-label">Hemoglobina glicada</span><span class="m-val"><span class="num">7,4</span><span class="unit">%</span></span></div>
+    <div class="m-mid"><span class="chip st-high"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-up"/></svg>Acima da faixa</span><div class="rb" style="width:112px" aria-hidden="true"><i class="rb-band" style="left:0%;width:49.999999999999986%"></i><b class="rb-dot st-high" style="left:83.1384015594542%"></b></div></div>
+    <div class="m-meta">Faixa do laudo: inferior a 5,7 % · 28 de out. de 2026 · do laudo Laboratório Vida</div>
+  </a>
+    <a class="row metric" role="link" aria-label="Creatinina, 1,1 mg/dL, Dentro da faixa do laudo, faixa 0,7–1,3 mg/dL. 28 de out. de 2026 · do laudo Laboratório Vida">
+    <div class="m-top"><span class="m-label">Creatinina</span><span class="m-val"><span class="num">1,1</span><span class="unit">mg/dL</span></span></div>
+    <div class="m-mid"><span class="chip st-in"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-check"/></svg>Dentro da faixa</span><div class="rb" style="width:112px" aria-hidden="true"><i class="rb-band" style="left:27.27272727272727%;width:45.45454545454547%"></i><b class="rb-dot st-in" style="left:57.57575757575758%"></b></div></div>
+    <div class="m-meta">Faixa do laudo: 0,7–1,3 mg/dL · 28 de out. de 2026 · do laudo Laboratório Vida</div>
+  </a>
+    <a class="row metric" role="link" aria-label="Colesterol LDL, 118 mg/dL, Sem faixa numérica no laudo. 28 de out. de 2026">
+    <div class="m-top"><span class="m-label">Colesterol LDL</span><span class="m-val"><span class="num">118</span><span class="unit">mg/dL</span></span></div>
+    <div class="m-mid"><span class="chip st-none"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-minus"/></svg>Sem faixa</span><div class="rb rb-none" style="width:112px" aria-hidden="true"></div></div>
+    <div class="m-meta">Faixa do laudo: "Desejável: < 100" (texto do laudo) · 28 de out. de 2026</div>
+  </a>
+  </div>
+  <p class="foot">A faixa de referência é a impressa no laudo. Só o profissional de saúde pode interpretar o resultado.</p>
+
+  <div class="sh"><h3>Medicamentos em uso</h3><span class="sh-link">Ver tudo</span></div>
+  <div class="group">
+    <a class="row med"><span class="v-ic"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-pill"/></svg></span><div class="grow"><div class="r-title">Losartana 50 mg</div><div class="r-sub">1 comprimido pela manhã · uso contínuo</div><div class="r-mini">Do documento Receita cardiologia, 4 de mar. de 2024</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row med"><span class="v-ic"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-pill"/></svg></span><div class="grow"><div class="r-title">Metformina 850 mg</div><div class="r-sub">Após o almoço e o jantar · uso contínuo</div><div class="r-mini">Registrado por você</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+
+  <div class="sh"><h3>Sinais vitais</h3><span class="sh-link">Ver tudo</span></div>
+  <div class="group">
+    <a class="row vital"><span class="v-ic"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-heart"/></svg></span><div class="grow"><div class="r-sub">Pressão arterial</div><div class="m-val big"><span class="num">142/88</span><span class="unit">mmHg</span></div><div class="r-sub">10 de nov., 8h12</div></div><svg class="spark" width="116" height="40" viewBox="0 0 116 40" aria-hidden="true"><path d="M4.0 9.5 L25.6 6.3 L47.2 8.6 L68.8 7.7 L90.4 10.4 L112.0 7.7" class="sp-a"/><path d="M4.0 33.3 L25.6 31.4 L47.2 32.3 L68.8 32.3 L90.4 34.2 L112.0 32.3" class="sp-b"/><circle cx="112" cy="7.657142857142858" r="2.6" class="sp-dot"/><circle cx="112" cy="32.34285714285714" r="2.6" class="sp-dot b"/></svg></a>
+    <a class="row vital"><span class="v-ic"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-drop"/></svg></span><div class="grow"><div class="r-sub">Glicemia capilar · em jejum</div><div class="m-val big"><span class="num">128</span><span class="unit">mg/dL</span></div><div class="r-sub">10 de nov., 7h40</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row vital"><span class="v-ic"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-scale"/></svg></span><div class="grow"><div class="r-sub">Peso</div><div class="m-val big"><span class="num">82,4</span><span class="unit">kg</span></div><div class="r-sub">2 de nov.</div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+  <p class="foot">O app não avalia estes valores. Mostre a sequência ao profissional que acompanha Carlos.</p>
+  <div class="spacer"></div>
+  </div>
+  <span class="fab"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-plus"/></svg>Novo registro</span></div><figcaption>Escuro</figcaption></figure>
+    </div>
+  </section>
+<section class="pair" id="tendencia" aria-labelledby="h-tendencia">
+    <h2 id="h-tendencia">Tendência de exame</h2><p>F2: valor atual, gráfico com a banda do laudo (R4: só quando todos os pontos têm a mesma faixa), resumo textual e lista completa.</p>
+    <div class="frames">
+      <figure><div class="phone" role="img" aria-label="Tendência de exame, tema claro"><div class="sb" aria-hidden="true"><span class="sb-time">9:41</span><span class="island"></span><span class="sb-r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".45"/></svg></span></div><div class="scroll">
+  <div class="nav"><span class="nav-btn"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-chev-l"/></svg><span class="sr">Voltar para Carlos</span></span><span class="nav-title">Exame</span><span class="nav-sp"></span></div>
+  <header class="hero tight"><h1 class="serif t1">Hemoglobina glicada</h1><p class="sub">HbA1c · Carlos Souza</p></header>
+  <div class="group now">
+    <div class="now-val"><span class="num">7,4</span><span class="unit">%</span></div>
+    <div class="now-st"><span class="chip st-high"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-up"/></svg>Acima da faixa do laudo</span></div>
+    <div class="rb" style="width:300px" aria-hidden="true"><i class="rb-band" style="left:0%;width:49.999999999999986%"></i><b class="rb-dot st-high" style="left:83.1384015594542%"></b></div>
+    <p class="r-sub">Faixa do laudo: inferior a 5,7 %</p>
+    <p class="r-mini">28 de out. de 2026 · do laudo Laboratório Vida</p>
+  </div>
+  <div class="sh"><h3>Evolução</h3></div>
+  <div class="group chartbox"><svg class="chart" width="326" height="196" viewBox="0 0 326 196" role="img" aria-label="Hemoglobina glicada: 6 resultados de março de 2025 a outubro de 2026. Último: 7,4 %, acima da faixa do laudo."><rect x="30" y="138.79999999999998" width="276" height="31.200000000000017" class="band"/><line x1="30" x2="306" y1="138.79999999999998" y2="138.79999999999998" class="band-edge"/><text x="302" y="153.79999999999998" class="band-l" text-anchor="end">faixa do laudo: inferior a 5,7</text><line x1="30" x2="306" y1="170" y2="170" class="grid"/><text x="22" y="174" class="ax" text-anchor="end">5</text><line x1="30" x2="306" y1="125.42857142857143" y2="125.42857142857143" class="grid"/><text x="22" y="129.42857142857144" class="ax" text-anchor="end">6</text><line x1="30" x2="306" y1="80.85714285714286" y2="80.85714285714286" class="grid"/><text x="22" y="84.85714285714286" class="ax" text-anchor="end">7</text><line x1="30" x2="306" y1="36.28571428571429" y2="36.28571428571429" class="grid"/><text x="22" y="40.28571428571429" class="ax" text-anchor="end">8</text><path d="M30.0 31.8 L85.2 45.2 L140.4 54.1 L195.6 71.9 L250.8 58.6 L306.0 63.0" class="ln"/><path d="M30 26.62857142857145L34.6 34.82857142857145L25.4 34.82857142857145Z" class="tri "/><path d="M85.2 40.00000000000001L89.8 48.20000000000001L80.60000000000001 48.20000000000001Z" class="tri "/><path d="M140.4 48.914285714285725L145 57.11428571428573L135.8 57.11428571428573Z" class="tri "/><path d="M195.6 66.74285714285712L200.2 74.94285714285712L191 74.94285714285712Z" class="tri "/><path d="M250.8 53.37142857142857L255.4 61.57142857142857L246.20000000000002 61.57142857142857Z" class="tri "/><path d="M306 57.82857142857141L310.6 66.02857142857141L301.4 66.02857142857141Z" class="tri last"/><text x="30" y="189" class="ax" text-anchor="start" dx="-10">mar./25</text><text x="85.2" y="189" class="ax" text-anchor="middle" dx="0">jul.</text><text x="140.4" y="189" class="ax" text-anchor="middle" dx="0">nov.</text><text x="195.6" y="189" class="ax" text-anchor="middle" dx="0">mar./26</text><text x="250.8" y="189" class="ax" text-anchor="middle" dx="0">jul.</text><text x="306" y="189" class="ax" text-anchor="end" dx="10">out.</text><text x="297" y="53.02857142857141" class="val-l" text-anchor="end">7,4</text></svg>
+    <p class="legend"><span><svg width="12" height="12" aria-hidden="true"><path d="M6 1.5L10.5 10H1.5Z" class="tri"/></svg> acima da faixa</span><span><i class="sw band-sw"></i> faixa do laudo</span></p>
+    <p class="summary">Hemoglobina glicada: 6 resultados de março de 2025 a outubro de 2026. Último: 7,4 %, acima da faixa do laudo.</p>
+  </div>
+  <div class="sh"><h3>Resultados</h3><span class="sh-link">Adicionar</span></div>
+  <div class="group">
+    <a class="row tbl"><span class="tbl-d num">28 de out. de 2026</span><span class="grow tbl-v"><span class="num">7,4</span> %</span><svg class="i st-ic st-high" width="17" height="17" aria-hidden="true"><use href="#i-up"/></svg><span class="sr">acima da faixa do laudo</span><svg class="i chev" width="16" height="16" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row tbl"><span class="tbl-d num">9 de jul. de 2026</span><span class="grow tbl-v"><span class="num">7,5</span> %</span><svg class="i st-ic st-high" width="17" height="17" aria-hidden="true"><use href="#i-up"/></svg><span class="sr">acima da faixa do laudo</span><svg class="i chev" width="16" height="16" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row tbl"><span class="tbl-d num">12 de mar. de 2026</span><span class="grow tbl-v"><span class="num">7,2</span> %</span><svg class="i st-ic st-high" width="17" height="17" aria-hidden="true"><use href="#i-up"/></svg><span class="sr">acima da faixa do laudo</span><svg class="i chev" width="16" height="16" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row tbl"><span class="tbl-d num">6 de nov. de 2025</span><span class="grow tbl-v"><span class="num">7,6</span> %</span><svg class="i st-ic st-high" width="17" height="17" aria-hidden="true"><use href="#i-up"/></svg><span class="sr">acima da faixa do laudo</span><svg class="i chev" width="16" height="16" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row tbl"><span class="tbl-d num">10 de jul. de 2025</span><span class="grow tbl-v"><span class="num">7,8</span> %</span><svg class="i st-ic st-high" width="17" height="17" aria-hidden="true"><use href="#i-up"/></svg><span class="sr">acima da faixa do laudo</span><svg class="i chev" width="16" height="16" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row tbl"><span class="tbl-d num">14 de mar. de 2025</span><span class="grow tbl-v"><span class="num">8,1</span> %</span><svg class="i st-ic st-high" width="17" height="17" aria-hidden="true"><use href="#i-up"/></svg><span class="sr">acima da faixa do laudo</span><svg class="i chev" width="16" height="16" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+  <p class="foot">A faixa de referência é a impressa no laudo. Só o profissional de saúde pode interpretar o resultado.</p>
+  <div class="spacer"></div>
+  </div></div><figcaption>Claro</figcaption></figure>
+      <figure><div class="phone dark" role="img" aria-label="Tendência de exame, tema escuro"><div class="sb" aria-hidden="true"><span class="sb-time">9:41</span><span class="island"></span><span class="sb-r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".45"/></svg></span></div><div class="scroll">
+  <div class="nav"><span class="nav-btn"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-chev-l"/></svg><span class="sr">Voltar para Carlos</span></span><span class="nav-title">Exame</span><span class="nav-sp"></span></div>
+  <header class="hero tight"><h1 class="serif t1">Hemoglobina glicada</h1><p class="sub">HbA1c · Carlos Souza</p></header>
+  <div class="group now">
+    <div class="now-val"><span class="num">7,4</span><span class="unit">%</span></div>
+    <div class="now-st"><span class="chip st-high"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-up"/></svg>Acima da faixa do laudo</span></div>
+    <div class="rb" style="width:300px" aria-hidden="true"><i class="rb-band" style="left:0%;width:49.999999999999986%"></i><b class="rb-dot st-high" style="left:83.1384015594542%"></b></div>
+    <p class="r-sub">Faixa do laudo: inferior a 5,7 %</p>
+    <p class="r-mini">28 de out. de 2026 · do laudo Laboratório Vida</p>
+  </div>
+  <div class="sh"><h3>Evolução</h3></div>
+  <div class="group chartbox"><svg class="chart" width="326" height="196" viewBox="0 0 326 196" role="img" aria-label="Hemoglobina glicada: 6 resultados de março de 2025 a outubro de 2026. Último: 7,4 %, acima da faixa do laudo."><rect x="30" y="138.79999999999998" width="276" height="31.200000000000017" class="band"/><line x1="30" x2="306" y1="138.79999999999998" y2="138.79999999999998" class="band-edge"/><text x="302" y="153.79999999999998" class="band-l" text-anchor="end">faixa do laudo: inferior a 5,7</text><line x1="30" x2="306" y1="170" y2="170" class="grid"/><text x="22" y="174" class="ax" text-anchor="end">5</text><line x1="30" x2="306" y1="125.42857142857143" y2="125.42857142857143" class="grid"/><text x="22" y="129.42857142857144" class="ax" text-anchor="end">6</text><line x1="30" x2="306" y1="80.85714285714286" y2="80.85714285714286" class="grid"/><text x="22" y="84.85714285714286" class="ax" text-anchor="end">7</text><line x1="30" x2="306" y1="36.28571428571429" y2="36.28571428571429" class="grid"/><text x="22" y="40.28571428571429" class="ax" text-anchor="end">8</text><path d="M30.0 31.8 L85.2 45.2 L140.4 54.1 L195.6 71.9 L250.8 58.6 L306.0 63.0" class="ln"/><path d="M30 26.62857142857145L34.6 34.82857142857145L25.4 34.82857142857145Z" class="tri "/><path d="M85.2 40.00000000000001L89.8 48.20000000000001L80.60000000000001 48.20000000000001Z" class="tri "/><path d="M140.4 48.914285714285725L145 57.11428571428573L135.8 57.11428571428573Z" class="tri "/><path d="M195.6 66.74285714285712L200.2 74.94285714285712L191 74.94285714285712Z" class="tri "/><path d="M250.8 53.37142857142857L255.4 61.57142857142857L246.20000000000002 61.57142857142857Z" class="tri "/><path d="M306 57.82857142857141L310.6 66.02857142857141L301.4 66.02857142857141Z" class="tri last"/><text x="30" y="189" class="ax" text-anchor="start" dx="-10">mar./25</text><text x="85.2" y="189" class="ax" text-anchor="middle" dx="0">jul.</text><text x="140.4" y="189" class="ax" text-anchor="middle" dx="0">nov.</text><text x="195.6" y="189" class="ax" text-anchor="middle" dx="0">mar./26</text><text x="250.8" y="189" class="ax" text-anchor="middle" dx="0">jul.</text><text x="306" y="189" class="ax" text-anchor="end" dx="10">out.</text><text x="297" y="53.02857142857141" class="val-l" text-anchor="end">7,4</text></svg>
+    <p class="legend"><span><svg width="12" height="12" aria-hidden="true"><path d="M6 1.5L10.5 10H1.5Z" class="tri"/></svg> acima da faixa</span><span><i class="sw band-sw"></i> faixa do laudo</span></p>
+    <p class="summary">Hemoglobina glicada: 6 resultados de março de 2025 a outubro de 2026. Último: 7,4 %, acima da faixa do laudo.</p>
+  </div>
+  <div class="sh"><h3>Resultados</h3><span class="sh-link">Adicionar</span></div>
+  <div class="group">
+    <a class="row tbl"><span class="tbl-d num">28 de out. de 2026</span><span class="grow tbl-v"><span class="num">7,4</span> %</span><svg class="i st-ic st-high" width="17" height="17" aria-hidden="true"><use href="#i-up"/></svg><span class="sr">acima da faixa do laudo</span><svg class="i chev" width="16" height="16" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row tbl"><span class="tbl-d num">9 de jul. de 2026</span><span class="grow tbl-v"><span class="num">7,5</span> %</span><svg class="i st-ic st-high" width="17" height="17" aria-hidden="true"><use href="#i-up"/></svg><span class="sr">acima da faixa do laudo</span><svg class="i chev" width="16" height="16" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row tbl"><span class="tbl-d num">12 de mar. de 2026</span><span class="grow tbl-v"><span class="num">7,2</span> %</span><svg class="i st-ic st-high" width="17" height="17" aria-hidden="true"><use href="#i-up"/></svg><span class="sr">acima da faixa do laudo</span><svg class="i chev" width="16" height="16" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row tbl"><span class="tbl-d num">6 de nov. de 2025</span><span class="grow tbl-v"><span class="num">7,6</span> %</span><svg class="i st-ic st-high" width="17" height="17" aria-hidden="true"><use href="#i-up"/></svg><span class="sr">acima da faixa do laudo</span><svg class="i chev" width="16" height="16" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row tbl"><span class="tbl-d num">10 de jul. de 2025</span><span class="grow tbl-v"><span class="num">7,8</span> %</span><svg class="i st-ic st-high" width="17" height="17" aria-hidden="true"><use href="#i-up"/></svg><span class="sr">acima da faixa do laudo</span><svg class="i chev" width="16" height="16" aria-hidden="true"><use href="#i-chev-r"/></svg></a><a class="row tbl"><span class="tbl-d num">14 de mar. de 2025</span><span class="grow tbl-v"><span class="num">8,1</span> %</span><svg class="i st-ic st-high" width="17" height="17" aria-hidden="true"><use href="#i-up"/></svg><span class="sr">acima da faixa do laudo</span><svg class="i chev" width="16" height="16" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+  <p class="foot">A faixa de referência é a impressa no laudo. Só o profissional de saúde pode interpretar o resultado.</p>
+  <div class="spacer"></div>
+  </div></div><figcaption>Escuro</figcaption></figure>
+    </div>
+  </section>
+<section class="pair" id="ocr" aria-labelledby="h-ocr">
+    <h2 id="h-ocr">Revisão do OCR</h2><p>F1: cada campo do registro tem o selo “Sugestão” e a confiança da leitura; os itens encontrados começam desmarcados e mostram o trecho lido.</p>
+    <div class="frames">
+      <figure><div class="phone" role="img" aria-label="Revisão do OCR, tema claro"><div class="sb" aria-hidden="true"><span class="sb-time">9:41</span><span class="island"></span><span class="sb-r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".45"/></svg></span></div><div class="sheet-bg"></div><div class="sheet"><div class="grab"></div>
+  <div class="sheet-nav"><span class="txt-btn">Cancelar</span><span class="sheet-title">Revisar dados</span><span class="nav-sp"></span></div>
+  <div class="scroll in-sheet">
+  <div class="note"><svg class="i " width="18" height="18" aria-hidden="true"><use href="#i-info"/></svg><span>Confira cada item com o documento. Só o que você marcar será salvo.</span></div>
+  <div class="docthumb" aria-label="Página 1 de 2 do documento, com os trechos lidos destacados" role="img"><div class="paper"><b class="p-h"></b><b class="p-l w70"></b><b class="p-l w50"></b><b class="p-gap"></b><b class="p-l w90 hl"></b><b class="p-l w80 hl"></b><b class="p-l w85 hl"></b><b class="p-l w60"></b><b class="p-l w75"></b></div><div class="pg"><span>Página 1 de 2</span><span>Lido no aparelho, sem internet</span></div></div>
+  <div class="sh"><h3>Registro</h3></div>
+  <div class="group">
+    <div class="ocr ">
+    <div class="ocr-top"><span class="ocr-l">Pessoa</span><span class="conf c-user">Escolhida por você</span></div>
+    <div class="ocr-v"><span><span class="av " style="--ac:var(--c1);--acs:var(--c1s);--aco:var(--c1o);width:24px;height:24px;font-size:9px" aria-hidden="true">CS</span> Carlos Souza</span></div>
+    
+  </div>
+    <div class="ocr ">
+    <div class="ocr-top"><span class="ocr-l">Tipo</span><span class="sug">Sugestão</span></div>
+    <div class="ocr-v"><span>Resultado</span><span class="ocr-edit"><svg class="i " width="17" height="17" aria-hidden="true"><use href="#i-pencil"/></svg><span class="sr">Editar Tipo</span></span></div>
+    <div class="ocr-src"><span class="conf c-alta"><i></i><i></i><i></i>Leitura alta</span><span>· página 1</span></div>
+  </div>
+    <div class="ocr ">
+    <div class="ocr-top"><span class="ocr-l">Data da coleta</span><span class="sug">Sugestão</span></div>
+    <div class="ocr-v"><span>28 de outubro de 2026</span><span class="ocr-edit"><svg class="i " width="17" height="17" aria-hidden="true"><use href="#i-pencil"/></svg><span class="sr">Editar Data da coleta</span></span></div>
+    <div class="ocr-src"><span class="conf c-alta"><i></i><i></i><i></i>Leitura alta</span><span>· página 1</span></div>
+  </div>
+    <div class="ocr ">
+    <div class="ocr-top"><span class="ocr-l">Local</span><span class="sug">Sugestão</span></div>
+    <div class="ocr-v"><span>Laboratório Vida — Unidade Centro</span><span class="ocr-edit"><svg class="i " width="17" height="17" aria-hidden="true"><use href="#i-pencil"/></svg><span class="sr">Editar Local</span></span></div>
+    <div class="ocr-src"><span class="conf c-média"><i></i><i></i><i></i>Leitura média</span><span>· página 1</span></div>
+  </div>
+    <div class="ocr warn">
+    <div class="ocr-top"><span class="ocr-l">Profissional</span><span class="sug">Sugestão</span></div>
+    <div class="ocr-v"><span>Dra. Paula Lima</span><span class="ocr-edit"><svg class="i " width="17" height="17" aria-hidden="true"><use href="#i-pencil"/></svg><span class="sr">Editar Profissional</span></span></div>
+    <div class="ocr-src"><span class="conf c-baixa"><i></i><i></i><i></i>Confira</span><span>· página 1</span></div>
+  </div>
+  </div>
+  <div class="sh"><h3>Exames (3)</h3><span class="sh-link">Selecionar todos</span></div>
+  <div class="group">
+    <div class="row ocr-m"><span class="cb on" role="checkbox" aria-checked="true"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 7.3l2.6 2.6L11 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="grow"><div class="m-top"><span class="m-label strong">Hemoglobina glicada</span><span class="m-val"><span class="num">7,4 %</span></span></div><div class="r-sub">Faixa do laudo: inferior a 5,7 %</div><div class="r-sub wrap"><span class="chip st-high"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-up"/></svg>Acima da faixa</span><span class="conf c-alta"><i></i><i></i><i></i>Leitura alta</span></div><div class="trecho">“HEMOGLOBINA GLICADA (HbA1c) ..... 7,4 %  VR: inferior a 5,7”</div></div></div>
+    <div class="row ocr-m"><span class="cb on" role="checkbox" aria-checked="true"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 7.3l2.6 2.6L11 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="grow"><div class="m-top"><span class="m-label strong">Glicemia de jejum</span><span class="m-val"><span class="num">132 mg/dL</span></span></div><div class="r-sub">Faixa do laudo: 70–99 mg/dL</div><div class="r-sub wrap"><span class="chip st-high"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-up"/></svg>Acima da faixa</span><span class="conf c-alta"><i></i><i></i><i></i>Leitura alta</span></div><div class="trecho">“GLICOSE ..... 132 mg/dL  VR: 70 a 99”</div></div></div>
+    <div class="row ocr-m"><span class="cb " role="checkbox" aria-checked="false"></span><div class="grow"><div class="m-top"><span class="m-label strong">Creatinina</span><span class="m-val"><span class="num">1,1 mg/dL</span></span></div><div class="r-sub">Faixa do laudo: 0,7–1,3 mg/dL</div><div class="r-sub wrap"><span class="chip st-in"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-check"/></svg>Dentro da faixa</span><span class="conf c-baixa"><i></i><i></i><i></i>Confira</span></div><div class="trecho">“CREATININA ..... 1.1 mg/dl  0,7 - 1,3”</div></div></div>
+  </div>
+  <p class="foot">Exemplo com 2 itens marcados pela pessoa: todos começam desmarcados.</p>
+  <div class="spacer"></div></div>
+  <div class="sheet-foot"><span class="btn">Salvar registro e 2 itens</span></div>
+  </div></div><figcaption>Claro</figcaption></figure>
+      <figure><div class="phone dark" role="img" aria-label="Revisão do OCR, tema escuro"><div class="sb" aria-hidden="true"><span class="sb-time">9:41</span><span class="island"></span><span class="sb-r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".45"/></svg></span></div><div class="sheet-bg"></div><div class="sheet"><div class="grab"></div>
+  <div class="sheet-nav"><span class="txt-btn">Cancelar</span><span class="sheet-title">Revisar dados</span><span class="nav-sp"></span></div>
+  <div class="scroll in-sheet">
+  <div class="note"><svg class="i " width="18" height="18" aria-hidden="true"><use href="#i-info"/></svg><span>Confira cada item com o documento. Só o que você marcar será salvo.</span></div>
+  <div class="docthumb" aria-label="Página 1 de 2 do documento, com os trechos lidos destacados" role="img"><div class="paper"><b class="p-h"></b><b class="p-l w70"></b><b class="p-l w50"></b><b class="p-gap"></b><b class="p-l w90 hl"></b><b class="p-l w80 hl"></b><b class="p-l w85 hl"></b><b class="p-l w60"></b><b class="p-l w75"></b></div><div class="pg"><span>Página 1 de 2</span><span>Lido no aparelho, sem internet</span></div></div>
+  <div class="sh"><h3>Registro</h3></div>
+  <div class="group">
+    <div class="ocr ">
+    <div class="ocr-top"><span class="ocr-l">Pessoa</span><span class="conf c-user">Escolhida por você</span></div>
+    <div class="ocr-v"><span><span class="av " style="--ac:var(--c1);--acs:var(--c1s);--aco:var(--c1o);width:24px;height:24px;font-size:9px" aria-hidden="true">CS</span> Carlos Souza</span></div>
+    
+  </div>
+    <div class="ocr ">
+    <div class="ocr-top"><span class="ocr-l">Tipo</span><span class="sug">Sugestão</span></div>
+    <div class="ocr-v"><span>Resultado</span><span class="ocr-edit"><svg class="i " width="17" height="17" aria-hidden="true"><use href="#i-pencil"/></svg><span class="sr">Editar Tipo</span></span></div>
+    <div class="ocr-src"><span class="conf c-alta"><i></i><i></i><i></i>Leitura alta</span><span>· página 1</span></div>
+  </div>
+    <div class="ocr ">
+    <div class="ocr-top"><span class="ocr-l">Data da coleta</span><span class="sug">Sugestão</span></div>
+    <div class="ocr-v"><span>28 de outubro de 2026</span><span class="ocr-edit"><svg class="i " width="17" height="17" aria-hidden="true"><use href="#i-pencil"/></svg><span class="sr">Editar Data da coleta</span></span></div>
+    <div class="ocr-src"><span class="conf c-alta"><i></i><i></i><i></i>Leitura alta</span><span>· página 1</span></div>
+  </div>
+    <div class="ocr ">
+    <div class="ocr-top"><span class="ocr-l">Local</span><span class="sug">Sugestão</span></div>
+    <div class="ocr-v"><span>Laboratório Vida — Unidade Centro</span><span class="ocr-edit"><svg class="i " width="17" height="17" aria-hidden="true"><use href="#i-pencil"/></svg><span class="sr">Editar Local</span></span></div>
+    <div class="ocr-src"><span class="conf c-média"><i></i><i></i><i></i>Leitura média</span><span>· página 1</span></div>
+  </div>
+    <div class="ocr warn">
+    <div class="ocr-top"><span class="ocr-l">Profissional</span><span class="sug">Sugestão</span></div>
+    <div class="ocr-v"><span>Dra. Paula Lima</span><span class="ocr-edit"><svg class="i " width="17" height="17" aria-hidden="true"><use href="#i-pencil"/></svg><span class="sr">Editar Profissional</span></span></div>
+    <div class="ocr-src"><span class="conf c-baixa"><i></i><i></i><i></i>Confira</span><span>· página 1</span></div>
+  </div>
+  </div>
+  <div class="sh"><h3>Exames (3)</h3><span class="sh-link">Selecionar todos</span></div>
+  <div class="group">
+    <div class="row ocr-m"><span class="cb on" role="checkbox" aria-checked="true"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 7.3l2.6 2.6L11 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="grow"><div class="m-top"><span class="m-label strong">Hemoglobina glicada</span><span class="m-val"><span class="num">7,4 %</span></span></div><div class="r-sub">Faixa do laudo: inferior a 5,7 %</div><div class="r-sub wrap"><span class="chip st-high"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-up"/></svg>Acima da faixa</span><span class="conf c-alta"><i></i><i></i><i></i>Leitura alta</span></div><div class="trecho">“HEMOGLOBINA GLICADA (HbA1c) ..... 7,4 %  VR: inferior a 5,7”</div></div></div>
+    <div class="row ocr-m"><span class="cb on" role="checkbox" aria-checked="true"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 7.3l2.6 2.6L11 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="grow"><div class="m-top"><span class="m-label strong">Glicemia de jejum</span><span class="m-val"><span class="num">132 mg/dL</span></span></div><div class="r-sub">Faixa do laudo: 70–99 mg/dL</div><div class="r-sub wrap"><span class="chip st-high"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-up"/></svg>Acima da faixa</span><span class="conf c-alta"><i></i><i></i><i></i>Leitura alta</span></div><div class="trecho">“GLICOSE ..... 132 mg/dL  VR: 70 a 99”</div></div></div>
+    <div class="row ocr-m"><span class="cb " role="checkbox" aria-checked="false"></span><div class="grow"><div class="m-top"><span class="m-label strong">Creatinina</span><span class="m-val"><span class="num">1,1 mg/dL</span></span></div><div class="r-sub">Faixa do laudo: 0,7–1,3 mg/dL</div><div class="r-sub wrap"><span class="chip st-in"><svg class="i " width="15" height="15" aria-hidden="true"><use href="#i-check"/></svg>Dentro da faixa</span><span class="conf c-baixa"><i></i><i></i><i></i>Confira</span></div><div class="trecho">“CREATININA ..... 1.1 mg/dl  0,7 - 1,3”</div></div></div>
+  </div>
+  <p class="foot">Exemplo com 2 itens marcados pela pessoa: todos começam desmarcados.</p>
+  <div class="spacer"></div></div>
+  <div class="sheet-foot"><span class="btn">Salvar registro e 2 itens</span></div>
+  </div></div><figcaption>Escuro</figcaption></figure>
+    </div>
+  </section>
+<section class="pair" id="vacinas" aria-labelledby="h-vacinas">
+    <h2 id="h-vacinas">Vacinas</h2><p>F3: pendências pelo calendário para a idade, doses aplicadas e o calendário da faixa etária, com A3 e A13.</p>
+    <div class="frames">
+      <figure><div class="phone" role="img" aria-label="Vacinas, tema claro"><div class="sb" aria-hidden="true"><span class="sb-time">9:41</span><span class="island"></span><span class="sb-r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".45"/></svg></span></div><div class="scroll">
+  <div class="nav"><span class="nav-btn"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-chev-l"/></svg><span class="sr">Voltar para Dirce</span></span><span class="nav-title">Vacinas</span><span class="nav-sp"></span></div>
+  <header class="hero tight"><h1 class="serif t1">Carteira de vacinas</h1><p class="sub">Dirce Almeida · 74 anos</p></header>
+  <div class="px"><div class="tally"><div><span class="num">2</span><em>pendências</em></div><div><span class="num">7</span><em>doses registradas</em></div><div><span class="num">1</span><em>data não informada</em></div></div></div>
+  <div class="sh"><h3>Pendências</h3></div>
+  <div class="group">
+    <a class="row vac"><span class="v-ic care"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-syringe"/></svg></span><div class="grow"><div class="r-title">Influenza de 2026</div><div class="r-sub">Anual para 60 anos ou mais · nenhuma dose registrada em 2026</div><div class="r-st"><span class="pill-st care">Pendente</span></div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row vac"><span class="v-ic care"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-syringe"/></svg></span><div class="grow"><div class="r-title">Covid-19</div><div class="r-sub">A cada 6 meses para 60 anos ou mais · última em 14 de abr. de 2026</div><div class="r-st"><span class="pill-st care">Pendente</span></div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+  <p class="foot">Referência do calendário público. Confirme com o profissional de saúde. As pendências consideram só as doses registradas no app.</p>
+  <div class="sh"><h3>Aplicadas</h3></div>
+  <div class="group">
+    <a class="row vac"><span class="v-ic in"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-check"/></svg></span><div class="grow"><div class="r-title">Pneumocócica 23</div><div class="r-sub">20 de mai. de 2024 · lote PN2205 · UBS Jardim Botânico</div><div class="r-st"><span class="pill-st in">Aplicada</span></div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row vac"><span class="v-ic in"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-check"/></svg></span><div class="grow"><div class="r-title">dT (reforço)</div><div class="r-sub">3 de set. de 2019 · próximo reforço a partir de 3 de set. de 2029</div><div class="r-st"><span class="pill-st in">Aplicada</span></div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row vac"><span class="v-ic in"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-check"/></svg></span><div class="grow"><div class="r-title">Hepatite B</div><div class="r-sub">3 doses · 2010 a 2011</div><div class="r-st"><span class="pill-st in">Aplicada</span></div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row vac"><span class="v-ic in"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-check"/></svg></span><div class="grow"><div class="r-title">Febre amarela</div><div class="r-sub">Dose única · data não informada</div><div class="r-st"><span class="pill-st in">Aplicada</span></div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+  <div class="sh"><h3>Calendário para a idade</h3></div>
+  <div class="group">
+    <a class="row vac"><span class="v-ic neutral"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-syringe"/></svg></span><div class="grow"><div class="r-title">Pneumocócica 20</div><div class="r-sub">Dose única a partir de 85 anos · prevista</div><div class="r-st"><span class="pill-st neutral">Próxima</span></div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+  <div class="spacer"></div>
+  </div>
+  <span class="fab"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-plus"/></svg>Registrar dose</span></div><figcaption>Claro</figcaption></figure>
+      <figure><div class="phone dark" role="img" aria-label="Vacinas, tema escuro"><div class="sb" aria-hidden="true"><span class="sb-time">9:41</span><span class="island"></span><span class="sb-r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".45"/></svg></span></div><div class="scroll">
+  <div class="nav"><span class="nav-btn"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-chev-l"/></svg><span class="sr">Voltar para Dirce</span></span><span class="nav-title">Vacinas</span><span class="nav-sp"></span></div>
+  <header class="hero tight"><h1 class="serif t1">Carteira de vacinas</h1><p class="sub">Dirce Almeida · 74 anos</p></header>
+  <div class="px"><div class="tally"><div><span class="num">2</span><em>pendências</em></div><div><span class="num">7</span><em>doses registradas</em></div><div><span class="num">1</span><em>data não informada</em></div></div></div>
+  <div class="sh"><h3>Pendências</h3></div>
+  <div class="group">
+    <a class="row vac"><span class="v-ic care"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-syringe"/></svg></span><div class="grow"><div class="r-title">Influenza de 2026</div><div class="r-sub">Anual para 60 anos ou mais · nenhuma dose registrada em 2026</div><div class="r-st"><span class="pill-st care">Pendente</span></div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row vac"><span class="v-ic care"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-syringe"/></svg></span><div class="grow"><div class="r-title">Covid-19</div><div class="r-sub">A cada 6 meses para 60 anos ou mais · última em 14 de abr. de 2026</div><div class="r-st"><span class="pill-st care">Pendente</span></div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+  <p class="foot">Referência do calendário público. Confirme com o profissional de saúde. As pendências consideram só as doses registradas no app.</p>
+  <div class="sh"><h3>Aplicadas</h3></div>
+  <div class="group">
+    <a class="row vac"><span class="v-ic in"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-check"/></svg></span><div class="grow"><div class="r-title">Pneumocócica 23</div><div class="r-sub">20 de mai. de 2024 · lote PN2205 · UBS Jardim Botânico</div><div class="r-st"><span class="pill-st in">Aplicada</span></div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row vac"><span class="v-ic in"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-check"/></svg></span><div class="grow"><div class="r-title">dT (reforço)</div><div class="r-sub">3 de set. de 2019 · próximo reforço a partir de 3 de set. de 2029</div><div class="r-st"><span class="pill-st in">Aplicada</span></div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row vac"><span class="v-ic in"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-check"/></svg></span><div class="grow"><div class="r-title">Hepatite B</div><div class="r-sub">3 doses · 2010 a 2011</div><div class="r-st"><span class="pill-st in">Aplicada</span></div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+    <a class="row vac"><span class="v-ic in"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-check"/></svg></span><div class="grow"><div class="r-title">Febre amarela</div><div class="r-sub">Dose única · data não informada</div><div class="r-st"><span class="pill-st in">Aplicada</span></div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+  <div class="sh"><h3>Calendário para a idade</h3></div>
+  <div class="group">
+    <a class="row vac"><span class="v-ic neutral"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-syringe"/></svg></span><div class="grow"><div class="r-title">Pneumocócica 20</div><div class="r-sub">Dose única a partir de 85 anos · prevista</div><div class="r-st"><span class="pill-st neutral">Próxima</span></div></div><svg class="i chev" width="18" height="18" aria-hidden="true"><use href="#i-chev-r"/></svg></a>
+  </div>
+  <div class="spacer"></div>
+  </div>
+  <span class="fab"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-plus"/></svg>Registrar dose</span></div><figcaption>Escuro</figcaption></figure>
+    </div>
+  </section>
+<section class="pair" id="timeline" aria-labelledby="h-timeline">
+    <h2 id="h-timeline">Pessoa · Documentos</h2><p>A linha do tempo do MVP como segundo segmento: coluna de datas tabular, tipo com cor e rótulo, meses em serifa.</p>
+    <div class="frames">
+      <figure><div class="phone" role="img" aria-label="Pessoa · Documentos, tema claro"><div class="sb" aria-hidden="true"><span class="sb-time">9:41</span><span class="island"></span><span class="sb-r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".45"/></svg></span></div><div class="scroll">
+  <div class="nav"><span class="nav-btn"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-chev-l"/></svg><span class="sr">Voltar para Família</span></span><span class="nav-title"></span><span class="nav-btn"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-more"/></svg><span class="sr">Mais ações</span></span></div>
+  <header class="p-head"><span class="av ring" style="--ac:var(--c4);--acs:var(--c4s);--aco:var(--c4o);width:56px;height:56px;font-size:21px" aria-hidden="true">LS</span><div><h1 class="serif t1">Lia Souza</h1><p class="sub">Filha · 7 anos · 22 documentos</p></div></header>
+  <div class="px"><div class="seg" role="tablist"><span role="tab" aria-selected="false" class="">Resumo</span><span role="tab" aria-selected="true" class="on">Documentos</span></div></div>
+  <div class="chips" role="tablist"><span class="fchip on"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 7.3l2.6 2.6L11 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Tudo</span><span class="fchip">Resultados</span><span class="fchip">Consultas</span><span class="fchip">Vacinas</span><span class="fchip">Receitas</span></div>
+  <h2 class="month serif">Outubro de 2026</h2>
+  <div class="group">
+    <a class="row tl"><span class="tl-d num">22 out.</span><span class="tl-ic" style="--tc:var(--c1);--tcs:var(--c1s)"><svg class="i " width="18" height="18" aria-hidden="true"><use href="#i-steth"/></svg></span><div class="grow"><div class="tl-type" style="color:var(--c1)">Consulta</div><div class="r-title">Oftalmologista — rotina escolar</div><div class="r-sub">Clínica Olhar · Dra. Marina Reis</div><div class="r-mini"><svg class="i " width="14" height="14" aria-hidden="true"><use href="#i-clip"/></svg>1 anexo</div></div></a>
+  </div>
+  <h2 class="month serif">Março de 2026</h2>
+  <div class="group">
+    <a class="row tl"><span class="tl-d num">12 mar.</span><span class="tl-ic" style="--tc:var(--c0);--tcs:var(--c0s)"><svg class="i " width="18" height="18" aria-hidden="true"><use href="#i-flask"/></svg></span><div class="grow"><div class="tl-type" style="color:var(--c0)">Resultado</div><div class="r-title">Hemograma completo</div><div class="r-sub">Laboratório Vida · Dra. Paula Lima</div><div class="r-mini"><svg class="i " width="14" height="14" aria-hidden="true"><use href="#i-trend"/></svg><span>3 exames no acompanhamento ·</span><span class="st-t-low">1 abaixo da faixa do laudo</span></div></div></a>
+    <a class="row tl"><span class="tl-d num">3 mar.</span><span class="tl-ic" style="--tc:var(--c1);--tcs:var(--c1s)"><svg class="i " width="18" height="18" aria-hidden="true"><use href="#i-steth"/></svg></span><div class="grow"><div class="tl-type" style="color:var(--c1)">Consulta</div><div class="r-title">Pediatra — rotina</div><div class="r-sub">Clínica Bem Crescer · Dr. Rui Tavares</div><div class="r-mini"><svg class="i " width="14" height="14" aria-hidden="true"><use href="#i-clip"/></svg>1 anexo</div></div></a>
+  </div>
+  <h2 class="month serif">Fevereiro de 2026</h2>
+  <div class="group">
+    <a class="row tl"><span class="tl-d num">20 fev.</span><span class="tl-ic" style="--tc:var(--c4);--tcs:var(--c4s)"><svg class="i " width="18" height="18" aria-hidden="true"><use href="#i-syringe"/></svg></span><div class="grow"><div class="tl-type" style="color:var(--c4)">Vacina</div><div class="r-title">Influenza 2026</div><div class="r-sub">UBS Jardim Botânico · lote FX2391</div></div></a>
+    <a class="row tl"><span class="tl-d num">2 fev.</span><span class="tl-ic" style="--tc:var(--c5);--tcs:var(--c5s)"><svg class="i " width="18" height="18" aria-hidden="true"><use href="#i-pill"/></svg></span><div class="grow"><div class="tl-type" style="color:var(--c5)">Receita</div><div class="r-title">Amoxicilina 250 mg/5 mL</div><div class="r-sub">Dr. Rui Tavares · encerrado em 8 de fev.</div></div></a>
+  </div>
+  <div class="spacer"></div>
+  </div>
+  <span class="fab"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-plus"/></svg>Novo registro</span></div><figcaption>Claro</figcaption></figure>
+      <figure><div class="phone dark" role="img" aria-label="Pessoa · Documentos, tema escuro"><div class="sb" aria-hidden="true"><span class="sb-time">9:41</span><span class="island"></span><span class="sb-r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".45"/></svg></span></div><div class="scroll">
+  <div class="nav"><span class="nav-btn"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-chev-l"/></svg><span class="sr">Voltar para Família</span></span><span class="nav-title"></span><span class="nav-btn"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-more"/></svg><span class="sr">Mais ações</span></span></div>
+  <header class="p-head"><span class="av ring" style="--ac:var(--c4);--acs:var(--c4s);--aco:var(--c4o);width:56px;height:56px;font-size:21px" aria-hidden="true">LS</span><div><h1 class="serif t1">Lia Souza</h1><p class="sub">Filha · 7 anos · 22 documentos</p></div></header>
+  <div class="px"><div class="seg" role="tablist"><span role="tab" aria-selected="false" class="">Resumo</span><span role="tab" aria-selected="true" class="on">Documentos</span></div></div>
+  <div class="chips" role="tablist"><span class="fchip on"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 7.3l2.6 2.6L11 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Tudo</span><span class="fchip">Resultados</span><span class="fchip">Consultas</span><span class="fchip">Vacinas</span><span class="fchip">Receitas</span></div>
+  <h2 class="month serif">Outubro de 2026</h2>
+  <div class="group">
+    <a class="row tl"><span class="tl-d num">22 out.</span><span class="tl-ic" style="--tc:var(--c1);--tcs:var(--c1s)"><svg class="i " width="18" height="18" aria-hidden="true"><use href="#i-steth"/></svg></span><div class="grow"><div class="tl-type" style="color:var(--c1)">Consulta</div><div class="r-title">Oftalmologista — rotina escolar</div><div class="r-sub">Clínica Olhar · Dra. Marina Reis</div><div class="r-mini"><svg class="i " width="14" height="14" aria-hidden="true"><use href="#i-clip"/></svg>1 anexo</div></div></a>
+  </div>
+  <h2 class="month serif">Março de 2026</h2>
+  <div class="group">
+    <a class="row tl"><span class="tl-d num">12 mar.</span><span class="tl-ic" style="--tc:var(--c0);--tcs:var(--c0s)"><svg class="i " width="18" height="18" aria-hidden="true"><use href="#i-flask"/></svg></span><div class="grow"><div class="tl-type" style="color:var(--c0)">Resultado</div><div class="r-title">Hemograma completo</div><div class="r-sub">Laboratório Vida · Dra. Paula Lima</div><div class="r-mini"><svg class="i " width="14" height="14" aria-hidden="true"><use href="#i-trend"/></svg><span>3 exames no acompanhamento ·</span><span class="st-t-low">1 abaixo da faixa do laudo</span></div></div></a>
+    <a class="row tl"><span class="tl-d num">3 mar.</span><span class="tl-ic" style="--tc:var(--c1);--tcs:var(--c1s)"><svg class="i " width="18" height="18" aria-hidden="true"><use href="#i-steth"/></svg></span><div class="grow"><div class="tl-type" style="color:var(--c1)">Consulta</div><div class="r-title">Pediatra — rotina</div><div class="r-sub">Clínica Bem Crescer · Dr. Rui Tavares</div><div class="r-mini"><svg class="i " width="14" height="14" aria-hidden="true"><use href="#i-clip"/></svg>1 anexo</div></div></a>
+  </div>
+  <h2 class="month serif">Fevereiro de 2026</h2>
+  <div class="group">
+    <a class="row tl"><span class="tl-d num">20 fev.</span><span class="tl-ic" style="--tc:var(--c4);--tcs:var(--c4s)"><svg class="i " width="18" height="18" aria-hidden="true"><use href="#i-syringe"/></svg></span><div class="grow"><div class="tl-type" style="color:var(--c4)">Vacina</div><div class="r-title">Influenza 2026</div><div class="r-sub">UBS Jardim Botânico · lote FX2391</div></div></a>
+    <a class="row tl"><span class="tl-d num">2 fev.</span><span class="tl-ic" style="--tc:var(--c5);--tcs:var(--c5s)"><svg class="i " width="18" height="18" aria-hidden="true"><use href="#i-pill"/></svg></span><div class="grow"><div class="tl-type" style="color:var(--c5)">Receita</div><div class="r-title">Amoxicilina 250 mg/5 mL</div><div class="r-sub">Dr. Rui Tavares · encerrado em 8 de fev.</div></div></a>
+  </div>
+  <div class="spacer"></div>
+  </div>
+  <span class="fab"><svg class="i " width="22" height="22" aria-hidden="true"><use href="#i-plus"/></svg>Novo registro</span></div><figcaption>Escuro</figcaption></figure>
+    </div>
+  </section>
+</main>
+</body>
+</html>

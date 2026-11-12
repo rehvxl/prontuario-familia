@@ -8,14 +8,14 @@ import type { FloatingActionButtonProps } from './FloatingActionButton.types';
 export type { FloatingActionButtonProps } from './FloatingActionButton.types';
 
 /**
- * FAB Material 3 (Android/web): 56 dp, cantos de 16, container `primarySoft` (primary container),
- * elevação 3, ripple. Estendido mostra o rótulo. Não imita o vidro do iOS.
+ * FAB Material 3 (Android/web), v4: 56 dp, cantos de 16, sólido na tinta da divisória (`primary`), sombra "Flutuante",
+ * ripple. Estendido mostra o rótulo. Sem vidro.
  */
 export function FloatingActionButton({ icon, label, onPress, extended = false, disabled = false, accessibilityHint, testID }: FloatingActionButtonProps) {
   const theme = useTheme();
   const focus = useFocusState();
   return (
-    <View style={[styles.wrap, theme.elevation(3), { borderRadius: 16 }]}>
+    <View style={[styles.wrap, theme.elevation(2), { borderRadius: 16 }]}>
       <Pressable
         onPress={onPress}
         disabled={disabled}
@@ -25,20 +25,20 @@ export function FloatingActionButton({ icon, label, onPress, extended = false, d
         accessibilityLabel={label}
         accessibilityHint={accessibilityHint}
         accessibilityState={{ disabled }}
-        android_ripple={{ color: theme.colors.border, foreground: true }}
+        android_ripple={{ color: theme.colors.primaryPressed, foreground: true }}
         testID={testID}
         style={[
           styles.fab,
           {
-            backgroundColor: disabled ? theme.colors.surfaceSunken : theme.colors.primarySoft,
+            backgroundColor: disabled ? theme.colors.surfaceSunken : theme.colors.primary,
             paddingHorizontal: extended ? 20 : 0,
             width: extended ? undefined : 56,
           },
         ]}
       >
-        <Icon name={icon} size={24} color={disabled ? 'textDisabled' : 'onPrimarySoft'} />
+        <Icon name={icon} size={24} color={disabled ? 'textDisabled' : 'onPrimary'} />
         {extended ? (
-          <Text variant="bodyStrong" color={disabled ? 'disabled' : 'onPrimarySoft'}>
+          <Text variant="bodyStrong" color={disabled ? 'disabled' : 'onPrimary'}>
             {label}
           </Text>
         ) : null}

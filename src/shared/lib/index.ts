@@ -5,3 +5,4 @@ export * from './id';
 export * from './di';
 export * from './local-db';
 export * from './local-files';
+export * from './format';

@@ -5,13 +5,14 @@ import {
   controlSize,
   disabled as disabledMod,
   font,
+  foregroundStyle,
   frame,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme';
 import { resolveIcon } from './Icon';
-import { resolveButtonStyle, syntheticPress, type ButtonProps, type ButtonStyleName } from './Button.types';
+import { prominentForeground, resolveButtonStyle, syntheticPress, type ButtonProps, type ButtonStyleName } from './Button.types';
 
 export type { ButtonProps, ButtonSize, ButtonVariant, ButtonStyleName, ButtonRole } from './Button.types';
 
@@ -62,14 +63,22 @@ export function Button({
     if (!inactive) onPress?.(syntheticPress);
   };
 
+  const swift = swiftStyle(resolved, theme.glass.enabled);
+  const prominent = swift === 'glassProminent' || swift === 'borderedProminent';
   const labelModifiers = [
-    font({ textStyle: 'headline', weight: 'semibold' }),
+    // v4: Archivo SemiBold, escalando com o Dynamic Type do `headline` (sem a fonte, a do sistema).
+    font({ textStyle: 'headline', weight: 'semibold', ...(theme.fontsLoaded ? { family: theme.font('600') } : {}) }),
     frame({ maxWidth: fullWidth ? Infinity : undefined }),
+    // Rótulo com o token "on" do fundo: o branco padrão do SwiftUI some sobre o azul claro do escuro (BUG-05).
+    ...(prominent && !inactive ? [foregroundStyle(prominentForeground(theme.colors, role))] : []),
   ];
 
   return (
     <View
       accessible
+      // `role` e `accessibilityRole` juntos: o Fabric deriva o traço de botão do `role` primeiro, e o
+      // invólucro continua [button] quando rótulo, dica ou estado mudam (A8).
+      role="button"
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityHint={accessibilityHint}
@@ -86,7 +95,7 @@ export function Button({
           onPress={press}
           role={role === 'default' ? undefined : role}
           modifiers={[
-            buttonStyle(swiftStyle(resolved, theme.glass.enabled)),
+            buttonStyle(swift),
             buttonBorderShape('capsule'),
             controlSize(size === 'md' ? 'large' : 'regular'),
             tint(color),

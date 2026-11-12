@@ -1,6 +1,5 @@
 import { useState, type Ref } from 'react';
 import { StyleSheet, TextInput, View, type StyleProp, type TextInputInstance, type TextInputProps, type ViewStyle } from 'react-native';
-import { fontFamily } from '../tokens';
 import { useTheme } from '../theme';
 import { FieldLabel, FieldMessage, fieldAccessibilityHint } from './FieldMessage';
 import { Icon, type IconName } from './Icon';
@@ -85,7 +84,7 @@ export function TextField({
           style={[
             styles.input,
             {
-              fontFamily,
+              fontFamily: theme.font('400'),
               fontSize: t.fontSize,
               lineHeight: multiline ? t.lineHeight : undefined,
               color: disabled ? theme.colors.textDisabled : theme.colors.textPrimary,

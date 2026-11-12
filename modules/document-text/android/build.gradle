@@ -1,0 +1,21 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'expo.modules.documenttext'
+version = '0.1.0'
+
+android {
+  namespace "expo.modules.documenttext"
+  defaultConfig {
+    versionCode 1
+    versionName "0.1.0"
+  }
+}
+
+dependencies {
+  // Modelo latino EMBUTIDO (~4 MB por ABI; o AAB entrega só a ABI do aparelho). Funciona offline desde o
+  // primeiro uso e sem Google Play Services. minSdk do ML Kit: 23 (o app usa 24).
+  implementation 'com.google.mlkit:text-recognition:16.0.1'
+}

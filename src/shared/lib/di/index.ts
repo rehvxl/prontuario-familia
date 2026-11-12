@@ -15,6 +15,10 @@ export const DEPENDENCY_KEYS = {
   storage: 'storage',
   consents: 'consents',
   dataExport: 'dataExport',
+  measurements: 'measurements',
+  vaccineDoses: 'vaccineDoses',
+  medications: 'medications',
+  documentText: 'documentText',
 } as const;
 
 export type DependencyKey = (typeof DEPENDENCY_KEYS)[keyof typeof DEPENDENCY_KEYS];

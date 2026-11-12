@@ -17,7 +17,8 @@
         "CFBundleDevelopmentRegion": "pt-BR",
         "CFBundleLocalizations": [
           "pt-BR"
-        ]
+        ],
+        "UIViewControllerBasedStatusBarAppearance": false
       }
     },
     "android": {
@@ -39,7 +40,17 @@
       "expo-secure-store",
       "expo-image",
       "expo-web-browser",
-      "expo-font",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/ArchivoSC-Regular.ttf",
+            "./assets/fonts/ArchivoSC-Medium.ttf",
+            "./assets/fonts/ArchivoSC-SemiBold.ttf",
+            "./assets/fonts/ArchivoSC-Bold.ttf"
+          ]
+        }
+      ],
       "expo-sharing",
       "expo-localization",
       "@react-native-community/datetimepicker",
@@ -52,7 +63,20 @@
           "microphonePermission": false
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#F3F4F8",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#1E2029"
+          }
+        }
+      ]
     ],
     "scheme": "prontuariofamilia",
     "experiments": {

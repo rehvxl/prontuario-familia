@@ -1,0 +1,957 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-12T18:31:47.813Z",
+  "title": "Design System: Prontuário da Família",
+  "extensions": {
+    "colorMeta": {
+      "ultramar-board": {
+        "role": "primary",
+        "displayName": "Ultramar (divisória)",
+        "canonical": "#2B3FB8",
+        "dark": "#1B2672",
+        "darkTab": "#223190",
+        "tonalRamp": [
+          "#1B2672",
+          "#223190",
+          "#233497",
+          "#2B3FB8",
+          "#9FAEFF",
+          "#D3D7EE",
+          "#EEF0F9"
+        ]
+      },
+      "ultramar-onBoard": {
+        "role": "primary",
+        "displayName": "Texto sobre Ultramar",
+        "canonical": "#FFFFFF",
+        "dark": "#F5F6FA"
+      },
+      "ultramar-ink": {
+        "role": "primary",
+        "displayName": "Tinta Ultramar",
+        "canonical": "#2B3FB8",
+        "dark": "#9FAEFF",
+        "pressed": "#233497"
+      },
+      "ultramar-soft": {
+        "role": "primary",
+        "displayName": "Ultramar diluído",
+        "canonical": "#D3D7EE",
+        "dark": "#383C54"
+      },
+      "ultramar-leaf": {
+        "role": "neutral",
+        "displayName": "Folha sobre Ultramar",
+        "canonical": "#EEF0F9",
+        "dark": "#1E2029",
+        "derivation": "mixHex('#FFFFFF', '#2B3FB8', 0.08) (papel fixo da pasta)"
+      },
+      "oxido-board": {
+        "role": "secondary",
+        "displayName": "Óxido (divisória)",
+        "canonical": "#D9541E",
+        "dark": "#7A2A0A",
+        "darkTab": "#A94217",
+        "tonalRamp": [
+          "#7A2A0A",
+          "#8A300B",
+          "#A83A0E",
+          "#A94217",
+          "#D9541E",
+          "#FF9C70",
+          "#EFDAD5",
+          "#FCF1ED"
+        ]
+      },
+      "oxido-onBoard": {
+        "role": "secondary",
+        "displayName": "Texto sobre Óxido",
+        "canonical": "#100E0C",
+        "dark": "#F5F6FA"
+      },
+      "oxido-ink": {
+        "role": "secondary",
+        "displayName": "Tinta Óxido",
+        "canonical": "#A83A0E",
+        "dark": "#FF9C70",
+        "pressed": "#8A300B"
+      },
+      "oxido-soft": {
+        "role": "secondary",
+        "displayName": "Óxido diluído",
+        "canonical": "#EFDAD5",
+        "dark": "#4B3937"
+      },
+      "oxido-leaf": {
+        "role": "neutral",
+        "displayName": "Folha sobre Óxido",
+        "canonical": "#EEF0F9",
+        "dark": "#1E2029",
+        "derivation": "mixHex('#FFFFFF', '#2B3FB8', 0.08) (papel fixo da pasta)"
+      },
+      "cromo-board": {
+        "role": "secondary",
+        "displayName": "Cromo (divisória)",
+        "canonical": "#F2B90F",
+        "dark": "#6B5000",
+        "darkTab": "#BD900C",
+        "tonalRamp": [
+          "#644800",
+          "#6B5000",
+          "#7A5800",
+          "#BD900C",
+          "#F2B90F",
+          "#F2C440",
+          "#F3EBD3",
+          "#FEF9EC"
+        ]
+      },
+      "cromo-onBoard": {
+        "role": "secondary",
+        "displayName": "Texto sobre Cromo",
+        "canonical": "#100E0C",
+        "dark": "#F5F6FA"
+      },
+      "cromo-ink": {
+        "role": "secondary",
+        "displayName": "Tinta Cromo",
+        "canonical": "#7A5800",
+        "dark": "#F2C440",
+        "pressed": "#644800"
+      },
+      "cromo-soft": {
+        "role": "secondary",
+        "displayName": "Cromo diluído",
+        "canonical": "#F3EBD3",
+        "dark": "#48412E"
+      },
+      "cromo-leaf": {
+        "role": "neutral",
+        "displayName": "Folha sobre Cromo",
+        "canonical": "#EEF0F9",
+        "dark": "#1E2029",
+        "derivation": "mixHex('#FFFFFF', '#2B3FB8', 0.08) (papel fixo da pasta)"
+      },
+      "grama-board": {
+        "role": "secondary",
+        "displayName": "Grama (divisória)",
+        "canonical": "#3E8E3A",
+        "dark": "#1F4F1D",
+        "darkTab": "#306F2D",
+        "tonalRamp": [
+          "#1F4F1D",
+          "#255822",
+          "#2D6B2A",
+          "#306F2D",
+          "#3E8E3A",
+          "#86CF80",
+          "#D6E4DA",
+          "#F0F6EF"
+        ]
+      },
+      "grama-onBoard": {
+        "role": "secondary",
+        "displayName": "Texto sobre Grama",
+        "canonical": "#100E0C",
+        "dark": "#F5F6FA"
+      },
+      "grama-ink": {
+        "role": "secondary",
+        "displayName": "Tinta Grama",
+        "canonical": "#2D6B2A",
+        "dark": "#86CF80",
+        "pressed": "#255822"
+      },
+      "grama-soft": {
+        "role": "secondary",
+        "displayName": "Grama diluído",
+        "canonical": "#D6E4DA",
+        "dark": "#33433A"
+      },
+      "grama-leaf": {
+        "role": "neutral",
+        "displayName": "Folha sobre Grama",
+        "canonical": "#EEF0F9",
+        "dark": "#1E2029",
+        "derivation": "mixHex('#FFFFFF', '#2B3FB8', 0.08) (papel fixo da pasta)"
+      },
+      "petroleo-board": {
+        "role": "secondary",
+        "displayName": "Petróleo (divisória)",
+        "canonical": "#127A80",
+        "dark": "#0A4246",
+        "darkTab": "#0E5F64",
+        "tonalRamp": [
+          "#0A4246",
+          "#0B5256",
+          "#0E5F64",
+          "#0E6469",
+          "#127A80",
+          "#6CCCD2",
+          "#CFE0E5",
+          "#ECF4F5"
+        ]
+      },
+      "petroleo-onBoard": {
+        "role": "secondary",
+        "displayName": "Texto sobre Petróleo",
+        "canonical": "#FFFFFF",
+        "dark": "#F5F6FA"
+      },
+      "petroleo-ink": {
+        "role": "secondary",
+        "displayName": "Tinta Petróleo",
+        "canonical": "#0E6469",
+        "dark": "#6CCCD2",
+        "pressed": "#0B5256"
+      },
+      "petroleo-soft": {
+        "role": "secondary",
+        "displayName": "Petróleo diluído",
+        "canonical": "#CFE0E5",
+        "dark": "#2E424B"
+      },
+      "petroleo-leaf": {
+        "role": "neutral",
+        "displayName": "Folha sobre Petróleo",
+        "canonical": "#EEF0F9",
+        "dark": "#1E2029",
+        "derivation": "mixHex('#FFFFFF', '#2B3FB8', 0.08) (papel fixo da pasta)"
+      },
+      "violeta-board": {
+        "role": "secondary",
+        "displayName": "Violeta (divisória)",
+        "canonical": "#6B3FA0",
+        "dark": "#3A2160",
+        "darkTab": "#53317D",
+        "tonalRamp": [
+          "#3A2160",
+          "#53317D",
+          "#583483",
+          "#6B3FA0",
+          "#C6A5F0",
+          "#DDD7EA",
+          "#F3F0F7"
+        ]
+      },
+      "violeta-onBoard": {
+        "role": "secondary",
+        "displayName": "Texto sobre Violeta",
+        "canonical": "#FFFFFF",
+        "dark": "#F5F6FA"
+      },
+      "violeta-ink": {
+        "role": "secondary",
+        "displayName": "Tinta Violeta",
+        "canonical": "#6B3FA0",
+        "dark": "#C6A5F0",
+        "pressed": "#583483"
+      },
+      "violeta-soft": {
+        "role": "secondary",
+        "displayName": "Violeta diluído",
+        "canonical": "#DDD7EA",
+        "dark": "#403B51"
+      },
+      "violeta-leaf": {
+        "role": "neutral",
+        "displayName": "Folha sobre Violeta",
+        "canonical": "#EEF0F9",
+        "dark": "#1E2029",
+        "derivation": "mixHex('#FFFFFF', '#2B3FB8', 0.08) (papel fixo da pasta)"
+      },
+      "siena-board": {
+        "role": "secondary",
+        "displayName": "Siena (divisória)",
+        "canonical": "#8A4B2A",
+        "dark": "#4E2814",
+        "darkTab": "#6C3B21",
+        "tonalRamp": [
+          "#4E2814",
+          "#6C3B21",
+          "#713E22",
+          "#8A4B2A",
+          "#E2A57F",
+          "#E2D9D7",
+          "#F6F1EE"
+        ]
+      },
+      "siena-onBoard": {
+        "role": "secondary",
+        "displayName": "Texto sobre Siena",
+        "canonical": "#FFFFFF",
+        "dark": "#F5F6FA"
+      },
+      "siena-ink": {
+        "role": "secondary",
+        "displayName": "Tinta Siena",
+        "canonical": "#8A4B2A",
+        "dark": "#E2A57F",
+        "pressed": "#713E22"
+      },
+      "siena-soft": {
+        "role": "secondary",
+        "displayName": "Siena diluído",
+        "canonical": "#E2D9D7",
+        "dark": "#453B3A"
+      },
+      "siena-leaf": {
+        "role": "neutral",
+        "displayName": "Folha sobre Siena",
+        "canonical": "#EEF0F9",
+        "dark": "#1E2029",
+        "derivation": "mixHex('#FFFFFF', '#2B3FB8', 0.08) (papel fixo da pasta)"
+      },
+      "oliva-board": {
+        "role": "secondary",
+        "displayName": "Oliva (divisória)",
+        "canonical": "#7A8418",
+        "dark": "#3E4410",
+        "darkTab": "#5F6713",
+        "tonalRamp": [
+          "#3E4410",
+          "#4A500D",
+          "#5A6110",
+          "#5F6713",
+          "#7A8418",
+          "#C3CC5C",
+          "#E0E2D4",
+          "#F4F5ED"
+        ]
+      },
+      "oliva-onBoard": {
+        "role": "secondary",
+        "displayName": "Texto sobre Oliva",
+        "canonical": "#100E0C",
+        "dark": "#F5F6FA"
+      },
+      "oliva-ink": {
+        "role": "secondary",
+        "displayName": "Tinta Oliva",
+        "canonical": "#5A6110",
+        "dark": "#C3CC5C",
+        "pressed": "#4A500D"
+      },
+      "oliva-soft": {
+        "role": "secondary",
+        "displayName": "Oliva diluído",
+        "canonical": "#E0E2D4",
+        "dark": "#3F4233"
+      },
+      "oliva-leaf": {
+        "role": "neutral",
+        "displayName": "Folha sobre Oliva",
+        "canonical": "#EEF0F9",
+        "dark": "#1E2029",
+        "derivation": "mixHex('#FFFFFF', '#2B3FB8', 0.08) (papel fixo da pasta)"
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Tinta da divisória atual",
+        "canonical": "#2B3FB8",
+        "dark": "#9FAEFF",
+        "note": "Troca para o ink da pessoa dentro de HueProvider/DividerBoard.",
+        "tonalRamp": [
+          "#1B2672",
+          "#223190",
+          "#233497",
+          "#2B3FB8",
+          "#9FAEFF",
+          "#D3D7EE",
+          "#EEF0F9"
+        ]
+      },
+      "primaryPressed": {
+        "role": "primary",
+        "displayName": "Tinta pressionada",
+        "canonical": "#233497",
+        "dark": "#B2BEFF"
+      },
+      "onPrimary": {
+        "role": "primary",
+        "displayName": "Texto sobre a tinta",
+        "canonical": "#FFFFFF",
+        "dark": "#12131A"
+      },
+      "primarySoft": {
+        "role": "primary",
+        "displayName": "Tinta diluída",
+        "canonical": "#D3D7EE",
+        "dark": "#383C54"
+      },
+      "onPrimarySoft": {
+        "role": "primary",
+        "displayName": "Texto sobre a tinta diluída",
+        "canonical": "#2B3FB8",
+        "dark": "#9FAEFF"
+      },
+      "focusRing": {
+        "role": "primary",
+        "displayName": "Anel de foco",
+        "canonical": "#2B3FB8",
+        "dark": "#9FAEFF"
+      },
+      "rangeBand": {
+        "role": "primary",
+        "displayName": "Faixa do laudo",
+        "canonical": "#D3D7EE",
+        "dark": "#383C54"
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Vermelhão",
+        "canonical": "#BF1F2F",
+        "dark": "#FF8A80",
+        "tonalRamp": [
+          "#9A1824",
+          "#9E1926",
+          "#BF1F2F",
+          "#FF8A80",
+          "#FFA59D",
+          "#FFC2BC",
+          "#F8E3E3"
+        ]
+      },
+      "dangerPressed": {
+        "role": "tertiary",
+        "displayName": "Vermelhão pressionado",
+        "canonical": "#9E1926",
+        "dark": "#FFA59D"
+      },
+      "onDanger": {
+        "role": "tertiary",
+        "displayName": "Texto sobre vermelhão",
+        "canonical": "#FFFFFF",
+        "dark": "#12131A"
+      },
+      "dangerSoft": {
+        "role": "tertiary",
+        "displayName": "Vermelhão diluído",
+        "canonical": "#F8E3E3",
+        "dark": "#3D2224"
+      },
+      "onDangerSoft": {
+        "role": "tertiary",
+        "displayName": "Texto sobre vermelhão diluído",
+        "canonical": "#9A1824",
+        "dark": "#FFC2BC"
+      },
+      "clinicalIn": {
+        "role": "neutral",
+        "displayName": "Dentro da faixa",
+        "canonical": "#3A3F5C",
+        "dark": "#C9CCDA"
+      },
+      "clinicalInSoft": {
+        "role": "neutral",
+        "displayName": "Fundo: dentro",
+        "canonical": "#E7E9F1",
+        "dark": "#2C2F3C"
+      },
+      "onClinicalInSoft": {
+        "role": "neutral",
+        "displayName": "Texto: dentro",
+        "canonical": "#2E3350",
+        "dark": "#D7DAE6"
+      },
+      "clinicalHigh": {
+        "role": "neutral",
+        "displayName": "Acima da faixa",
+        "canonical": "#141833",
+        "dark": "#F2F3F8"
+      },
+      "clinicalHighSoft": {
+        "role": "neutral",
+        "displayName": "Fundo: acima",
+        "canonical": "#E1E3EC",
+        "dark": "#343747"
+      },
+      "onClinicalHighSoft": {
+        "role": "neutral",
+        "displayName": "Texto: acima",
+        "canonical": "#141833",
+        "dark": "#F2F3F8"
+      },
+      "clinicalLow": {
+        "role": "neutral",
+        "displayName": "Abaixo da faixa",
+        "canonical": "#141833",
+        "dark": "#F2F3F8"
+      },
+      "clinicalLowSoft": {
+        "role": "neutral",
+        "displayName": "Fundo: abaixo",
+        "canonical": "#E1E3EC",
+        "dark": "#343747"
+      },
+      "onClinicalLowSoft": {
+        "role": "neutral",
+        "displayName": "Texto: abaixo",
+        "canonical": "#141833",
+        "dark": "#F2F3F8"
+      },
+      "clinicalNone": {
+        "role": "neutral",
+        "displayName": "Sem faixa",
+        "canonical": "#575C7A",
+        "dark": "#A2A7BB"
+      },
+      "clinicalNoneSoft": {
+        "role": "neutral",
+        "displayName": "Fundo: sem faixa",
+        "canonical": "#ECEDF3",
+        "dark": "#2A2C38"
+      },
+      "onClinicalNoneSoft": {
+        "role": "neutral",
+        "displayName": "Texto: sem faixa",
+        "canonical": "#474C6B",
+        "dark": "#B9BDCF"
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Branco leitoso frio",
+        "canonical": "#F3F4F8",
+        "dark": "#1E2029"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Folha de campo",
+        "canonical": "#FBFBFD",
+        "dark": "#262833"
+      },
+      "surfaceSunken": {
+        "role": "neutral",
+        "displayName": "Afundado",
+        "canonical": "#E6E8F0",
+        "dark": "#2F3240"
+      },
+      "surfaceRaised": {
+        "role": "neutral",
+        "displayName": "Elevado",
+        "canonical": "#FFFFFF",
+        "dark": "#2A2C38"
+      },
+      "scrim": {
+        "role": "neutral",
+        "displayName": "Véu",
+        "canonical": "rgba(10, 14, 40, 0.38)",
+        "dark": "rgba(0, 0, 0, 0.6)"
+      },
+      "textPrimary": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "canonical": "#141833",
+        "dark": "#ECEEF5",
+        "tonalRamp": [
+          "#141833",
+          "#2E3350",
+          "#3A3F5C",
+          "#474C6B",
+          "#575C7A",
+          "#7A7F9E",
+          "#A3A7BC",
+          "#D5D8E6",
+          "#E6E8F0",
+          "#F3F4F8"
+        ]
+      },
+      "textSecondary": {
+        "role": "neutral",
+        "displayName": "Tinta secundária",
+        "canonical": "#474C6B",
+        "dark": "#B9BDCF"
+      },
+      "textTertiary": {
+        "role": "neutral",
+        "displayName": "Tinta terciária",
+        "canonical": "#575C7A",
+        "dark": "#A2A7BB"
+      },
+      "textInverse": {
+        "role": "neutral",
+        "displayName": "Tinta inversa",
+        "canonical": "#FFFFFF",
+        "dark": "#12131A"
+      },
+      "textDisabled": {
+        "role": "neutral",
+        "displayName": "Tinta desabilitada",
+        "canonical": "#A3A7BC",
+        "dark": "#5D6174"
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Fio",
+        "canonical": "#D5D8E6",
+        "dark": "#383B4A"
+      },
+      "borderStrong": {
+        "role": "neutral",
+        "displayName": "Contorno",
+        "canonical": "#7A7F9E",
+        "dark": "#7D8297"
+      },
+      "rangeTrack": {
+        "role": "neutral",
+        "displayName": "Trilho",
+        "canonical": "#E1E3EC",
+        "dark": "#33364A"
+      }
+    },
+    "typographyMeta": {
+      "largeTitle": {
+        "displayName": "Large Title",
+        "purpose": "Título da tela-raiz, na tinta da divisória. maxFontSizeMultiplier 1.4."
+      },
+      "title1": {
+        "displayName": "Title 1",
+        "purpose": "Nome da pessoa e título de detalhe. maxFontSizeMultiplier 1.5."
+      },
+      "title2": {
+        "displayName": "Section",
+        "purpose": "Cabeçalho de seção (title2 = title3). maxFontSizeMultiplier 1.7."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Título de linha."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Corpo único de 17 pt."
+      },
+      "bodyStrong": {
+        "displayName": "Body Strong",
+        "purpose": "Valor e destaque no corpo; rótulo do FAB."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Rótulo de botão. maxFontSizeMultiplier 1.8."
+      },
+      "subheadline": {
+        "displayName": "Subheadline",
+        "purpose": "Apoio, meta, rótulo da aba da régua."
+      },
+      "footnote": {
+        "displayName": "Footnote",
+        "purpose": "Rodapés obrigatórios e origem do dado."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Rótulo do StateChip e do DemoBadge."
+      },
+      "metricHero": {
+        "displayName": "Metric Hero",
+        "purpose": "Valor atual na tela de tendência, tabular."
+      },
+      "metric": {
+        "displayName": "Metric",
+        "purpose": "Valor numa linha de exame, tabular."
+      },
+      "metricUnit": {
+        "displayName": "Metric Unit",
+        "purpose": "Unidade a 4 pt do valor."
+      }
+    },
+    "fonts": {
+      "family": "Archivo SemiCondensed (OFL)",
+      "files": {
+        "400": "ArchivoSC-Regular",
+        "500": "ArchivoSC-Medium",
+        "600": "ArchivoSC-SemiBold",
+        "700": "ArchivoSC-Bold"
+      },
+      "fallback": "Platform.select({ ios: 'System', android: 'sans-serif' })",
+      "units": "pt lógicos do React Native (px no frontmatter)"
+    },
+    "shadows": [
+      {
+        "name": "leaf-resting",
+        "value": "2px -1px 6px rgba(5, 10, 40, 0.24)",
+        "dark": "2px -1px 6px rgba(0, 0, 0, 0.55)",
+        "purpose": "Folha pousada sobre a divisória; cai sobre as abas."
+      },
+      {
+        "name": "tab",
+        "value": "0 1px 3px rgba(5, 10, 40, 0.35)",
+        "purpose": "Aba não selecionada da TabRail."
+      },
+      {
+        "name": "floating",
+        "value": "0 6px 16px rgba(20, 25, 70, 0.24), 0 1px 3px rgba(20, 25, 70, 0.2)",
+        "android": "elevation: 3, shadowColor: #141946",
+        "dark": "none",
+        "purpose": "FAB e banner flutuante (nível 2)."
+      },
+      {
+        "name": "leaf-hole",
+        "value": "inset 0 1.5px 2.5px rgba(10, 14, 40, 0.45)",
+        "dark": "inset 0 1.5px 2.5px rgba(0, 0, 0, 0.7)",
+        "purpose": "Furo de fichário lido como corte."
+      },
+      {
+        "name": "focus-ring",
+        "value": "2px solid focusRing, 4px de afastamento, raio + 3",
+        "purpose": "Foco visível de todo controle."
+      }
+    ],
+    "motion": [
+      {
+        "name": "boardSwap",
+        "value": "90ms, 2 frames, steps (sem easing)",
+        "purpose": "Assinatura: capa, papel e conteúdo no mesmo quadro; aba sai em 120 ms, conteúdo entra em 150 ms. Instantâneo com Reduzir movimento."
+      },
+      {
+        "name": "duration.fast",
+        "value": "120ms",
+        "purpose": "Respostas rápidas."
+      },
+      {
+        "name": "duration.base",
+        "value": "200ms",
+        "purpose": "Mudança de estado."
+      },
+      {
+        "name": "duration.slow",
+        "value": "300ms",
+        "purpose": "Assentar o marcador da RangeBar (rangeSettle)."
+      },
+      {
+        "name": "easing.out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Entrada de elementos e sheets."
+      },
+      {
+        "name": "easing.in",
+        "value": "cubic-bezier(0.7, 0, 0.84, 0)",
+        "purpose": "Saída."
+      },
+      {
+        "name": "easing.standard",
+        "value": "cubic-bezier(0.2, 0, 0, 1)",
+        "purpose": "Mudanças de estado no lugar."
+      },
+      {
+        "name": "spring.snappy",
+        "value": "damping 22, stiffness 320, mass 1",
+        "purpose": "Controles (não usar com Reduzir movimento)."
+      },
+      {
+        "name": "spring.smooth",
+        "value": "damping 26, stiffness 200, mass 1",
+        "purpose": "Superfícies (sheets, FAB)."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "rail-strip",
+        "value": "fontScale >= 1.35",
+        "purpose": "TabRail vira faixa horizontal no topo."
+      },
+      {
+        "name": "stacked",
+        "value": "fontScale >= 2.35",
+        "purpose": "Linhas empilham, gráfico 240 pt."
+      },
+      {
+        "name": "icon-scale-cap",
+        "value": "fontScale 2",
+        "purpose": "Teto do crescimento de ícones com o texto."
+      },
+      {
+        "name": "max-content",
+        "value": "640px",
+        "purpose": "Largura máxima de leitura."
+      }
+    ],
+    "sizes": {
+      "railWidth": 40,
+      "tabMinHeight": 64,
+      "tabMax": 184,
+      "tabSelectedMin": 118,
+      "tabGap": 6,
+      "controlHeight": 52,
+      "controlHeightSmall": 44,
+      "rowMinHeight": 52,
+      "minTouchTarget": {
+        "ios": 44,
+        "android": 48
+      },
+      "tabMark": {
+        "sm": [
+          10,
+          14,
+          4
+        ],
+        "md": [
+          14,
+          20,
+          5
+        ]
+      },
+      "avatar": {
+        "xs": 24,
+        "sm": 32,
+        "md": 44,
+        "lg": 56,
+        "xl": 80
+      }
+    }
+  },
+  "components": [
+    {
+      "name": "Botão cheio",
+      "kind": "button",
+      "refersTo": "button-filled",
+      "description": "Ação principal, na tinta da divisória atual (aqui, ultramar).",
+      "html": "<button class=\"ds-btn-filled\">Salvar medida</button>",
+      "css": ".ds-btn-filled { background: #2B3FB8; color: #FFFFFF; font-family: 'Archivo SemiCondensed', system-ui, sans-serif; font-weight: 600; font-size: 17px; line-height: 22px; min-height: 52px; padding: 12px 24px; border: none; border-radius: 26px; cursor: pointer; } .ds-btn-filled:active { background: #233497; } .ds-btn-filled:focus-visible { outline: 2px solid #2B3FB8; outline-offset: 4px; } .ds-btn-filled:disabled { background: #E6E8F0; color: #A3A7BC; }"
+    },
+    {
+      "name": "Botão tonal",
+      "kind": "button",
+      "refersTo": "button-tonal",
+      "description": "Ação secundária no soft da divisória.",
+      "html": "<button class=\"ds-btn-tonal\">Pular leitura</button>",
+      "css": ".ds-btn-tonal { background: #D3D7EE; color: #2B3FB8; font-family: 'Archivo SemiCondensed', system-ui, sans-serif; font-weight: 600; font-size: 17px; line-height: 22px; min-height: 52px; padding: 12px 24px; border: none; border-radius: 26px; cursor: pointer; } .ds-btn-tonal:active { background: #E6E8F0; } .ds-btn-tonal:focus-visible { outline: 2px solid #2B3FB8; outline-offset: 4px; }"
+    },
+    {
+      "name": "Botão destrutivo",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "Único lugar do vermelhão fora de erro.",
+      "html": "<button class=\"ds-btn-danger\">Excluir conta</button>",
+      "css": ".ds-btn-danger { background: #BF1F2F; color: #FFFFFF; font-family: 'Archivo SemiCondensed', system-ui, sans-serif; font-weight: 600; font-size: 17px; line-height: 22px; min-height: 52px; padding: 12px 24px; border: none; border-radius: 26px; cursor: pointer; } .ds-btn-danger:active { background: #9E1926; } .ds-btn-danger:focus-visible { outline: 2px solid #2B3FB8; outline-offset: 4px; }"
+    },
+    {
+      "name": "Novo registro (FAB)",
+      "kind": "button",
+      "refersTo": "fab",
+      "description": "Ação flutuante sólida com sombra Flutuante.",
+      "html": "<button class=\"ds-fab\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg>Novo registro</button>",
+      "css": ".ds-fab { display: inline-flex; align-items: center; gap: 12px; background: #2B3FB8; color: #FFFFFF; font-family: 'Archivo SemiCondensed', system-ui, sans-serif; font-weight: 600; font-size: 17px; line-height: 22px; min-height: 56px; padding: 0 24px; border: none; border-radius: 28px; box-shadow: 0 6px 16px rgba(20, 25, 70, 0.24), 0 1px 3px rgba(20, 25, 70, 0.2); cursor: pointer; } .ds-fab:active { background: #233497; } .ds-fab:focus-visible { outline: 2px solid #2B3FB8; outline-offset: 4px; }"
+    },
+    {
+      "name": "Campo de texto",
+      "kind": "input",
+      "refersTo": "text-field",
+      "description": "Campo com contorno borderStrong; foco e erro em 2 pt.",
+      "html": "<input class=\"ds-field\" placeholder=\"Nome do exame\" aria-label=\"Nome do exame\">",
+      "css": ".ds-field { display: block; width: 280px; min-height: 52px; padding: 0 16px; background: #FBFBFD; color: #141833; font-family: 'Archivo SemiCondensed', system-ui, sans-serif; font-size: 17px; line-height: 22px; border: 1px solid #7A7F9E; border-radius: 12px; } .ds-field::placeholder { color: #575C7A; } .ds-field:focus-visible { outline: none; border: 2px solid #2B3FB8; padding: 0 15px; } .ds-field[aria-invalid=true] { border: 2px solid #BF1F2F; padding: 0 15px; }"
+    },
+    {
+      "name": "Chip de filtro",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Cápsula de 36 pt; selecionado no soft da divisória com check.",
+      "html": "<button class=\"ds-chip\" aria-pressed=\"false\">Resultado</button> <button class=\"ds-chip\" aria-pressed=\"true\">✓ Laudo</button>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; background: #FBFBFD; color: #141833; font-family: 'Archivo SemiCondensed', system-ui, sans-serif; font-weight: 500; font-size: 15px; line-height: 20px; border: 1px solid #7A7F9E; border-radius: 999px; cursor: pointer; } .ds-chip[aria-pressed=true] { background: #D3D7EE; color: #2B3FB8; font-weight: 600; border-color: transparent; } .ds-chip:focus-visible { outline: 2px solid #2B3FB8; outline-offset: 4px; }"
+    },
+    {
+      "name": "StateChip",
+      "kind": "chip",
+      "refersTo": "state-chip-high",
+      "description": "Estado clínico em tinta neutra, ícone e texto.",
+      "html": "<span class=\"ds-state-chip\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 19V5M5 12l7-7 7 7\"/></svg>Acima da faixa</span> <span class=\"ds-state-chip ds-state-chip--in\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M8 12.5l2.7 2.7L16 9.8\"/></svg>Dentro da faixa</span>",
+      "css": ".ds-state-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px 3px 6px; background: #E1E3EC; color: #141833; font-family: 'Archivo SemiCondensed', system-ui, sans-serif; font-weight: 600; font-size: 13px; line-height: 18px; letter-spacing: 0.1px; border-radius: 999px; } .ds-state-chip svg { width: 15px; height: 15px; } .ds-state-chip--in { background: #E7E9F1; color: #2E3350; }"
+    },
+    {
+      "name": "Pasta: divisória, folha e régua",
+      "kind": "nav",
+      "refersTo": "divider-board",
+      "description": "Assinatura: DividerBoard ultramar, Leaf sem furos e TabRail com aba atual estendida.",
+      "html": "<div class=\"ds-pasta\"><div class=\"ds-pasta-leaf\"><span class=\"ds-pasta-hole\" style=\"top:12px\"></span><span class=\"ds-pasta-hole\" style=\"top:312px\"></span><h1 class=\"ds-pasta-title\">Família Souza</h1><p class=\"ds-pasta-sub\">Quinta-feira, 12 de novembro de 2026</p><div class=\"ds-pasta-row\"><span class=\"ds-pasta-mark\" style=\"background:#F2B90F\"></span>Carlos · Glicose em jejum</div><div class=\"ds-pasta-row\"><span class=\"ds-pasta-mark\" style=\"background:#3E8E3A\"></span>Lia · Ferritina</div></div><div class=\"ds-pasta-rail\" role=\"tablist\" aria-label=\"Divisórias da pasta\"><button class=\"ds-pasta-tab\" role=\"tab\" aria-selected=\"true\" style=\"height:84px;background:#2B3FB8;color:#FFFFFF\"><span>Família</span></button><button class=\"ds-pasta-tab\" role=\"tab\" aria-selected=\"false\" style=\"height:64px;background:#D9541E;color:#100E0C\"><span>Ana</span><span>0</span></button><button class=\"ds-pasta-tab\" role=\"tab\" aria-selected=\"false\" style=\"height:184px;background:#F2B90F;color:#100E0C\"><span>Carlos</span><span>6</span></button></div></div>",
+      "css": ".ds-pasta { display: flex; width: 340px; height: 420px; padding-top: 4px; background: #2B3FB8; font-family: 'Archivo SemiCondensed', system-ui, sans-serif; } .ds-pasta-leaf { position: relative; flex: 1; z-index: 1; background: #EEF0F9; border-top-right-radius: 16px; box-shadow: 2px -1px 6px rgba(5, 10, 40, 0.24); padding: 16px 12px 24px 34px; color: #141833; } .ds-pasta-hole { position: absolute; left: 11px; width: 12px; height: 12px; border-radius: 6px; background: #CFD2DD; border: 1px solid #ADAFBE; box-shadow: inset 0 1.5px 2.5px rgba(10, 14, 40, 0.45); } .ds-pasta-title { margin: 0; font-weight: 700; font-size: 34px; line-height: 40px; letter-spacing: -0.6px; color: #2B3FB8; } .ds-pasta-sub { margin: 4px 0 16px; font-size: 15px; line-height: 20px; color: #474C6B; } .ds-pasta-row { display: flex; align-items: center; gap: 10px; min-height: 52px; border-bottom: 1px solid #D5D8E6; font-size: 17px; line-height: 22px; font-weight: 600; } .ds-pasta-mark { width: 10px; height: 14px; border-radius: 0 4px 4px 0; } .ds-pasta-rail { width: 40px; display: flex; flex-direction: column; gap: 6px; } .ds-pasta-tab { display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 35px; padding: 10px 0 8px; border: none; border-radius: 0 8px 8px 0; box-shadow: 0 1px 3px rgba(5, 10, 40, 0.35); font-family: inherit; font-size: 15px; line-height: 18px; font-weight: 600; font-variant-numeric: tabular-nums; cursor: pointer; } .ds-pasta-tab span:first-child { writing-mode: vertical-rl; } .ds-pasta-tab[aria-selected=true] { width: 40px; border-radius: 0; box-shadow: none; font-weight: 700; } .ds-pasta-tab:active { opacity: 0.85; } .ds-pasta-tab:focus-visible { outline: 2px solid #2B3FB8; outline-offset: 4px; }"
+    },
+    {
+      "name": "Régua do laudo",
+      "kind": "custom",
+      "refersTo": "range-bar-track",
+      "description": "Trilho, faixa no soft da divisória e marcador na tinta, com anel da cor da folha.",
+      "html": "<div class=\"ds-range\" aria-hidden=\"true\"><span class=\"ds-range-track\"></span><span class=\"ds-range-band\"></span><span class=\"ds-range-marker\"></span></div>",
+      "css": ".ds-range { position: relative; width: 112px; height: 16px; } .ds-range-track, .ds-range-band { position: absolute; top: 6px; height: 4px; border-radius: 2px; } .ds-range-track { left: 0; right: 0; background: #E1E3EC; } .ds-range-band { left: 27%; width: 46%; background: #D3D7EE; } .ds-range-marker { position: absolute; top: 0; left: 84%; width: 16px; height: 16px; margin-left: -8px; border-radius: 8px; background: #2B3FB8; border: 2px solid #EEF0F9; box-sizing: border-box; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A pasta com divisórias",
+    "overview": "A família é uma pasta de papéis como a que a Ana leva para a mesa da cozinha. Cada pessoa é uma divisória de cor plena; os documentos e os dados dela são uma folha leitosa pousada por cima; na borda direita, a régua de abas mostra a pasta inteira de uma vez, com a altura de cada aba proporcional aos documentos da pessoa. A cor não decora: ela diz **de quem** é o que está na tela. Por isso nada mais disputa cor com as pessoas. Estados clínicos, tipos de registro, sucesso e aviso ficam em tinta neutra com ícone e texto.\n\nO tipo é uma grotesca de manual de instruções, Archivo SemiCondensed, num corpo quase único de 17 pt. A hierarquia vem do peso (400 a 700) e da tinta da divisória, não de muitos tamanhos. A densidade é a de um caderno: linhas separadas por fio fino sobre a folha, sem cartões flutuantes. A estrutura é nativa (tab bar, pilha, sheets, menus, `Switch`, `Select`, `SegmentedControl` do sistema); o mundo empresta só tipo, paleta, densidade e um movimento-assinatura seco.\n\nEste mundo substitui o \"Cuidado sereno\" (serifa New York, sálvia, papel creme), rejeitado pelo Douglas em 11/11/2026, e recusa também os cartões brancos agrupados com um acento único, padrão do app Saúde.",
+    "keyCharacteristics": [
+      "Divisória de matiz pleno atrás de cada tela de pessoa e da família (ultramar).",
+      "Folha de papel de tom fixo (8% do ultramar sobre o branco) em toda a pasta, sem furos, com canto superior direito arredondado.",
+      "Régua de abas vertical na borda direita, com rótulo girado 90° e a contagem de documentos escrita na aba.",
+      "Um corpo de 17 pt em Archivo SemiCondensed; títulos em Bold, nunca serifa.",
+      "Todo estado com ícone e texto; o vermelhão só para erro e ação destrutiva.",
+      "Troca de divisória no mesmo quadro (capa, papel e conteúdo juntos): a aba sai de trás da folha em 120 ms e o conteúdo entra em 150 ms de opacidade; instantânea com Reduzir movimento."
+    ],
+    "rules": [
+      {
+        "name": "The Color Is Identity Rule",
+        "body": "Matiz pleno significa pessoa. Tipo de registro usa `NEUTRAL_CATEGORICAL` (tile `surfaceSunken` + ícone `textSecondary`); estado clínico usa a escala neutra. Um exame nunca \"parece\" ser do Carlos por estar na cor dele sem estar na divisória dele.",
+        "section": "colors"
+      },
+      {
+        "name": "The Vermilion Reserve Rule",
+        "body": "`danger` aparece só em erro e ação destrutiva. Valor fora da faixa do laudo nunca é vermelho.",
+        "section": "colors"
+      },
+      {
+        "name": "The Name Beside the Color Rule",
+        "body": "Toda `TabMark`, aba e capa leva o nome da pessoa escrito ao lado. A cor nunca é a única pista de quem é.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink From the Board Rule",
+        "body": "Nunca escreva texto no `board` de cromo, óxido, grama ou oliva com a cor do próprio matiz. Sobre a folha, use `ink`; sobre a divisória, `onBoard`.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Body Rule",
+        "body": "Hierarquia por peso e tinta, não por tamanho. Os tamanhos são 34, 30, 20, 17, 15 e 13; não crie outro.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Figures Rule",
+        "body": "Métricas, datas de lista, contagens das abas e eixos do gráfico usam `tabular-nums`.",
+        "section": "typography"
+      },
+      {
+        "name": "The No Serif Rule",
+        "body": "Nenhuma serifa, em nenhuma plataforma (a serifa era o mundo rejeitado).",
+        "section": "typography"
+      },
+      {
+        "name": "The Rail Is Never the Only Way Rule",
+        "body": "A régua de abas é um atalho; a lista \"Pessoas\" na folha leva ao mesmo lugar.",
+        "section": "layout"
+      },
+      {
+        "name": "The Declare Depth Once Rule",
+        "body": "Um elemento usa fio (conteúdo, níveis 0 e 1) ou sombra (flutuante, nível 2), nunca os dois. Sheets: sombra no claro, fio no escuro.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Glass Stays Native Rule",
+        "body": "Vidro só onde o sistema já aplica (tab bar, sheets nativas, botões do cabeçalho do iOS 26) e em `GlassSurface` sobre imagem. Sobre a divisória, o cabeçalho é opaco na cor dela.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** pôr toda tela de pessoa em `Screen board={theme.personBoard(categoricalIndexFor(id))}` com `headerOptions(theme, { board })`, e o painel Família em `board=\"ultramar\"` com a `TabRail`.",
+      "**Do** escrever o estado com ícone e palavras do vocabulário fixo (\"dentro / acima / abaixo da faixa do laudo\", \"sem faixa no laudo\"), via `StateLine` ou `StateChip`.",
+      "**Do** usar `ink` do matiz para texto e traço sobre a folha e `onBoard` sobre a divisória; conferir todo par novo em `tokens.test.ts` (texto ≥ 4,5:1, UI ≥ 3:1).",
+      "**Do** manter conteúdo em linhas com fio fino sobre a folha, agrupadas por `SectionHeader`.",
+      "**Do** trocar de divisória por estado na mesma tela, com capa, papel e conteúdo no mesmo quadro, e cortar para instantâneo com Reduzir movimento.",
+      "**Do** levar formulários, login, consentimento, Ajustes e Buscar na folha simples (`background`), sem divisória."
+    ],
+    "donts": [
+      "**Don't** usar o matiz de uma pessoa para tipo de registro, estado clínico, sucesso ou aviso.",
+      "**Don't** usar `danger` para valor fora da faixa do laudo, nem escrever \"normal\".",
+      "**Don't** pôr cartões brancos com sombra sobre a folha, nem agrupar conteúdo em caixas com fundo próprio.",
+      "**Don't** usar serifa, sálvia ou o papel creme neutro do mundo \"Cuidado sereno\" como fundo de tela. O leve tom quente da folha sobre cromo ou óxido vem da divisória e é do mundo.",
+      "**Don't** pôr gradiente ou vidro decorativo; vidro só onde o sistema já aplica.",
+      "**Don't** voltar os furos de fichário nem tingir o papel por pessoa: custam largura, leem como marcador e fazem a área maior da tela piscar na troca.",
+      "**Don't** criar tamanhos de texto fora de 34, 30, 20, 17, 15 e 13, nem texto legível abaixo de 13 pt.",
+      "**Don't** deixar a régua de abas como único caminho para uma pessoa."
+    ]
+  }
+}
