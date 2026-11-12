@@ -1,0 +1,48 @@
+name: Algo não funciona
+description: Relate um comportamento errado do app.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por relatar. **Não inclua dados de saúde reais**, nem em texto nem em capturas: use a família de exemplo do modo demonstração.
+  - type: textarea
+    id: what
+    attributes:
+      label: O que aconteceu
+      description: O que você viu e o que esperava ver.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Como reproduzir
+      placeholder: |
+        1. Abra a divisória da pessoa
+        2. Toque em "Novo registro"
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Plataforma
+      multiple: true
+      options: [iOS, Android]
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Aparelho e versão do sistema
+      placeholder: "iPhone 15, iOS 26.1 / Pixel 8, Android 16 / simulador"
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Modo
+      options: [Demonstração (dados no aparelho), Com backend (Supabase), Não sei]
+  - type: textarea
+    id: extra
+    attributes:
+      label: Capturas ou registros
+      description: Prints, vídeo curto ou log do Metro. Confira se não há dados pessoais.
