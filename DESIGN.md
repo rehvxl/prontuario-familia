@@ -416,7 +416,7 @@ Dentro da folha, o texto começa a `leafMargin` (20 pt) da borda esquerda e term
 
 Linhas de lista: altura mínima 52 pt (64 com subtítulo), 12 pt de respiro vertical, fio fino embaixo. Controles com 52 pt de altura (`controlHeight`), toque mínimo 44 pt no iOS e 48 dp no Android.
 
-**Tamanho de texto.** Com `fontScale ≥ 1,35` (`RAIL_STRIP_FONT_SCALE`), a régua sai da borda direita e vira faixa horizontal rolável no topo, com abas em pé e cantos de baixo arredondados. Com `fontScale ≥ 2,35` (AX3+, `STACK_FONT_SCALE`), linhas lado a lado empilham (rótulo em cima, valor embaixo), o fio ao lado do título de seção sai, o gráfico cresce para 240 pt e a régua do laudo ocupa a largura.
+**Tamanho de texto.** Com `fontScale ≥ 1,35` (`RAIL_STRIP_FONT_SCALE`), a régua sai da borda direita e vira faixa horizontal rolável no topo, com abas em pé e cantos de baixo arredondados. Com `fontScale ≥ 1,75` (`STACK_FONT_SCALE`: o Android grande, que não passa de 2,0×, e o iOS de AX2 em diante), linhas lado a lado empilham (rótulo em cima, valor embaixo), o fio ao lado do título de seção sai, o gráfico cresce para 240 pt e a régua do laudo ocupa a largura.
 
 ### Named Rules
 **The Rail Is Never the Only Way Rule.** A régua de abas é um atalho; a lista "Pessoas" na folha leva ao mesmo lugar.
