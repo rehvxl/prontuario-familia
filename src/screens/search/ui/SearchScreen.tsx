@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, FlatList, Platform, View } from 'react-native';
 import type { SearchBarCommands } from 'react-native-screens';
-import { Stack, useFocusEffect, useRouter } from 'expo-router';
-import { setStatusBarStyle } from 'expo-status-bar';
+import { Stack, useRouter } from 'expo-router';
 import { useMyFamily } from '@/entities/family';
 import { useMembers } from '@/entities/member';
 import { RECORD_TYPE_OPTIONS, RecordListItem, type HealthRecord, type RecordType } from '@/entities/health-record';
@@ -24,6 +23,7 @@ import {
   useFloatingFooterInset,
   useTheme,
 } from '@/shared/ui';
+import { useBoardStatusBar } from '@/shared/ui/navigation';
 
 const countLabel = (n: number) => (n === 1 ? '1 resultado' : `${n} resultados`);
 
@@ -55,12 +55,7 @@ export function SearchScreen() {
   const loaded = searchable && search.isSuccess;
   const shown = loaded ? results : [];
   const family = theme.hues.family;
-  useFocusEffect(
-    useCallback(() => {
-      setStatusBarStyle(family.statusBar);
-      return () => setStatusBarStyle('auto');
-    }, [family.statusBar]),
-  );
+  useBoardStatusBar(family.statusBar);
   // Campo de busca nativo sobre o cabeçalho ultramar: no iOS o campo fica claro com texto escuro (caret na
   // tinta da família); no Android o campo é a própria barra, então texto e ícones vão em onBoard.
   const searchColors =

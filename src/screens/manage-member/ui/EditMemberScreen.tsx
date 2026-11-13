@@ -34,7 +34,7 @@ export function EditMemberScreen() {
   if (member.isPending || remove.isSuccess) return frame(<Spinner fill label="Carregando" />);
   if (member.isError) return frame(<LoadErrorState onRetry={() => member.refetch()} />);
   if (!member.data) {
-    return frame(<EmptyState tone="error" title="Pessoa não encontrada" message="Ela pode ter sido removida da família." action={{ label: 'Voltar', onPress: () => router.back() }} />);
+    return frame(<EmptyState icon="person" title="Pessoa não encontrada" message="Ela pode ter sido removida da família." action={{ label: 'Voltar', onPress: () => router.back() }} />);
   }
   const m = member.data;
 

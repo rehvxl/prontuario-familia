@@ -12,12 +12,17 @@ import { MemberVaccinesScreen } from './MemberVaccinesScreen';
 
 const mockRouter = { push: jest.fn(), back: jest.fn(), replace: jest.fn() };
 let mockParams: Record<string, string> = {};
-jest.mock('expo-router', () => ({
-  Stack: { Screen: () => null },
-  useRouter: () => mockRouter,
-  useLocalSearchParams: () => mockParams,
-  useIsFocused: () => true,
-}));
+jest.mock('expo-router', () => {
+  /* eslint-disable @typescript-eslint/no-require-imports -- fábrica de jest.mock não pode usar imports de topo */
+  const React = require('react');
+  const { Pressable } = require('react-native');
+  /* eslint-enable @typescript-eslint/no-require-imports */
+  const Toolbar = Object.assign(({ children }: { children?: unknown }) => React.createElement(React.Fragment, null, children), {
+    Button: ({ accessibilityLabel, onPress }: { accessibilityLabel: string; onPress: () => void }) =>
+      React.createElement(Pressable, { accessibilityRole: 'button', accessibilityLabel, onPress }),
+  });
+  return { Stack: { Screen: () => null, Toolbar }, useRouter: () => mockRouter, useLocalSearchParams: () => mockParams, useIsFocused: () => true };
+});
 // Folhas nativas do SwiftUI não têm árvore RN tocável: nos testes usa as variantes em React Native.
 jest.mock('@/shared/ui/components/BottomSheet.ios', () => jest.requireActual('@/shared/ui/components/BottomSheet.tsx'));
 jest.mock('@/shared/ui/components/ActionSheet.ios', () => jest.requireActual('@/shared/ui/components/ActionSheet.tsx'));
@@ -193,7 +198,7 @@ describe('carteira de vacinas (F3)', () => {
   it('F3.5: "Registrar dose" abre a folha da pessoa', async () => {
     const { wrapper } = await setup(LIA);
     await show(<MemberVaccinesScreen />, wrapper);
-    await activate(await screen.findByRole('button', { name: 'Registrar dose' }));
+    await fireEvent.press(await screen.findByRole('button', { name: 'Registrar dose' })); // botão "+" da barra
     expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/(main)/vaccine-dose/new', params: { memberId: member.id } });
   });
 

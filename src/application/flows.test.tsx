@@ -400,17 +400,13 @@ describe('home', () => {
     expect(mockRouter.push).toHaveBeenCalledWith('/(main)/record/new');
   });
 
-  it('o menu "…" de cada pessoa é um botão acessível "Mais ações para <nome>" e "Editar pessoa" navega (BUG-01)', async () => {
+  it('abrir a pessoa pela linha leva a "Editar pessoa" na tela dela (sem menu "…" por linha)', async () => {
     const { ana } = await seedFamily();
     await renderApp(<FamilyHomeScreen />);
 
-    const trigger = await screen.findByRole('button', { name: 'Mais ações para Ana Souza' });
-    expect(trigger).toBeOnTheScreen();
-    expect(trigger.props.accessibilityHint).toBe('Abre o menu de ações');
-
-    // o menu é nativo (UIMenu): a ação chega como o evento `pressAction` do sistema, como em `chooseOption`
-    await fireEvent(trigger, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 44, height: 44 } } });
-    await fireEvent(await screen.findByRole('button', { name: 'Mais ações para Ana Souza' }), 'pressAction', { nativeEvent: { event: 'Editar pessoa' } });
+    expect(screen.queryByRole('button', { name: 'Mais ações para Ana Souza' })).toBeNull();
+    await fireEvent.press(await screen.findByTestId(`member-${ana.id}`));
+    await fireEvent.press(await screen.findByRole('button', { name: 'Editar pessoa' }));
     expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/(main)/member/[id]/edit', params: { id: ana.id } });
   });
 

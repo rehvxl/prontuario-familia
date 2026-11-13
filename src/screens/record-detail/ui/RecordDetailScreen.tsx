@@ -1,7 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
-import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { setStatusBarStyle } from 'expo-status-bar';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMember } from '@/entities/member';
 import {
   RECORD_TYPE_APPEARANCE,
@@ -16,7 +15,7 @@ import { vaccineLabel, type VaccineDose } from '@/entities/vaccine';
 import { useDeleteRecord } from '@/features/delete-record';
 import { useRecordLinkedItems } from '@/features/health-overview';
 import { AttachmentViewer } from '@/widgets/attachment-viewer';
-import { TOOLBAR_ICONS } from '@/shared/ui/navigation';
+import { TOOLBAR_ICONS, useBoardStatusBar } from '@/shared/ui/navigation';
 import { formatShortDate, toLocalIsoDate } from '@/shared/lib';
 import {
   Badge,
@@ -108,17 +107,6 @@ function MedicationItem({ m, today, onPress }: { m: Medication; today: string; o
       accessibilityHint="Abre os medicamentos"
       testID={`linked-${m.id}`}
     />
-  );
-}
-
-/** Barra de status legível sobre a divisória enquanto a tela está em foco; volta ao automático ao sair. */
-function useBoardStatusBar(style: 'light' | 'dark' | null) {
-  useFocusEffect(
-    useCallback(() => {
-      if (!style) return undefined;
-      setStatusBarStyle(style);
-      return () => setStatusBarStyle('auto');
-    }, [style]),
   );
 }
 

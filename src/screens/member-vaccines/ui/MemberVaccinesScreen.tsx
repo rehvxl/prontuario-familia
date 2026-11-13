@@ -21,7 +21,6 @@ import {
   categoricalIndexFor,
   errorMessage,
   headerOptions,
-  useFloatingFooterInset,
   useTheme,
   type ActionSheetOption,
 } from '@/shared/ui';
@@ -29,7 +28,7 @@ import { useRecord } from '@/entities/health-record';
 import { formatAge, useMember } from '@/entities/member';
 import { VaccineStatusRow, evaluateVaccines, useMemberVaccines, vaccineLabel, type RuleEvaluation, type VaccineDose } from '@/entities/vaccine';
 import { DISMISSAL_REASON_LABEL, DismissRuleSheet, useDeleteVaccineDose, useUndoDismissal } from '@/features/record-vaccine-dose';
-import { FloatingActions, floatingFooterOf } from '@/widgets/floating-actions';
+import { TOOLBAR_ICONS } from '@/shared/ui/navigation';
 import { A13, A3, a12, doseDetail, doseExtra, emptyDoses, firstNameOf, plural, ruleDetail, ruleDoses, ruleTitle } from './vaccineText';
 
 const ACTIONABLE = new Set(['late', 'due', 'confirm', 'next']);
@@ -59,8 +58,6 @@ export function MemberVaccinesScreen() {
   const hue = theme.personBoard(categoricalIndexFor(memberId));
   const focused = useIsFocused();
   const person = member.data;
-  const fab = person ? { label: 'Registrar dose', icon: 'add' as const, onPress: () => registerDose(), testID: 'register-dose-fab' } : null;
-  const footerInset = useFloatingFooterInset(floatingFooterOf({ action: fab }));
   const data = vaccines.data;
   // F3.6: a consulta é invalidada a cada mudança, e a avaliação refaz aqui, sem recarregar a tela.
   const evaluation = useMemo(
@@ -207,12 +204,16 @@ export function MemberVaccinesScreen() {
 
   return (
     <HueProvider hue={hue}>
-      <Screen testID="member-vaccines-screen" board={hue} heading={heading} contentContainerStyle={{ paddingBottom: footerInset || theme.space[6] }}>
+      <Screen testID="member-vaccines-screen" board={hue} heading={heading}>
         <Stack.Screen options={headerOptions(theme, { board: hue, contentTitle: true })} />
         {focused ? <StatusBar style={hue.statusBar} /> : null}
+        {person ? (
+          <Stack.Toolbar placement="right">
+            <Stack.Toolbar.Button icon={TOOLBAR_ICONS.add} accessibilityLabel="Registrar dose" onPress={registerDose} />
+          </Stack.Toolbar>
+        ) : null}
         {body}
       </Screen>
-      <FloatingActions action={fab} />
       <ActionSheet visible={sheet !== null} onClose={() => setSheet(null)} title={sheet?.title} message={sheet?.message} options={sheet?.options ?? []} />
       <ConfirmSheet
         visible={deleting !== null}
