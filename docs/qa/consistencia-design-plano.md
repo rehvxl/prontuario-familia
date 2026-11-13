@@ -84,4 +84,5 @@ Fora: o cartão `CoverLabel` de Criar família (decorativo, sem token equivalent
 ## Andamento da rodada 2
 
 - [x] PR A, padrões de interação: D7 (Vacinas com "+" na barra, sem botão flutuante), D8 e D10 (regras no doc §7.1), D9 (Pessoas sem menu "…" por linha; "Editar pessoa" e "Novo registro" ficam na tela da pessoa). Testes ajustados.
-- [ ] PR B, infra de tela: hook único da barra de status, D11, valores soltos, estado "não encontrado".
+- [x] PR B, infra de tela: hook único `useBoardStatusBar` (Ajustes, Buscar, Registro); D11 (`layout.sectionGap` 32 → 28, token sem uso nas telas); "não encontrado" padronizado (Editar pessoa sem `tone="error"`, regra no doc).
+- Decidido não fazer: tokenizar `fontWeight` (passa por `Text`, que escolhe o arquivo Archivo) nem `paddingVertical: 14`/`minHeight: 64` (3 ocorrências de anatomia de linha, sem ganho). O `{focused ? <StatusBar/> : null}` das telas da pessoa também fica: é o padrão do Expo Router e já está correto.
