@@ -12,6 +12,7 @@ import {
   type EmergencyCardFormValues,
 } from '@/features/manage-emergency-card';
 import { ConfirmSheet, HueProvider, ListSkeleton, Screen, categoricalIndexFor, errorMessage, useTheme } from '@/shared/ui';
+import { backOrReplace } from '@/shared/ui/navigation';
 
 const SAVE_ERROR = 'Não foi possível salvar a ficha. Nada foi perdido. Tente de novo.';
 
@@ -40,8 +41,8 @@ export function EditEmergencyCardScreen() {
   usePreventRemove(dirty && !leaving && !save.isPending, () => setAskLeave(true));
 
   useEffect(() => {
-    if (leaving) router.back();
-  }, [leaving, router]);
+    if (leaving) backOrReplace(router, { pathname: '/(main)/member/[id]/emergency', params: { id: memberId } });
+  }, [leaving, memberId, router]);
 
   const onSave = (values: EmergencyCardFormValues) => {
     if (!member.data) return;

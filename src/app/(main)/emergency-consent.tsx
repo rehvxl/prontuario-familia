@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useConsentFlow } from '@/application';
 import { trackConsentEvent } from '@/features/consent';
 import { EmergencyConsentScreen } from '@/screens/emergency-consent';
+import { backOrReplace } from '@/shared/ui/navigation';
 
 /** Porta da ficha: reaceite da v3, fora do onboarding. A SessionGate permanece em main. */
 export default function EmergencyConsentRoute() {
@@ -13,6 +14,13 @@ export default function EmergencyConsentRoute() {
   const openCard = useCallback(() => {
     if (memberId) router.replace({ pathname: '/(main)/member/[id]/emergency', params: { id: memberId } });
     else router.back();
+  }, [memberId, router]);
+  // “Agora não” volta ao resumo. A leitura da ficha reabre este modal enquanto faltar a v3, então não é destino.
+  const decline = useCallback(() => {
+    backOrReplace(
+      router,
+      memberId ? { pathname: '/(main)/(tabs)/(family)', params: { member: memberId } } : '/(main)/(tabs)/(family)',
+    );
   }, [memberId, router]);
 
   return (
@@ -28,7 +36,7 @@ export default function EmergencyConsentRoute() {
         isPending: flow.isPending,
         error: flow.error,
       }}
-      onDecline={() => router.back()}
+      onDecline={decline}
       onAccepted={openCard}
     />
   );

@@ -12,6 +12,7 @@ import {
   useEmergencyCardView,
 } from '@/features/manage-emergency-card';
 import { Button, DemoBadge, IconButton, ListSkeleton, Screen, Text, formatDate, useTheme } from '@/shared/ui';
+import { backOrReplace } from '@/shared/ui/navigation';
 
 function Awake() {
   useKeepAwake();
@@ -39,18 +40,19 @@ export function PresentEmergencyCardScreen({ demo = false }: { demo?: boolean })
 
   if (access !== 'card' || state.status !== 'ready') return <ListSkeleton />;
   const updated = state.view.card ? formatDate(calendarDay(state.view.card.updatedAt), 'long') : '';
+  const close = () => backOrReplace(router, { pathname: '/(main)/member/[id]/emergency', params: { id: memberId } });
   return (
     <Screen testID="emergency-present-screen">
       <Awake />
       <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-        <IconButton icon="close" accessibilityLabel="Fechar a tela para o profissional" onPress={() => router.back()} />
+        <IconButton icon="close" accessibilityLabel="Fechar a tela para o profissional" onPress={close} />
       </View>
       {demo ? <DemoBadge /> : null}
       <EmergencyCardSections view={state.view} mode="present" />
       <Text variant="footnote" color="secondary" style={{ marginTop: theme.layout.sectionGap }}>
         {legalFooter(state.view.card, updated || null)}
       </Text>
-      <Button label="Fechar" variant="bordered" onPress={() => router.back()} fullWidth style={{ marginTop: theme.space[4] }} />
+      <Button label="Fechar" variant="bordered" onPress={close} fullWidth style={{ marginTop: theme.space[4] }} />
     </Screen>
   );
 }
