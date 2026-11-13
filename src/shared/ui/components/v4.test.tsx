@@ -18,7 +18,7 @@ import { StateLine } from './StateLine';
 import { SectionHeader } from './SectionHeader';
 import { TabMark } from './TabMark';
 import { TREND_LAST_LEGEND, TrendChart } from './TrendChart';
-import { ICON_FONT_SCALE_CAP, useIconScale } from '../lib/a11y';
+import { ICON_FONT_SCALE_CAP, STACK_FONT_SCALE, useIconScale } from '../lib/a11y';
 import { Text } from './Text';
 
 const flat = (el: { props: { style?: unknown } }) => (StyleSheet.flatten(el.props.style as never) ?? {}) as Record<string, unknown>;
@@ -363,11 +363,19 @@ describe('revisão final: legenda, fio de seção, ícone que cresce com o texto
     expect(rule).toMatchObject({ flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: createTheme('light').colors.border });
   });
 
-  it('SectionHeader em AX3+: o título empilha e o fio sai', async () => {
-    mockFontScale(2.4);
+  it('SectionHeader com texto grande: o título empilha e o fio sai (inclusive em 2,0×, o máximo do Android)', async () => {
+    for (const scale of [2.4, 2.0, STACK_FONT_SCALE]) {
+      mockFontScale(scale);
+      await renderWithTheme(<SectionHeader title="Pessoas" testID="sh" />);
+      expect(screen.getByRole('header', { name: 'Pessoas' })).toBeTruthy();
+      expect(screen.queryByTestId('sh-rule')).toBeNull();
+    }
+  });
+
+  it('SectionHeader abaixo do limite de empilhar mantém o fio', async () => {
+    mockFontScale(1.5);
     await renderWithTheme(<SectionHeader title="Pessoas" testID="sh" />);
-    expect(screen.getByRole('header', { name: 'Pessoas' })).toBeTruthy();
-    expect(screen.queryByTestId('sh-rule')).toBeNull();
+    expect(screen.getByTestId('sh-rule')).toBeTruthy();
   });
 
   it('ícone de estado cresce com o texto do sistema, com teto de 2×', async () => {
