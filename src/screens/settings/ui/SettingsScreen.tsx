@@ -101,7 +101,7 @@ export function SettingsScreen({ mode, revokeConsent, deleteAccount, loadDemoFam
           <ListItem
             leading={<IconTile icon="download" />}
             title="Exportar meus dados"
-            subtitle={exporting ? 'Preparando seus dados…' : 'Gera um arquivo JSON com documentos, exames, vacinas, medicamentos e sinais vitais.'}
+            subtitle={exporting ? 'Preparando seus dados…' : 'Gera um arquivo JSON com documentos, exames, vacinas, medicamentos, sinais vitais e a ficha de emergência.'}
             onPress={() => void doExport()}
             disabled={exporting}
             trailing={exporting ? <Spinner size="small" /> : undefined}

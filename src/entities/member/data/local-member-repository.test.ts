@@ -64,13 +64,14 @@ describe('createLocalMemberRepository', () => {
     await expect(repo.remove('nada')).rejects.toMatchObject({ code: 'member/not-found' });
   });
 
-  it('remover a pessoa apaga em cascata medições, doses, medicamentos e dispensas dela, preservando os dos outros', async () => {
+  it('remover a pessoa apaga em cascata medições, doses, medicamentos, a ficha e dispensas dela, preservando os dos outros', async () => {
     const ana = await repo.create(input());
     const bia = await repo.create(input({ fullName: 'Bia' }));
     const health = [
       LOCAL_COLLECTIONS.measurements,
       LOCAL_COLLECTIONS.vaccineDoses,
       LOCAL_COLLECTIONS.medications,
+      LOCAL_COLLECTIONS.emergencyCards,
       LOCAL_COLLECTIONS.vaccineRuleDismissals,
     ];
     for (const c of health) {

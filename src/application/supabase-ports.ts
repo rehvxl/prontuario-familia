@@ -7,6 +7,7 @@ import { createSupabaseAuthGateway, createSupabaseDataExportGateway } from '@/en
 import { createSupabaseMeasurementRepository } from '@/entities/measurement';
 import { createSupabaseVaccineDoseRepository } from '@/entities/vaccine';
 import { createSupabaseMedicationRepository } from '@/entities/medication';
+import { createSupabaseEmergencyCardRepository } from '@/entities/emergency-card';
 import type { BackendPorts } from './container';
 
 /** Portas do modo Supabase: um único cliente (`getSupabaseClient`) compartilhado por todos os adaptadores. */
@@ -23,5 +24,6 @@ export function createSupabasePorts(): BackendPorts {
     measurements: createSupabaseMeasurementRepository(client),
     vaccineDoses: createSupabaseVaccineDoseRepository(client),
     medications: createSupabaseMedicationRepository(client),
+    emergencyCards: createSupabaseEmergencyCardRepository(client),
   };
 }

@@ -17,7 +17,7 @@ export function createLocalDataExportGateway(db: LocalDb): DataExportGateway {
       const families = (await db.list<OwnedDoc>(LOCAL_COLLECTIONS.families)).filter((f) => f.ownerId === userId);
       const familyIds = new Set(families.map((f) => f.id));
       const inMyFamilies = (d: OwnedDoc) => d.familyId !== undefined && familyIds.has(d.familyId);
-      const [members, records, consents, measurements, vaccineDoses, medications, vaccineRuleDismissals] = await Promise.all([
+      const [members, records, consents, measurements, vaccineDoses, medications, vaccineRuleDismissals, emergencyCards] = await Promise.all([
         db.list<OwnedDoc>(LOCAL_COLLECTIONS.members),
         db.list<OwnedDoc>(LOCAL_COLLECTIONS.records),
         db.list<OwnedDoc>(LOCAL_COLLECTIONS.consents),
@@ -25,10 +25,13 @@ export function createLocalDataExportGateway(db: LocalDb): DataExportGateway {
         db.list<OwnedDoc>(LOCAL_COLLECTIONS.vaccineDoses),
         db.list<OwnedDoc>(LOCAL_COLLECTIONS.medications),
         db.list<OwnedDoc>(LOCAL_COLLECTIONS.vaccineRuleDismissals),
+        db.list<OwnedDoc>(LOCAL_COLLECTIONS.emergencyCards),
       ]);
       return JSON.stringify(
         {
           exportedAt: new Date().toISOString(),
+          // O arquivo do servidor usa `format_version: 3` e a chave `emergency_cards` (sem `created_by`).
+          format_version: 3,
           source: 'demo',
           user,
           consents: consents.filter((c) => c.userId === userId),
@@ -40,6 +43,7 @@ export function createLocalDataExportGateway(db: LocalDb): DataExportGateway {
           vaccineDoses: vaccineDoses.filter(inMyFamilies),
           medications: medications.filter(inMyFamilies),
           vaccineRuleDismissals: vaccineRuleDismissals.filter(inMyFamilies),
+          emergencyCards: emergencyCards.filter(inMyFamilies),
         },
         null,
         2,

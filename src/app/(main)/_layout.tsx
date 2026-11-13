@@ -19,6 +19,7 @@ const MEMBER_PAGES = [
   ['member/[id]/vaccines', 'Vacinas'],
   ['member/[id]/medications', 'Medicamentos'],
   ['member/[id]/vitals/[code]', 'Sinais vitais'],
+  ['member/[id]/emergency', 'Ficha de emergência'],
 ] as const;
 
 const SHEETS = [
@@ -28,6 +29,7 @@ const SHEETS = [
   ['vaccine-dose/new', 'Nova dose'],
   ['medication/new', 'Novo medicamento'],
   ['vital/new', 'Novo sinal vital'],
+  ['emergency/edit', 'Editar ficha'],
 ] as const;
 
 const SHEET_OPTIONS = sheetScreenOptions();
@@ -66,6 +68,7 @@ export default function MainLayout() {
       ))}
       {/* Reaceite da ficha: modal nas duas plataformas, fora do onboarding. A SessionGate não muda de etapa. */}
       <Stack.Screen name="emergency-consent" options={{ presentation: 'modal', title: 'Termo atualizado' }} />
+      <Stack.Screen name="member/[id]/emergency-present" options={{ presentation: 'fullScreenModal', headerShown: false, title: 'Ficha de emergência' }} />
     </Stack>
   );
 }

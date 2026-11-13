@@ -33,7 +33,7 @@ describe('createLocalDataExportGateway', () => {
     expect(json).not.toContain('Alheio');
   });
 
-  it('exporta as 4 coleções de saúde da família do usuário, no nível de cima (spec P6)', async () => {
+  it('exporta as coleções de saúde da família, inclusive a ficha, no nível de cima', async () => {
     const db = createMemoryDb();
     const me = await createLocalAuthGateway(db).verifyEmailOtp('ana@exemplo.com', '123456');
     await db.put(LOCAL_COLLECTIONS.families, 'f1', { id: 'f1', name: 'Silva', ownerId: me.id });
@@ -43,6 +43,7 @@ describe('createLocalDataExportGateway', () => {
       vaccineDoses: LOCAL_COLLECTIONS.vaccineDoses,
       medications: LOCAL_COLLECTIONS.medications,
       vaccineRuleDismissals: LOCAL_COLLECTIONS.vaccineRuleDismissals,
+      emergencyCards: LOCAL_COLLECTIONS.emergencyCards,
     };
     for (const c of Object.values(collections)) {
       await db.put(c, `${c}-meu`, { id: `${c}-meu`, familyId: 'f1', memberId: 'm1' });
@@ -56,5 +57,6 @@ describe('createLocalDataExportGateway', () => {
       expect(data[key].map((d: { id: string }) => d.id)).toEqual([`${c}-meu`]);
     }
     expect(json).not.toContain('alheio');
+    expect(data.format_version).toBe(3);
   });
 });
