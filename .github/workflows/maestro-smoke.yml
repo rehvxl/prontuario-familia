@@ -23,6 +23,8 @@ env:
   EXPO_PUBLIC_DEMO_MODE: "1"
   EXPO_NO_DOTENV: "1"
   EXPO_NO_TELEMETRY: "1"
+  # O driver XCTest demora a subir no runner macOS; o padrão estoura.
+  MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
 
 jobs:
   android:

@@ -109,9 +109,11 @@ tags:
 - tapOn:
     text: "^Carregar família de exemplo$"
     below: "Carregar a família de exemplo\\?"
-- extendedWaitUntil:
-    visible:
+# O aviso aparece abaixo da lista, fora da tela.
+- scrollUntilVisible:
+    element:
       id: "demo-family-done"
+    direction: DOWN
     timeout: 90000
 - tapOn:
     id: "tab-family"
