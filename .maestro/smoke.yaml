@@ -66,9 +66,9 @@ tags:
 - tapOn:
     id: "family-name-input"
 - inputText: "Família Souza"
-- hideKeyboard
-- waitForAnimationToEnd
-- tapOn: "Criar família"
+# Envia pelo teclado (onSubmitEditing). Tocar no botão derruba o driver XCTest no iOS:
+# o botão vira "carregando" e a tela troca no meio do toque.
+- pressKey: Enter
 - extendedWaitUntil:
     visible:
       id: "member-name"
@@ -143,7 +143,10 @@ tags:
     notVisible:
       id: "member-health-summary"
     timeout: 15000
-- assertVisible:
-    id: "add-member"
+# Com a família de exemplo, "Adicionar pessoa" fica abaixo da lista.
+- scrollUntilVisible:
+    element:
+      id: "add-member"
+    direction: DOWN
 - takeScreenshot: 05-voltou-familia
 - stopRecording
