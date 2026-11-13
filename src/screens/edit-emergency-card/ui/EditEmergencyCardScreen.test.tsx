@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { Platform } from 'react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider } from '@/shared/ui';
 import { DEPENDENCY_KEYS, newId } from '@/shared/lib';
@@ -9,13 +10,19 @@ import { createLocalMedicationRepository } from '@/entities/medication';
 import { createLocalEmergencyCardRepository, emergencyCardFieldsSchema } from '@/entities/emergency-card';
 import { EditEmergencyCardScreen } from './EditEmergencyCardScreen';
 
+const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => true) };
+
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
+  useRouter: () => mockRouter,
   useLocalSearchParams: () => mockParams,
   usePreventRemove: () => undefined,
 }));
 
 let mockParams: Record<string, string> = {};
+
+function setOs(os: typeof Platform.OS) {
+  Object.defineProperty(Platform, 'OS', { configurable: true, get: () => os });
+}
 
 const v3 = [
   { purpose: 'terms_and_privacy' as const, version: '2026-11-v3', acceptedAt: '2026-11-01T00:00:00.000Z', revokedAt: null },
@@ -47,6 +54,17 @@ async function setup() {
 }
 
 describe('edição da ficha', () => {
+  const os = Platform.OS;
+
+  beforeEach(() => {
+    mockRouter.back.mockClear();
+    mockRouter.replace.mockClear();
+    mockRouter.push.mockClear();
+    mockRouter.canGoBack.mockReturnValue(true);
+  });
+
+  afterEach(() => setOs(os));
+
   it('confirma antes de apagar as alergias listadas e não abre “Sair sem salvar?”', async () => {
     const { wrapper } = await setup();
     await render(<EditEmergencyCardScreen />, { wrapper });
@@ -54,5 +72,29 @@ describe('edição da ficha', () => {
     await fireEvent.press(screen.getByRole('checkbox', { name: /Sem alergias conhecidas/ }));
     expect(await screen.findByText('Apagar as alergias listadas?')).toBeOnTheScreen();
     expect(screen.queryByText('Sair sem salvar?')).toBeNull();
+  });
+
+  async function save() {
+    const { wrapper } = await setup();
+    await render(<EditEmergencyCardScreen />, { wrapper });
+    expect(await screen.findByDisplayValue('Dipirona')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole('button', { name: 'Salvar ficha' }));
+  }
+
+  it('depois de salvar, com histórico, volta', async () => {
+    setOs('web');
+    await save();
+    await waitFor(() => expect(mockRouter.back).toHaveBeenCalledTimes(1));
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+  });
+
+  it('depois de salvar, na web sem histórico, volta para a leitura sem empilhar', async () => {
+    setOs('web');
+    mockRouter.canGoBack.mockReturnValue(false);
+    await save();
+    await waitFor(() =>
+      expect(mockRouter.replace).toHaveBeenCalledWith({ pathname: '/(main)/member/[id]/emergency', params: { id: mockParams.memberId } }),
+    );
+    expect(mockRouter.back).not.toHaveBeenCalled();
   });
 });

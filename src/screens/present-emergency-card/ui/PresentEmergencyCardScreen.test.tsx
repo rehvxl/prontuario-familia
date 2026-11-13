@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { StyleSheet } from 'react-native';
-import { render, screen } from '@testing-library/react-native';
+import { Platform, StyleSheet } from 'react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider } from '@/shared/ui';
 import { DEPENDENCY_KEYS, newId } from '@/shared/lib';
@@ -10,13 +10,19 @@ import { createLocalMedicationRepository } from '@/entities/medication';
 import { createLocalEmergencyCardRepository, emergencyCardFieldsSchema } from '@/entities/emergency-card';
 import { PresentEmergencyCardScreen } from './PresentEmergencyCardScreen';
 
+const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => true) };
+
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
+  useRouter: () => mockRouter,
   useLocalSearchParams: () => mockParams,
 }));
 jest.mock('expo-keep-awake', () => ({ useKeepAwake: () => undefined }));
 
 let mockParams: Record<string, string> = {};
+
+function setOs(os: typeof Platform.OS) {
+  Object.defineProperty(Platform, 'OS', { configurable: true, get: () => os });
+}
 
 const v3 = [
   { purpose: 'terms_and_privacy' as const, version: '2026-11-v3', acceptedAt: '2026-11-01T00:00:00.000Z', revokedAt: null },
@@ -61,5 +67,55 @@ describe('modo profissional', () => {
     expect(screen.queryByRole('button', { name: 'Editar ficha' })).toBeNull();
     expect(StyleSheet.flatten(screen.getByText('Dipirona').props.style).color).toBe(StyleSheet.flatten(screen.getByText('Ana Souza').props.style).color);
     expect(screen.getByText('Ana Souza').props.allowFontScaling).toBe(true);
+  });
+});
+
+describe('fechar o modo profissional', () => {
+  const os = Platform.OS;
+
+  beforeEach(() => {
+    mockRouter.back.mockClear();
+    mockRouter.replace.mockClear();
+    mockRouter.canGoBack.mockReturnValue(true);
+    setOs('web');
+  });
+
+  afterEach(() => setOs(os));
+
+  async function shown() {
+    const { wrapper } = await setup();
+    await render(<PresentEmergencyCardScreen />, { wrapper });
+    expect(await screen.findByText('Dipirona')).toBeOnTheScreen();
+  }
+
+  async function pressBoth() {
+    await fireEvent.press(screen.getByRole('button', { name: 'Fechar' }));
+    await fireEvent.press(screen.getByLabelText('Fechar a tela para o profissional'));
+  }
+
+  it('com histórico, os dois Fechar voltam', async () => {
+    await shown();
+    await pressBoth();
+    expect(mockRouter.back).toHaveBeenCalledTimes(2);
+    expect(mockRouter.replace).not.toHaveBeenCalled();
+  });
+
+  it('na web sem histórico, os dois Fechar abrem a leitura da mesma pessoa sem empilhar', async () => {
+    mockRouter.canGoBack.mockReturnValue(false);
+    await shown();
+    await pressBoth();
+    const reading = { pathname: '/(main)/member/[id]/emergency', params: { id: mockParams.id } };
+    expect(mockRouter.replace).toHaveBeenNthCalledWith(1, reading);
+    expect(mockRouter.replace).toHaveBeenNthCalledWith(2, reading);
+    expect(mockRouter.back).not.toHaveBeenCalled();
+  });
+
+  it.each(['ios', 'android'] as const)('no %s sem histórico, Fechar continua voltando', async (platform) => {
+    setOs(platform);
+    mockRouter.canGoBack.mockReturnValue(false);
+    await shown();
+    await fireEvent.press(screen.getByRole('button', { name: 'Fechar' }));
+    expect(mockRouter.back).toHaveBeenCalledTimes(1);
+    expect(mockRouter.replace).not.toHaveBeenCalled();
   });
 });
