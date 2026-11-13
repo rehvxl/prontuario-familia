@@ -108,25 +108,43 @@ function safeGlassAvailable(): boolean {
 
 type AccessibilityFlag = 'reduceMotion' | 'reduceTransparency';
 
+/**
+ * Lê o ajuste de acessibilidade. `isReduceMotionEnabled` existe no react-native-web;
+ * `isReduceTransparencyEnabled` não (o módulo só implementa movimento, leitor de tela e
+ * `addEventListener`, que para `reduceTransparencyChanged` devolve uma inscrição vazia).
+ * Chamar a função ausente quebra na hora (`read is not a function`) — o `.catch` não pega
+ * TypeError síncrono. Sem a função, permanece false: não reduzir transparência.
+ * iOS e Android têm as duas funções e continuam lendo o sistema.
+ */
+function accessibilityReader(flag: AccessibilityFlag): (() => Promise<boolean>) | undefined {
+  const info = AccessibilityInfo as Partial<
+    Pick<typeof AccessibilityInfo, 'isReduceMotionEnabled' | 'isReduceTransparencyEnabled'>
+  >;
+  const read = flag === 'reduceMotion' ? info.isReduceMotionEnabled : info.isReduceTransparencyEnabled;
+  return typeof read === 'function' ? read : undefined;
+}
+
 function useAccessibilityFlag(flag: AccessibilityFlag, enabled: boolean): boolean {
   const [value, setValue] = useState(false);
   useEffect(() => {
     if (!enabled) return;
     let active = true;
-    const read =
-      flag === 'reduceMotion' ? AccessibilityInfo.isReduceMotionEnabled : AccessibilityInfo.isReduceTransparencyEnabled;
-    read()
-      .then((v) => {
-        if (active) setValue(v);
-      })
-      .catch(() => undefined);
+    const read = accessibilityReader(flag);
+    if (read) {
+      read()
+        .then((v) => {
+          if (active) setValue(v);
+        })
+        .catch(() => undefined);
+    }
     const sub = AccessibilityInfo.addEventListener(
       flag === 'reduceMotion' ? 'reduceMotionChanged' : 'reduceTransparencyChanged',
       setValue,
     );
     return () => {
       active = false;
-      sub.remove();
+      // No web, `reduceMotionChanged` devolve undefined quando não há matchMedia.
+      sub?.remove();
     };
   }, [enabled, flag]);
   return value;

@@ -1,9 +1,13 @@
 import { useWindowDimensions } from 'react-native';
 
-/** Multiplicador de fonte do iOS AX3 (≈ 2,35×). Daqui para cima, o que fica lado a lado empilha. */
-export const STACK_FONT_SCALE = 2.35;
+/**
+ * Multiplicador de fonte a partir do qual o que fica lado a lado empilha. O texto do app para em 2× (`maxFontSizeMultiplier`)
+ * e o Android não passa de 2,0×: com o limite no iOS AX3 (≈ 2,35×) a pilha nunca ligava no Android e rótulos quebravam no
+ * meio da palavra. 1,75× liga no Android grande e no iOS AX2 em diante.
+ */
+export const STACK_FONT_SCALE = 1.75;
 
-/** true em AX3+ (DESIGN.md › Typography): linhas de métrica, tiles e ações empilham. */
+/** true a partir de `STACK_FONT_SCALE` (DESIGN.md › Typography): linhas de métrica, tiles e ações empilham. */
 export function useStackedLayout(): boolean {
   return useWindowDimensions().fontScale >= STACK_FONT_SCALE;
 }

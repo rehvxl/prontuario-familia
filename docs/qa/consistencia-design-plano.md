@@ -103,3 +103,27 @@ iOS 26.5 (simulador novo, só para isso), claro e escuro, a partir da `main` ap�
 | Tema escuro (Pessoa/Documentos) | Sem problema visível |
 
 **Não conferido:** Android, texto grande (AX5), folhas de medicamento e sinal vital (mesmo caminho de código da folha de dose), e os estados de carregamento/erro de Editar pessoa e Primeiras pessoas (rápidos demais para capturar no modo demo).
+
+## Conferência no Android (13/11/2026)
+
+Emulador Pixel 7, Android 16 (API 36), AVD criado só para isso, modo demo, `main` em `38d8a93`. Percorrido: Boas-vindas → Consentimento → Entrar → Código → Criar família → Primeiras pessoas → Família → Carteira de vacinas → folha de dose; depois texto em 2,0× (o máximo do Android) em Pessoa e Vacinas.
+
+| Item | Resultado |
+|---|---|
+| Checkbox (Consentimento, folha de dose) | Mesmo raio do iOS |
+| Primeiras pessoas | Faixa e barra de status certas, sem cabeçalho vazio |
+| Carteira de vacinas | "+" na barra, sem botão flutuante |
+| Folha de dose (modal no Android) | Título uma vez, filete verde da pessoa |
+| Texto 2,0×: régua | Vira faixa no topo, como o doc manda |
+| Texto 2,0×: botão flutuante | Só o ícone, e nas Vacinas já não cobre conteúdo (é "+" na barra) |
+
+### Achados novos (já existiam antes das rodadas 1 e 2)
+
+1. **`StatTileGroup` quebra palavra no meio em 2,0×** ("pendênci/as", "registrad/as", "informad/as" em Carteira de vacinas). Causa: `STACK_FONT_SCALE = 2.35` (`shared/ui/lib/` do `useStackedLayout`) é o AX3 do iOS, mas o Android não passa de 2,0× e o texto do app é limitado a 2× (`maxFontSizeMultiplier`). No Android a pilha nunca liga. Correção sugerida: empilhar a partir de ~1,75× (ou medir a largura do rótulo) e conferir `StatTile`, linhas de métrica e ações, que usam o mesmo hook.
+2. **Chip de estado cortado em 2,0× no Resumo**: "Acima da faixa" aparece como "Acima da" ao lado da régua (`MeasurementRow`). O doc §7.1 manda empilhar em AX5; mesma causa do item 1.
+
+Não conferido no Android: folha de sinal vital e de medicamento, Documentos e Buscar.
+
+### Correção dos achados de texto grande (13/11/2026)
+
+`STACK_FONT_SCALE` passou de 2,35 (iOS AX3) para 1,75: liga no Android grande (máximo 2,0×) e no iOS de AX2 em diante. Conferido: Android em 2,0× (Carteira de vacinas com os três números empilhados, "Dentro da faixa" e "Acima da faixa" inteiros no Resumo, "Ver tudo" abaixo do título) e iOS 26.5 em AX2 (Carteira de vacinas empilhada). Testes: `SectionHeader` empilha em 2,4×, 2,0× e 1,75× e mantém o fio em 1,5×.
