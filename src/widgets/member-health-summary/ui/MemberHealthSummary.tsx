@@ -115,8 +115,8 @@ export function MemberHealthSummary({ member, onOpen }: MemberHealthSummaryProps
   const vaccines = useMemberVaccines(member.id);
   const medications = useMemberMedications(member.id);
   const consents = useMyConsents();
-  const emergencyCard = useMemberEmergencyCard(member.id);
   const needsConsent = consents.isSuccess ? !hasEmergencyCardConsent(consents.data) : consents.isError;
+  const emergencyCard = useMemberEmergencyCard(member.id, consents.isSuccess && !needsConsent);
   const updatedLabel = emergencyCard.data ? formatDate(calendarDay(emergencyCard.data.updatedAt), 'long') : '';
   const emergencySubtitle = needsConsent
     ? 'Aceite o termo atualizado para usar'

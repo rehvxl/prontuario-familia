@@ -41,11 +41,14 @@ function fromSnapshot(snapshot: EmergencyReadSnapshot): AssembledEmergencyCard {
   };
 }
 
-/** Leitura da ficha: a rede quando responde; o snapshot cifrado quando a consulta pausa. Sem snapshot, não inventa dado. */
-export function useEmergencyCardView(memberId: string): EmergencyCardViewState {
+/**
+ * Leitura da ficha: a rede quando responde; o snapshot cifrado quando a consulta pausa. Sem snapshot, não inventa dado.
+ * `enabled` falso (sem o termo v3) não busca a ficha nem lê ou grava o snapshot.
+ */
+export function useEmergencyCardView(memberId: string, enabled = true): EmergencyCardViewState {
   const user = useCurrentUser();
   const member = useMember(memberId || undefined);
-  const card = useMemberEmergencyCard(memberId);
+  const card = useMemberEmergencyCard(memberId, enabled);
   const medications = useMemberMedications(memberId);
   const timeline = useMemberTimeline(member.data?.familyId, memberId || undefined);
   const online = useOnline();
@@ -54,7 +57,7 @@ export function useEmergencyCardView(memberId: string): EmergencyCardViewState {
   const today = toLocalIsoDate();
 
   useEffect(() => {
-    if (!userId || !memberId) return;
+    if (!enabled || !userId || !memberId) return;
     let cancel = false;
     void readEmergencyReadCache(userId, memberId).then((value) => {
       if (!cancel) setSnapshot(value);
@@ -62,7 +65,7 @@ export function useEmergencyCardView(memberId: string): EmergencyCardViewState {
     return () => {
       cancel = true;
     };
-  }, [userId, memberId]);
+  }, [enabled, userId, memberId]);
 
   const records = useMemo(
     () => new Map((timeline.data ?? []).flatMap((group) => group.records).map((record) => [record.id, { title: record.title, date: record.date }] as const)),

@@ -25,7 +25,7 @@ export function EditEmergencyCardScreen() {
   const consents = useMyConsents();
   const access = consents.isSuccess ? resolveEmergencyEntry(hasEmergencyCardConsent(consents.data)) : 'unknown';
   const member = useMember(memberId || undefined);
-  const state = useEmergencyCardView(memberId);
+  const state = useEmergencyCardView(memberId, access === 'card');
   const save = useSaveEmergencyCard();
   const [dirty, setDirty] = useState(false);
   const [leaving, setLeaving] = useState(false);

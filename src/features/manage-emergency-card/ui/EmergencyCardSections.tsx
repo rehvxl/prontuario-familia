@@ -42,8 +42,8 @@ export function EmergencyCardSections({
       );
     }
     if (present) {
-      return card.allergies.map((item) => (
-        <View key={`${item.name}-${item.reaction ?? ''}`} style={{ marginTop: theme.space[3] }}>
+      return card.allergies.map((item, index) => (
+        <View key={`${index}-${item.name}`} style={{ marginTop: theme.space[3] }}>
           <Text variant="title1">{item.name}</Text>
           {item.reaction ? <Text variant="bodyStrong">{item.reaction}</Text> : null}
         </View>
@@ -51,8 +51,8 @@ export function EmergencyCardSections({
     }
     return (
       <ListSection>
-        {card.allergies.map((item) => (
-          <ListItem key={`${item.name}-${item.reaction ?? ''}`} title={item.name} subtitle={item.reaction ?? undefined} />
+        {card.allergies.map((item, index) => (
+          <ListItem key={`${index}-${item.name}`} title={item.name} subtitle={item.reaction ?? undefined} />
         ))}
       </ListSection>
     );
@@ -82,8 +82,8 @@ export function EmergencyCardSections({
         <SectionHeader title="Condições de saúde informadas" />
         {card && card.conditions.length > 0 ? (
           <ListSection>
-            {card.conditions.map((item) => (
-              <ListItem key={item.name} title={item.name} />
+            {card.conditions.map((item, index) => (
+              <ListItem key={`${index}-${item.name}`} title={item.name} />
             ))}
           </ListSection>
         ) : (

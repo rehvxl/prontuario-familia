@@ -70,6 +70,30 @@ describe('modo profissional', () => {
   });
 });
 
+describe('modo profissional sem acesso à ficha', () => {
+  it('mostra o fechar e não busca a ficha quando os consentimentos falham', async () => {
+    const getByMember = jest.fn(async () => null);
+    const { wrapper: Deps } = renderWithDependencies({
+      [DEPENDENCY_KEYS.auth]: { getCurrentUser: async () => ({ id: 'user-1', email: null, displayName: null, provider: 'email' }), onAuthStateChange: () => () => undefined },
+      [DEPENDENCY_KEYS.members]: { getById: async () => null },
+      [DEPENDENCY_KEYS.medications]: { listByMember: async () => [] },
+      [DEPENDENCY_KEYS.emergencyCards]: { getByMember },
+      [DEPENDENCY_KEYS.records]: { list: async () => [] },
+      [DEPENDENCY_KEYS.consents]: { listMine: async () => { throw new Error('offline'); } },
+    });
+    mockParams = { id: 'm-1' };
+    const wrapper = ({ children }: { children?: ReactNode }) => (
+      <SafeAreaProvider initialMetrics={{ frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 47, left: 0, right: 0, bottom: 34 } }}>
+        <ThemeProvider scheme="light" reducedMotion><Deps>{children}</Deps></ThemeProvider>
+      </SafeAreaProvider>
+    );
+    await render(<PresentEmergencyCardScreen />, { wrapper });
+    expect(await screen.findByText('Não foi possível abrir a ficha agora.')).toBeOnTheScreen();
+    expect(screen.getByLabelText('Fechar a tela para o profissional')).toBeOnTheScreen();
+    expect(getByMember).not.toHaveBeenCalled();
+  });
+});
+
 describe('fechar o modo profissional', () => {
   const os = Platform.OS;
 

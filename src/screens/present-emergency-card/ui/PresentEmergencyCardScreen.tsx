@@ -27,7 +27,7 @@ export function PresentEmergencyCardScreen({ demo = false }: { demo?: boolean })
   const memberId = typeof id === 'string' ? id : '';
   const consents = useMyConsents();
   const access = consents.isSuccess ? resolveEmergencyEntry(hasEmergencyCardConsent(consents.data)) : 'unknown';
-  const state = useEmergencyCardView(memberId);
+  const state = useEmergencyCardView(memberId, access === 'card');
 
   useEffect(() => {
     if (access === 'consent') router.replace({ pathname: '/(main)/emergency-consent', params: { memberId } });
@@ -38,15 +38,27 @@ export function PresentEmergencyCardScreen({ demo = false }: { demo?: boolean })
     if (access === 'card' && state.status === 'ready') trackEmergencyCardEvent('emergency_card_present_mode');
   }, [access, state.status]);
 
-  if (access !== 'card' || state.status !== 'ready') return <ListSkeleton />;
-  const updated = state.view.card ? formatDate(calendarDay(state.view.card.updatedAt), 'long') : '';
   const close = () => backOrReplace(router, { pathname: '/(main)/member/[id]/emergency', params: { id: memberId } });
+  // fullScreenModal sem cabeçalho: o fechar aparece em todo estado, senão erro ou carregamento prendem a pessoa aqui.
+  const closeRow = (
+    <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+      <IconButton icon="close" accessibilityLabel="Fechar a tela para o profissional" onPress={close} />
+    </View>
+  );
+  if (access !== 'card' || state.status !== 'ready') {
+    const failed = consents.isError || state.status === 'error' || state.status === 'missing';
+    return (
+      <Screen testID="emergency-present-screen">
+        {closeRow}
+        {failed ? <Text variant="body">Não foi possível abrir a ficha agora.</Text> : <ListSkeleton />}
+      </Screen>
+    );
+  }
+  const updated = state.view.card ? formatDate(calendarDay(state.view.card.updatedAt), 'long') : '';
   return (
     <Screen testID="emergency-present-screen">
       <Awake />
-      <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-        <IconButton icon="close" accessibilityLabel="Fechar a tela para o profissional" onPress={close} />
-      </View>
+      {closeRow}
       {demo ? <DemoBadge /> : null}
       <EmergencyCardSections view={state.view} mode="present" />
       <Text variant="footnote" color="secondary" style={{ marginTop: theme.layout.sectionGap }}>

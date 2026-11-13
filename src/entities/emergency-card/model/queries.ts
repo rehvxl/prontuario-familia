@@ -7,7 +7,7 @@ export const emergencyCardKeys = {
 };
 
 /** Ficha da pessoa. `null` é o vazio conhecido (ainda não há linha). */
-export function useMemberEmergencyCard(memberId: string) {
+export function useMemberEmergencyCard(memberId: string, enabled = true) {
   const repo = useEmergencyCardRepository();
-  return useQuery({ queryKey: emergencyCardKeys.byMember(memberId), queryFn: () => repo.getByMember(memberId), enabled: !!memberId });
+  return useQuery({ queryKey: emergencyCardKeys.byMember(memberId), queryFn: () => repo.getByMember(memberId), enabled: enabled && !!memberId });
 }

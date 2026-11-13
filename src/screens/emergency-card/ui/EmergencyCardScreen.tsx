@@ -38,7 +38,7 @@ export function EmergencyCardScreen({ demo = false }: { demo?: boolean }) {
   const memberId = typeof id === 'string' ? id : '';
   const consents = useMyConsents();
   const access = consents.isSuccess ? resolveEmergencyEntry(hasEmergencyCardConsent(consents.data)) : 'unknown';
-  const state = useEmergencyCardView(memberId);
+  const state = useEmergencyCardView(memberId, access === 'card');
   const hue = theme.personBoard(categoricalIndexFor(memberId));
   useBoardStatusBar(hue.statusBar);
 
