@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { formatAge, relationshipLabel, type Member } from '@/entities/member';
+import { resolveEmergencyEntry } from '@/features/manage-emergency-card';
 import { RECORD_TYPE_OPTIONS, RecordListItem, monthLabel, useMemberTimeline, type RecordType } from '@/entities/health-record';
 import { MemberHealthSummary, type SummaryTarget } from '@/widgets/member-health-summary';
 import { ChipGroup, EmptyState, ListSection, ListSkeleton, LoadErrorState, SegmentedControl, useTheme } from '@/shared/ui';
@@ -69,6 +70,10 @@ export function MemberPanel({ familyId, memberId, member, initialView = 'summary
         return router.push({ pathname: '/(main)/vital/new', params: { memberId: id } });
       case 'edit-member':
         return router.push({ pathname: '/(main)/member/[id]/edit', params: { id } });
+      case 'emergency': {
+        if (resolveEmergencyEntry() === 'paywall') return;
+        return router.push({ pathname: '/(main)/member/[id]/emergency', params: { id } });
+      }
     }
   };
 

@@ -82,6 +82,7 @@ async function setup(
     [DEPENDENCY_KEYS.measurements]: measurements,
     [DEPENDENCY_KEYS.vaccineDoses]: vaccineDoses,
     [DEPENDENCY_KEYS.medications]: medications,
+    [DEPENDENCY_KEYS.emergencyCards]: { getByMember: async () => null, upsert: async () => null, removeByMember: async () => undefined },
   });
   const seed = {
     record: (r: Partial<NewHealthRecord>) =>
@@ -144,6 +145,16 @@ describe('Pessoa · Resumo (F6)', () => {
     for (const id of ['summary-vaccines', 'summary-labs', 'summary-medications', 'summary-vitals']) {
       expect(within(screen.getByTestId(id)).getByRole('button', { name: 'Ver tudo' })).toBeOnTheScreen();
     }
+  });
+
+  it('a ficha fica no topo do resumo e o toque abre a leitura', async () => {
+    const { member, renderScreen } = await setup();
+    await renderScreen();
+    const row = await screen.findByTestId('summary-emergency');
+    expect(within(row).getByText('Ficha de emergência')).toBeOnTheScreen();
+    expect(await within(row).findByText('Ainda não preenchida')).toBeOnTheScreen();
+    await fireEvent.press(row);
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/(main)/member/[id]/emergency', params: { id: member.id } });
   });
 
   it('sem nenhum dado: frase do "tudo vazio" e, em cada seção, a frase curta com a ação (F6.3)', async () => {

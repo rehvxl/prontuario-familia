@@ -3,6 +3,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { formatDecimal, formatShortDate } from '@/shared/lib';
 import {
   Icon,
+  IconTile,
+  ListItem,
   ListSection,
   ListSkeleton,
   MetricValue,
@@ -11,6 +13,7 @@ import {
   Sparkline,
   StateChip,
   Text,
+  formatDate,
   metricAccessibilityLabel,
   useStackedLayout,
   useTheme,
@@ -27,7 +30,9 @@ import {
   type MeasurementSeries,
   type VitalCode,
 } from '@/entities/measurement';
+import { hasDeclaredContent, useMemberEmergencyCard } from '@/entities/emergency-card';
 import { useMemberMedications, type Medication } from '@/entities/medication';
+import { calendarDay, resolveEmergencyEntry } from '@/features/manage-emergency-card';
 import type { Member } from '@/entities/member';
 import { doseLabelOf, useMemberVaccines, vaccineLabel, type RuleEvaluation, type VaccineStatus } from '@/entities/vaccine';
 import { useMemberHealthSummary, type SectionState } from '@/features/health-overview';
@@ -43,7 +48,8 @@ export type SummaryTarget =
   | { screen: 'new-vaccine-dose' }
   | { screen: 'new-medication' }
   | { screen: 'new-vital' }
-  | { screen: 'edit-member' };
+  | { screen: 'edit-member' }
+  | { screen: 'emergency' };
 
 export interface MemberHealthSummaryProps {
   member: Member;
@@ -107,6 +113,15 @@ export function MemberHealthSummary({ member, onOpen }: MemberHealthSummaryProps
   const measurements = useMemberMeasurements(member.id);
   const vaccines = useMemberVaccines(member.id);
   const medications = useMemberMedications(member.id);
+  const emergencyCard = useMemberEmergencyCard(member.id, resolveEmergencyEntry() === 'card');
+  const updatedLabel = emergencyCard.data ? formatDate(calendarDay(emergencyCard.data.updatedAt), 'long') : '';
+  const emergencySubtitle =
+    emergencyCard.isSuccess && hasDeclaredContent(emergencyCard.data ?? null) && updatedLabel
+      ? `Atualizada em ${updatedLabel}`
+      : emergencyCard.isSuccess
+        ? 'Ainda não preenchida'
+        : undefined;
+  const emergencyLabel = `Ficha de emergência de ${member.fullName}, ${emergencySubtitle === 'Ainda não preenchida' || !emergencySubtitle ? 'ainda não preenchida' : emergencySubtitle.toLocaleLowerCase('pt-BR')}`;
 
   const labs = (measurements.data ?? []).filter((m) => m.kind === 'lab');
   const allEmpty =
@@ -116,6 +131,17 @@ export function MemberHealthSummary({ member, onOpen }: MemberHealthSummaryProps
 
   return (
     <View testID="member-health-summary">
+      <ListSection>
+        <ListItem
+          leading={<IconTile icon="medical" />}
+          title="Ficha de emergência"
+          subtitle={emergencySubtitle}
+          chevron
+          onPress={() => onOpen({ screen: 'emergency' })}
+          accessibilityLabel={emergencyLabel}
+          testID="summary-emergency"
+        />
+      </ListSection>
       {allEmpty ? (
         <Text variant="body" color="secondary" style={{ marginTop: theme.space[5] }} testID="summary-all-empty">
           {`Ainda não há dados de saúde de ${firstName}. Guarde um documento para começar.`}

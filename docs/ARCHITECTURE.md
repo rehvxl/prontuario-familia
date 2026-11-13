@@ -182,7 +182,7 @@ members ─1:n─ measurements · vaccine_doses · vaccine_rule_dismissals · me
 health_records ─1:n─ measurements · vaccine_doses · medications   (source_record_id, on delete cascade)
 ```
 
-- v0.2 (migração `20261111000004_health_data.sql`, `docs/features/dados-saude-backend.md`): FK composta `(source_record_id, member_id, family_id)` → `health_records`, para o item lido ser sempre da mesma pessoa do documento; apagar o documento apaga o que foi lido dele (A15). Os adaptadores locais imitam as mesmas restrições e cascatas. Termo `2026-11-v2`: o aceite da v1 deixa de valer e o app pede novo aceite.
+- v0.2 (migração `20261111000004_health_data.sql`, `docs/features/dados-saude-backend.md`): FK composta `(source_record_id, member_id, family_id)` → `health_records`, para o item lido ser sempre da mesma pessoa do documento; apagar o documento apaga o que foi lido dele (A15). Os adaptadores locais imitam as mesmas restrições e cascatas. Termo `2026-11-v2`: o aceite da v1 deixa de valer e o app pede novo aceite. Termo não versionado; adendo da ficha aprovado por Douglas em 2026-11-13: o texto da ficha de emergência integra o mesmo `2026-11-v2`, sem reaceite.
 
 - PKs `uuid`; `created_at`/`updated_at` com trigger; `health_records.family_id` desnormalizado para RLS e consulta.
 - Busca textual: coluna `search tsvector` (config `portuguese` + `unaccent`) com índice GIN em `health_records`.

@@ -43,6 +43,14 @@ describe('ConsentScreen (spec P1, termo 2026-11-v2)', () => {
       ),
     ).toBeOnTheScreen();
     expect(screen.getByText(TERMS_V2_PARAGRAPH)).toBeOnTheScreen();
+    const addendum = screen.getByTestId('terms-emergency-card');
+    expect(addendum).toHaveTextContent(/alergias/);
+    expect(addendum).toHaveTextContent(/tipo sanguíneo/);
+    expect(addendum).toHaveTextContent(/condições de saúde/);
+    expect(addendum).toHaveTextContent(/contatos de emergência/);
+    expect(addendum).toHaveTextContent(/profissional de saúde/);
+    expect(addendum).toHaveTextContent(/Lei nº 13\.709\/2018/);
+    expect(screen.queryByText('O que mudou')).toBeNull();
   });
 
   it('primeiro aceite: "Antes de começar"; o botão só aceita com as duas caixas, cada uma explícita', async () => {

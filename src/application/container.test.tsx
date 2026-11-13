@@ -15,10 +15,10 @@ jest.mock('@/features/read-document', () => {
 jest.mock('./supabase-ports', () => ({ createSupabasePorts: () => ({}) }));
 
 const demoEnv: AppEnv = { supabaseUrl: null, supabaseAnonKey: null, googleAuthEnabled: false, backendMode: 'demo' };
-const PORTS = ['auth', 'families', 'members', 'records', 'storage', 'consents', 'dataExport', 'measurements', 'vaccineDoses', 'medications', 'documentText'] as const;
+const PORTS = ['auth', 'families', 'members', 'records', 'storage', 'consents', 'dataExport', 'measurements', 'vaccineDoses', 'medications', 'emergencyCards', 'documentText'] as const;
 
 describe('createContainer', () => {
-  it('modo demo monta as 11 portas locais', async () => {
+  it('modo demo monta as 12 portas locais', async () => {
     const c = createContainer(demoEnv);
     expect(c.mode).toBe('demo');
     for (const key of PORTS) expect(c[key]).toBeDefined();

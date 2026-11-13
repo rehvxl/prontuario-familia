@@ -18,6 +18,7 @@ export const DEPENDENCY_KEYS = {
   measurements: 'measurements',
   vaccineDoses: 'vaccineDoses',
   medications: 'medications',
+  emergencyCards: 'emergencyCards',
   documentText: 'documentText',
 } as const;
 

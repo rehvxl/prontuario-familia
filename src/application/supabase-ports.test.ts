@@ -22,7 +22,7 @@ const supabaseEnv: AppEnv = {
 };
 
 describe('createContainer em modo supabase', () => {
-  it('monta as 11 portas com o cliente único e não toca no banco local', () => {
+  it('monta as 12 portas com o cliente único e não toca no banco local', () => {
     const client = fakeClient();
     const { from } = client;
     (getSupabaseClient as jest.Mock).mockReturnValue(client);
@@ -31,7 +31,7 @@ describe('createContainer em modo supabase', () => {
 
     expect(container.mode).toBe('supabase');
     expect(getSupabaseClient).toHaveBeenCalledTimes(1);
-    for (const key of ['auth', 'families', 'members', 'records', 'storage', 'consents', 'dataExport', 'measurements', 'vaccineDoses', 'medications', 'documentText'] as const) {
+    for (const key of ['auth', 'families', 'members', 'records', 'storage', 'consents', 'dataExport', 'measurements', 'vaccineDoses', 'medications', 'emergencyCards', 'documentText'] as const) {
       expect(container[key]).toBeDefined();
     }
     expect(from).not.toHaveBeenCalled(); // construir o container não faz consulta
