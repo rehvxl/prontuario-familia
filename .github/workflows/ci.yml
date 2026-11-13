@@ -34,7 +34,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
-      # CLI 3.1.0 (release estável de 2026-11-09). A mesma versão está em "db:test" no package.json.
+      # CLI 3.1.0 (release estável de 2026-11-09). A mesma versão está nos scripts db:* do package.json.
       # A action v3.2.0 instala essa versão fixa pelo npm; não usar latest.
       - uses: supabase/setup-cli@v3.2.0
         with:
