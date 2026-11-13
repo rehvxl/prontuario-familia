@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useMember } from '@/entities/member';
@@ -23,14 +23,18 @@ export function EditMemberScreen() {
   const remove = useRemoveMember();
   const [confirming, setConfirming] = useState(false);
 
-  if (member.isPending || remove.isSuccess) return <Screen scroll={false} board={hue}><Spinner fill label="Carregando" /></Screen>;
-  if (member.isError) return <Screen scroll={false} board={hue}><LoadErrorState onRetry={() => member.refetch()} /></Screen>;
+  // Cabeçalho opaco e barra de status na divisória também nos estados de carregamento, erro e não encontrada.
+  const frame = (children: ReactNode) => (
+    <Screen scroll={false} board={hue}>
+      <Stack.Screen options={headerOptions(theme, { board: hue })} />
+      <StatusBar style={hue.statusBar} />
+      {children}
+    </Screen>
+  );
+  if (member.isPending || remove.isSuccess) return frame(<Spinner fill label="Carregando" />);
+  if (member.isError) return frame(<LoadErrorState onRetry={() => member.refetch()} />);
   if (!member.data) {
-    return (
-      <Screen scroll={false} board={hue}>
-        <EmptyState tone="error" title="Pessoa não encontrada" message="Ela pode ter sido removida da família." action={{ label: 'Voltar', onPress: () => router.back() }} />
-      </Screen>
-    );
+    return frame(<EmptyState tone="error" title="Pessoa não encontrada" message="Ela pode ter sido removida da família." action={{ label: 'Voltar', onPress: () => router.back() }} />);
   }
   const m = member.data;
 

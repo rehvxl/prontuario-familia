@@ -8,6 +8,9 @@ import { useAddMember } from '@/features/manage-members';
 import { MemberForm } from '@/widgets/member-form';
 import { Button, ListSection, LoadErrorState, Screen, SectionHeader, Spinner, TabRail, Text, categoricalIndexFor, useTheme } from '@/shared/ui';
 
+/** Sem cabeçalho nativo: a divisória vai até a barra de status. */
+const EDGES = ['top', 'left', 'right', 'bottom'] as const;
+
 /**
  * Segundo passo do setup: cadastrar as primeiras pessoas. Depois da primeira, dá para concluir.
  * v4: na capa da família, cada pessoa ganha a sua divisória ao ser adicionada: a aba dela surge na régua, na cor
@@ -24,8 +27,8 @@ export function FirstMembersScreen() {
 
   const finish = () => router.replace('/(main)/(tabs)/(family)');
 
-  if (familyQuery.isError) return <Screen scroll={false} board="ultramar"><LoadErrorState onRetry={() => familyQuery.refetch()} /></Screen>;
-  if (!family) return <Screen scroll={false} board="ultramar"><Spinner fill label="Carregando" /></Screen>;
+  if (familyQuery.isError) return <Screen scroll={false} board="ultramar" edges={EDGES}><LoadErrorState onRetry={() => familyQuery.refetch()} /></Screen>;
+  if (!family) return <Screen scroll={false} board="ultramar" edges={EDGES}><Spinner fill label="Carregando" /></Screen>;
 
   const tabs = [
     { id: 'family', label: 'Família', hue: 'ultramar' as const, selected: true },
@@ -36,7 +39,7 @@ export function FirstMembersScreen() {
     <Screen
       testID="first-members-screen"
       board="ultramar"
-      edges={['top', 'left', 'right', 'bottom']}
+      edges={EDGES}
       rail={
         <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" testID="first-members-rail">
           <TabRail items={tabs} onSelect={() => undefined} />
