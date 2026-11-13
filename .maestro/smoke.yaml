@@ -66,9 +66,21 @@ tags:
 - tapOn:
     id: "family-name-input"
 - inputText: "Família Souza"
-# Envia pelo teclado (onSubmitEditing). Tocar no botão derruba o driver XCTest no iOS:
-# o botão vira "carregando" e a tela troca no meio do toque.
-- pressKey: Enter
+# iOS envia pelo teclado (onSubmitEditing): tocar no botão derruba o driver XCTest,
+# porque o botão vira "carregando" e a tela troca no meio do toque.
+# No Android o Enter do Maestro não dispara o envio; lá o toque funciona.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - pressKey: Enter
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+      - waitForAnimationToEnd
+      - tapOn: "Criar família"
 - extendedWaitUntil:
     visible:
       id: "member-name"
