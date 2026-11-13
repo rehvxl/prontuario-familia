@@ -15,7 +15,7 @@ export interface SectionHeaderProps {
 /**
  * Cabeçalho de seção (title3: 20 pt Bold, Archivo), anunciado como cabeçalho, com ação opcional na tinta
  * da divisória e um fio fino ao lado do título até a ação (o índice do manual). Respiro 28 acima e 10 abaixo;
- * a margem lateral é a do pai (Screen/Leaf). Em AX3+ a ação desce e o fio sai.
+ * a margem lateral é a do pai (Screen/Leaf). Com texto grande (`STACK_FONT_SCALE`) a ação desce e o fio sai.
  */
 export function SectionHeader({ title, action, level = 'section', style, testID }: SectionHeaderProps) {
   const theme = useTheme();

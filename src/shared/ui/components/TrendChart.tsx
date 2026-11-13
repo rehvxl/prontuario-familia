@@ -30,7 +30,7 @@ export interface TrendChartProps {
    */
   summary: string;
   onPointPress?: (index: number) => void;
-  /** Padrão 196 (240 em AX3+). */
+  /** Padrão 196 (240 com texto grande, `STACK_FONT_SCALE`). */
   height?: number;
   style?: StyleProp<ViewStyle>;
   testID?: string;
