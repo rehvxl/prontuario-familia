@@ -1,7 +1,74 @@
+import { act, render, renderHook, screen, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import { AccessibilityInfo, Text } from 'react-native';
-import { act, render, screen } from '@testing-library/react-native';
 import { ThemeProvider, useTheme } from './ThemeProvider';
+
+type Reader = () => Promise<boolean>;
+
+const info = AccessibilityInfo as Omit<typeof AccessibilityInfo, 'isReduceMotionEnabled' | 'isReduceTransparencyEnabled'> & {
+  isReduceMotionEnabled: Reader;
+  isReduceTransparencyEnabled?: Reader;
+};
+
+function themeWrapper(props: { glassAvailable?: boolean; reducedMotion?: boolean }) {
+  return function Wrapper({ children }: { children: ReactNode }) {
+    return (
+      <ThemeProvider scheme="light" {...props}>
+        {children}
+      </ThemeProvider>
+    );
+  };
+}
+
+describe('ThemeProvider: reduzir transparência', () => {
+  const originalTransparency = info.isReduceTransparencyEnabled;
+  const originalMotion = info.isReduceMotionEnabled;
+
+  afterEach(() => {
+    info.isReduceTransparencyEnabled = originalTransparency;
+    info.isReduceMotionEnabled = originalMotion;
+  });
+
+  it('sem isReduceTransparencyEnabled (react-native-web) não quebra e não reduz a transparência', async () => {
+    info.isReduceTransparencyEnabled = undefined;
+    const motion = jest.fn((...args: Parameters<Reader>) => originalMotion.apply(AccessibilityInfo, args));
+    info.isReduceMotionEnabled = motion;
+
+    const { result } = await renderHook(() => useTheme(), {
+      wrapper: themeWrapper({ glassAvailable: true }),
+    });
+
+    expect(result.current.glass.reduceTransparency).toBe(false);
+    expect(result.current.glass.enabled).toBe(true);
+    expect(motion).toHaveBeenCalled();
+  });
+
+  it('com a API presente, continua usando o valor do sistema', async () => {
+    info.isReduceTransparencyEnabled = () => Promise.resolve(true);
+
+    const { result } = await renderHook(() => useTheme(), {
+      wrapper: themeWrapper({ glassAvailable: true, reducedMotion: false }),
+    });
+
+    await waitFor(() => expect(result.current.glass.reduceTransparency).toBe(true));
+    expect(result.current.glass.enabled).toBe(false);
+  });
+
+  it('se a leitura rejeita, não quebra e não reduz a transparência', async () => {
+    info.isReduceTransparencyEnabled = () => Promise.reject(new Error('indisponível'));
+
+    const { result } = await renderHook(() => useTheme(), {
+      wrapper: themeWrapper({ glassAvailable: true, reducedMotion: false }),
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(result.current.glass.reduceTransparency).toBe(false);
+    expect(result.current.glass.enabled).toBe(true);
+  });
+});
 
 /** O padrão é não reduzir movimento nem transparência. Com vidro disponível, ele continua ligado. */
 function Reading() {
@@ -21,8 +88,14 @@ function wrapper({ children }: { children: ReactNode }) {
 }
 
 describe('ThemeProvider: leitura de acessibilidade rejeitada', () => {
-  const motion = jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled');
-  const transparency = jest.spyOn(AccessibilityInfo, 'isReduceTransparencyEnabled');
+  // Espiões criados por teste: o bloco acima reatribui as funções originais no afterEach.
+  let motion: jest.SpyInstance;
+  let transparency: jest.SpyInstance;
+
+  beforeEach(() => {
+    motion = jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled');
+    transparency = jest.spyOn(AccessibilityInfo, 'isReduceTransparencyEnabled');
+  });
 
   afterEach(() => {
     motion.mockRestore();
