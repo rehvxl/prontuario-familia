@@ -21,7 +21,7 @@ export const layout = {
   /** Margem lateral das telas. */
   screenGutter: 20,
   /** Distância entre seções de uma tela. */
-  sectionGap: 32,
+  sectionGap: 28,
   /** Distância entre campos de formulário. */
   fieldGap: 20,
   /** Largura máxima de leitura (tablets/landscape). */

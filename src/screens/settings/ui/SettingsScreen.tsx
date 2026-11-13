@@ -1,9 +1,9 @@
-import { useCallback, useState } from 'react';
-import { Stack, useFocusEffect } from 'expo-router';
-import { setStatusBarStyle } from 'expo-status-bar';
+import { useState } from 'react';
+import { Stack } from 'expo-router';
 import { useCurrentUser } from '@/entities/session';
 import { useExportData } from '@/features/export-data';
 import { useSignOut } from '@/features/auth';
+import { useBoardStatusBar } from '@/shared/ui/navigation';
 import { Avatar, Banner, ConfirmSheet, IconTile, ListItem, ListSection, Screen, Spinner, errorMessage, useTheme } from '@/shared/ui';
 import { shareExport } from '../lib/share-export';
 
@@ -47,13 +47,7 @@ export function SettingsScreen({ mode, revokeConsent, deleteAccount, loadDemoFam
   const [sheet, setSheet] = useState<Sheet>(null);
   const [exportError, setExportError] = useState<unknown>(null);
   const [exporting, setExporting] = useState(false);
-  const statusBar = theme.hues.family.statusBar;
-  useFocusEffect(
-    useCallback(() => {
-      setStatusBarStyle(statusBar);
-      return () => setStatusBarStyle('auto');
-    }, [statusBar]),
-  );
+  useBoardStatusBar(theme.hues.family.statusBar);
 
   const doExport = async () => {
     setExportError(null);
