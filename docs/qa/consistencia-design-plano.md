@@ -123,3 +123,7 @@ Emulador Pixel 7, Android 16 (API 36), AVD criado só para isso, modo demo, `mai
 2. **Chip de estado cortado em 2,0× no Resumo**: "Acima da faixa" aparece como "Acima da" ao lado da régua (`MeasurementRow`). O doc §7.1 manda empilhar em AX5; mesma causa do item 1.
 
 Não conferido no Android: folha de sinal vital e de medicamento, Documentos e Buscar.
+
+### Correção dos achados de texto grande (13/11/2026)
+
+`STACK_FONT_SCALE` passou de 2,35 (iOS AX3) para 1,75: liga no Android grande (máximo 2,0×) e no iOS de AX2 em diante. Conferido: Android em 2,0× (Carteira de vacinas com os três números empilhados, "Dentro da faixa" e "Acima da faixa" inteiros no Resumo, "Ver tudo" abaixo do título) e iOS 26.5 em AX2 (Carteira de vacinas empilhada). Testes: `SectionHeader` empilha em 2,4×, 2,0× e 1,75× e mantém o fio em 1,5×.

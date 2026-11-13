@@ -161,7 +161,7 @@ Especificação visual completa, props e anatomia: `DESIGN.md` › Components. R
 | `Text` | Archivo por peso (`theme.font`), inclusive com `style.fontWeight`; Android sem `fontWeight` | Visual |
 | `Button` / `FloatingActionButton` | Tinta da divisória atual (`primary`); Archivo no rótulo SwiftUI | Visual |
 | `ListSection` / `ListItem` | Sem cartão: sem fundo, raio nem borda; fio fino embaixo de cada linha; dentro da seção a linha alinha à coluna de texto (sem recuo de 16). `separatorInset` aceito e ignorado | Visual |
-| `SectionHeader` | 20 pt Bold, ação na tinta da divisória; fio fino (`border`, hairline) ao lado do título até a ação, como o índice do manual; em AX3+ o fio sai | Visual |
+| `SectionHeader` | 20 pt Bold, ação na tinta da divisória; fio fino (`border`, hairline) ao lado do título até a ação, como o índice do manual; com texto grande (`STACK_FONT_SCALE`, 1,75×) o fio sai | Visual |
 | `AttentionList` | Linhas da folha: `TabMark` da pessoa, título em 17 SemiBold, `meta` (data) à direita, ícone do estado na tinta da divisória + detalhe. Novos campos opcionais `personId?`, `hue?`, `meta?`; `tone` não pinta | Aditivo |
 | `RangeBar` | Faixa no `soft` da divisória, marcador na tinta da pessoa; `state` não pinta (o texto diz) | Visual |
 | `TrendChart` / `Sparkline` | Linha, pontos e bordas da faixa na tinta da pessoa; estado pela forma do ponto; eixos em Archivo. Legenda fiel ao desenho: cada estado presente com a forma **vazada** (como os pontos) e uma entrada "Cheio: último resultado" (`TREND_LAST_LEGEND`) com a forma do último ponto preenchida | Visual |
@@ -301,7 +301,7 @@ Acessibilidade: "Losartana 50 miligramas, 1 comprimido pela manhã, uso contínu
 ### 7.9 Sinais vitais + registrar (F5)
 Rota `member/[id]/vitals/[code]` + sheet `vital/new` (`formSheet`). Por tipo: último valor (`MetricValue row`), data e hora, série (pressão com duas linhas, sistólica e diastólica, sem banda e sem eixo de normalidade) e a lista com data e hora. Ação "Registrar sinal vital" → `VitalEntryForm`. Rodapé A4. Nada de dentro/fora de faixa nem IMC.
 Estados: vazio → "Nenhuma medição registrada."; validação pela F5 (sistólica ≤ diastólica bloqueia; fora dos limites de digitação, A14 com "Salvar assim" / "Corrigir").
-Acessibilidade: campos com rótulo e unidade ("Sistólica, em milímetros de mercúrio"); foco no primeiro campo ao abrir; teclado decimal; em AX3+ os dois campos de pressão empilham.
+Acessibilidade: campos com rótulo e unidade ("Sistólica, em milímetros de mercúrio"); foco no primeiro campo ao abrir; teclado decimal; a partir de 1,75× (`STACK_FONT_SCALE`) os dois campos de pressão empilham.
 
 ### 7.10 Novo registro: captura → leitura → revisão (F1)
 Rota `record/new` (hoje `modal`; `formSheet` depois da validação da §13.2). Captura, leitura e revisão são **passos da mesma folha**, sem rota `record/review` (spec §9 revisada; `ocr-tecnico.md` §f).
