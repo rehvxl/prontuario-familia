@@ -43,7 +43,7 @@ describe('createLocalDataExportGateway', () => {
       vaccineDoses: LOCAL_COLLECTIONS.vaccineDoses,
       medications: LOCAL_COLLECTIONS.medications,
       vaccineRuleDismissals: LOCAL_COLLECTIONS.vaccineRuleDismissals,
-      emergencyCards: LOCAL_COLLECTIONS.emergencyCards,
+      emergency_cards: LOCAL_COLLECTIONS.emergencyCards,
     };
     for (const c of Object.values(collections)) {
       await db.put(c, `${c}-meu`, { id: `${c}-meu`, familyId: 'f1', memberId: 'm1' });
@@ -58,5 +58,6 @@ describe('createLocalDataExportGateway', () => {
     }
     expect(json).not.toContain('alheio');
     expect(data.format_version).toBe(3);
+    expect(data.emergencyCards).toBeUndefined();
   });
 });

@@ -30,7 +30,7 @@ export function createLocalDataExportGateway(db: LocalDb): DataExportGateway {
       return JSON.stringify(
         {
           exportedAt: new Date().toISOString(),
-          // O arquivo do servidor usa `format_version: 3` e a chave `emergency_cards` (sem `created_by`).
+          // Mesma versão e a mesma chave da ficha que a Edge Function (`emergency_cards`, sem `created_by`).
           format_version: 3,
           source: 'demo',
           user,
@@ -43,7 +43,7 @@ export function createLocalDataExportGateway(db: LocalDb): DataExportGateway {
           vaccineDoses: vaccineDoses.filter(inMyFamilies),
           medications: medications.filter(inMyFamilies),
           vaccineRuleDismissals: vaccineRuleDismissals.filter(inMyFamilies),
-          emergencyCards: emergencyCards.filter(inMyFamilies),
+          emergency_cards: emergencyCards.filter(inMyFamilies),
         },
         null,
         2,

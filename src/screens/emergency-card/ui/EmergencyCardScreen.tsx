@@ -97,12 +97,8 @@ export function EmergencyCardScreen({ demo = false }: { demo?: boolean }) {
       {filled ? (
         <>
           <EmergencyCardSections view={view} mode="read" onEditMedications={openMeds} />
-          {offline ? null : (
-            <>
-              <Button label="Mostrar para o profissional" onPress={openPresent} fullWidth style={{ marginTop: theme.layout.sectionGap }} />
-              <Button label="Editar ficha" variant="bordered" onPress={openEdit} fullWidth style={{ marginTop: theme.space[3] }} />
-            </>
-          )}
+          <Button label="Mostrar para o profissional" onPress={openPresent} fullWidth style={{ marginTop: theme.layout.sectionGap }} />
+          {offline ? null : <Button label="Editar ficha" variant="bordered" onPress={openEdit} fullWidth style={{ marginTop: theme.space[3] }} />}
         </>
       ) : (
         <EmptyState

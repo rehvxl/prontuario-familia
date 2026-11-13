@@ -109,9 +109,12 @@ describe('Ficha de emergência', () => {
       onlineManager.setOnline(false);
     });
     expect(await screen.findByText('Sem conexão: a ficha está em modo leitura.')).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Mostrar para o profissional' })).toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: 'Editar ficha' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Preencher ficha' })).toBeNull();
     expect(screen.getByText('Dipirona')).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole('button', { name: 'Mostrar para o profissional' }));
+    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/(main)/member/[id]/emergency-present', params: { id: expect.any(String) } });
     await act(async () => {
       onlineManager.setOnline(true);
     });
