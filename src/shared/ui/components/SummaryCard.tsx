@@ -60,7 +60,7 @@ export function StatTile({ value, label, accessibilityLabel, testID }: StatTileP
   );
 }
 
-/** Faixa de 2–3 `StatTile` num único grupo, separados por fio vertical. Em AX3+ empilham. */
+/** Faixa de 2–3 `StatTile` num único grupo, separados por fio vertical. Com texto grande (`STACK_FONT_SCALE`) empilham. */
 export function StatTileGroup({ children, style, testID }: { children: ReactNode; style?: StyleProp<ViewStyle>; testID?: string }) {
   const theme = useTheme();
   const stacked = useStackedLayout();
