@@ -29,6 +29,9 @@ export interface AuthGateway {
 
 /** Exportação dos dados do titular (LGPD art. 18, II e V). */
 export interface DataExportGateway {
-  /** JSON com família, membros, registros, consentimentos e URLs temporárias dos anexos. */
+  /**
+   * JSON do titular. Servidor e modo demonstração usam `format_version: 3` e `emergency_cards`
+   * no nível de cima (sem `created_by`). As outras coleções do demo seguem em camelCase.
+   */
   exportMyData(): Promise<string>;
 }

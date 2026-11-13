@@ -11,7 +11,7 @@ select is(
 
 select is(
   (select array_agg(tablename::text order by tablename) from pg_tables where schemaname = 'public'),
-  array['attachments', 'audit_events', 'consents', 'families', 'family_memberships', 'health_records', 'measurements',
+  array['attachments', 'audit_events', 'consents', 'emergency_cards', 'families', 'family_memberships', 'health_records', 'measurements',
         'medications', 'members', 'profiles', 'vaccine_doses', 'vaccine_rule_dismissals'],
   'conjunto esperado de tabelas'
 );

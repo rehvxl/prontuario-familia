@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { CURRENT_TERMS_VERSION, useMyConsents } from '@/entities/consent';
+import { CURRENT_TERMS_VERSION, TERMS_EMERGENCY_CARD_ADDENDUM, TERMS_HEALTH_DESCRIPTION, TERMS_V2_PARAGRAPH, useMyConsents } from '@/entities/consent';
 import { useCurrentUser } from '@/entities/session';
 import { Banner, Button, Card, Checkbox, ListSection, Screen, Text, errorMessage, headerOptions, useTheme } from '@/shared/ui';
 
@@ -13,9 +13,8 @@ export interface ConsentFlow {
   error: unknown;
 }
 
-/** Parágrafo novo do termo v2 (spec §4, P1). Texto exato, sujeito à revisão jurídica (Q1). */
-export const TERMS_V2_PARAGRAPH =
-  'Além dos documentos, o app organiza valores de exames, vacinas, medicamentos e sinais vitais que você registrar ou confirmar. A leitura do texto dos documentos é feita no próprio aparelho: o texto lido não é enviado nem guardado, e só os dados que você confirmar são salvos. O calendário público de vacinação é usado apenas como referência.';
+/** Reexportado para os testes. */
+export { TERMS_V2_PARAGRAPH };
 
 /**
  * Consentimento (LGPD art. 11, I): duas caixas separadas e destacadas — termos/privacidade e tratamento de dados de saúde.
@@ -63,8 +62,11 @@ export function ConsentScreen({ flow }: { flow: ConsentFlow }) {
           : 'Precisamos da sua autorização para guardar as informações de saúde da sua família.'}
       </Text>
       {flow.error ? <Banner tone="danger" message={errorMessage(flow.error)} style={{ marginBottom: theme.space[4] }} /> : null}
-      <Card style={{ marginBottom: theme.space[6] }} testID="terms-v2">
+      <Card style={{ marginBottom: theme.space[4] }} testID="terms-v2">
         <Text>{TERMS_V2_PARAGRAPH}</Text>
+      </Card>
+      <Card style={{ marginBottom: theme.space[6] }} testID="terms-emergency-card">
+        <Text>{TERMS_EMERGENCY_CARD_ADDENDUM}</Text>
       </Card>
       <ListSection>
         <Checkbox
@@ -77,7 +79,7 @@ export function ConsentScreen({ flow }: { flow: ConsentFlow }) {
           checked={healthData}
           onChange={setHealthData}
           label="Autorizo o tratamento dos dados de saúde da minha família"
-          description="Exames, receitas e vacinas são dados pessoais sensíveis (LGPD, art. 11). Só servem para mostrar o histórico a você e a quem você adicionar à família. Você pode revogar quando quiser, em Ajustes."
+          description={TERMS_HEALTH_DESCRIPTION}
         />
       </ListSection>
     </Screen>

@@ -18,6 +18,7 @@ import { createLocalConsentRepository, type ConsentRepository } from '@/entities
 import { createLocalMeasurementRepository, type MeasurementRepository } from '@/entities/measurement';
 import { createLocalVaccineDoseRepository, type VaccineDoseRepository } from '@/entities/vaccine';
 import { createLocalMedicationRepository, type MedicationRepository } from '@/entities/medication';
+import { createLocalEmergencyCardRepository, type EmergencyCardRepository } from '@/entities/emergency-card';
 import {
   createDemoDocumentTextExtractor,
   createDeviceDocumentTextExtractor,
@@ -38,6 +39,7 @@ export interface AppPorts {
   measurements: MeasurementRepository;
   vaccineDoses: VaccineDoseRepository;
   medications: MedicationRepository;
+  emergencyCards: EmergencyCardRepository;
   /** Leitor de documentos; não depende do backend (ocr-tecnico.md §b.4). */
   documentText: DocumentTextExtractor;
 }
@@ -62,6 +64,7 @@ function createLocalPorts(): BackendPorts {
     measurements: createLocalMeasurementRepository(db),
     vaccineDoses: createLocalVaccineDoseRepository(db),
     medications: createLocalMedicationRepository(db),
+    emergencyCards: createLocalEmergencyCardRepository(db),
   };
 }
 
@@ -95,6 +98,7 @@ export function containerDependencies(container: AppContainer): Record<string, u
     [DEPENDENCY_KEYS.measurements]: container.measurements,
     [DEPENDENCY_KEYS.vaccineDoses]: container.vaccineDoses,
     [DEPENDENCY_KEYS.medications]: container.medications,
+    [DEPENDENCY_KEYS.emergencyCards]: container.emergencyCards,
     [DEPENDENCY_KEYS.documentText]: container.documentText,
   };
 }

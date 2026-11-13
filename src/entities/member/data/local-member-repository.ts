@@ -12,6 +12,7 @@ const HEALTH_COLLECTIONS = [
   LOCAL_COLLECTIONS.measurements,
   LOCAL_COLLECTIONS.vaccineDoses,
   LOCAL_COLLECTIONS.medications,
+  LOCAL_COLLECTIONS.emergencyCards,
   LOCAL_COLLECTIONS.vaccineRuleDismissals,
 ];
 

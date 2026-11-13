@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { clearEmergencyReadCache } from '@/entities/emergency-card';
 import { sessionKeys, useAuthGateway, type AuthUser } from '@/entities/session';
 import { requestEmailCode, signInWithApple, signInWithGoogle, signOut, verifyEmailCode } from '../domain/auth';
 
@@ -42,7 +43,12 @@ export function useSignOut() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => signOut({ auth }),
-    onSuccess: () => {
+    onMutate: () => {
+      const user = queryClient.getQueryData<AuthUser | null>(sessionKeys.user);
+      return { userId: user?.id ?? null };
+    },
+    onSuccess: (_data, _vars, context) => {
+      if (context?.userId) void clearEmergencyReadCache(context.userId);
       queryClient.clear();
       queryClient.setQueryData(sessionKeys.user, null);
     },

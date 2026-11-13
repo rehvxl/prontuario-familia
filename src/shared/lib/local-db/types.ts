@@ -9,6 +9,7 @@ export const LOCAL_COLLECTIONS = {
   measurements: 'measurements',
   vaccineDoses: 'vaccineDoses',
   medications: 'medications',
+  emergencyCards: 'emergencyCards',
   vaccineRuleDismissals: 'vaccineRuleDismissals',
 } as const;
 
