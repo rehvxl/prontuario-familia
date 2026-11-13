@@ -43,7 +43,7 @@ function fromSnapshot(snapshot: EmergencyReadSnapshot): AssembledEmergencyCard {
 
 /**
  * Leitura da ficha: a rede quando responde; o snapshot cifrado quando a consulta pausa. Sem snapshot, não inventa dado.
- * `enabled` falso (sem o termo v3) não busca a ficha nem lê ou grava o snapshot.
+ * `enabled` falso (paywall) não busca a ficha nem lê ou grava o snapshot.
  */
 export function useEmergencyCardView(memberId: string, enabled = true): EmergencyCardViewState {
   const user = useCurrentUser();

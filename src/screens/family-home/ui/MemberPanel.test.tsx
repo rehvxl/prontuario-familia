@@ -83,12 +83,6 @@ async function setup(
     [DEPENDENCY_KEYS.vaccineDoses]: vaccineDoses,
     [DEPENDENCY_KEYS.medications]: medications,
     [DEPENDENCY_KEYS.emergencyCards]: { getByMember: async () => null, upsert: async () => null, removeByMember: async () => undefined },
-    [DEPENDENCY_KEYS.consents]: {
-      listMine: async () => [
-        { purpose: 'terms_and_privacy', version: '2026-11-v3', acceptedAt: '2026-11-01T00:00:00.000Z', revokedAt: null },
-        { purpose: 'health_data_processing', version: '2026-11-v3', acceptedAt: '2026-11-01T00:00:00.000Z', revokedAt: null },
-      ],
-    },
   });
   const seed = {
     record: (r: Partial<NewHealthRecord>) =>
@@ -153,7 +147,7 @@ describe('Pessoa · Resumo (F6)', () => {
     }
   });
 
-  it('a ficha fica no topo do resumo e o toque abre a leitura quando o termo v3 está aceito', async () => {
+  it('a ficha fica no topo do resumo e o toque abre a leitura', async () => {
     const { member, renderScreen } = await setup();
     await renderScreen();
     const row = await screen.findByTestId('summary-emergency');

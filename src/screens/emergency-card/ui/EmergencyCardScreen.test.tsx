@@ -25,11 +25,6 @@ jest.mock('expo-keep-awake', () => ({ useKeepAwake: () => undefined }));
 
 const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
 
-const v3 = [
-  { purpose: 'terms_and_privacy' as const, version: '2026-11-v3', acceptedAt: '2026-11-01T00:00:00.000Z', revokedAt: null },
-  { purpose: 'health_data_processing' as const, version: '2026-11-v3', acceptedAt: '2026-11-01T00:00:00.000Z', revokedAt: null },
-];
-
 async function setup(filled: 'empty' | 'allergies' | 'none-known' = 'empty') {
   const db = createMemoryDb();
   const members = createLocalMemberRepository(db);
@@ -56,7 +51,6 @@ async function setup(filled: 'empty' | 'allergies' | 'none-known' = 'empty') {
     [DEPENDENCY_KEYS.medications]: createLocalMedicationRepository(db),
     [DEPENDENCY_KEYS.emergencyCards]: cards,
     [DEPENDENCY_KEYS.records]: { list: async () => [] },
-    [DEPENDENCY_KEYS.consents]: { listMine: async () => v3 },
   });
   mockParams = { id: member.id, memberId: member.id };
   const wrapper = ({ children }: { children?: ReactNode }) => (

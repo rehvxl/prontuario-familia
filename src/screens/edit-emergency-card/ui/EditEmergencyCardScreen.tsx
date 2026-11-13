@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { usePreventRemove, useLocalSearchParams, useRouter } from 'expo-router';
-import { hasEmergencyCardConsent, useMyConsents } from '@/entities/consent';
 import { useMember } from '@/entities/member';
 import {
   EmergencyCardForm,
@@ -22,8 +21,7 @@ export function EditEmergencyCardScreen() {
   const router = useRouter();
   const { memberId: raw } = useLocalSearchParams<{ memberId?: string }>();
   const memberId = typeof raw === 'string' ? raw : '';
-  const consents = useMyConsents();
-  const access = consents.isSuccess ? resolveEmergencyEntry(hasEmergencyCardConsent(consents.data)) : 'unknown';
+  const access = resolveEmergencyEntry();
   const member = useMember(memberId || undefined);
   const state = useEmergencyCardView(memberId, access === 'card');
   const save = useSaveEmergencyCard();
@@ -34,9 +32,8 @@ export function EditEmergencyCardScreen() {
   const hue = theme.personBoard(categoricalIndexFor(memberId));
 
   useEffect(() => {
-    if (access === 'consent') router.replace({ pathname: '/(main)/emergency-consent', params: { memberId } });
     if (access === 'paywall') router.back();
-  }, [access, memberId, router]);
+  }, [access, router]);
 
   usePreventRemove(dirty && !leaving && !save.isPending, () => setAskLeave(true));
 

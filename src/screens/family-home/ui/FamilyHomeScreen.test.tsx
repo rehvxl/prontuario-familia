@@ -61,12 +61,6 @@ async function setup(people: Omit<NewMember, 'familyId'>[], over: { listMembers?
     [DEPENDENCY_KEYS.vaccineDoses]: createLocalVaccineDoseRepository(db),
     [DEPENDENCY_KEYS.medications]: createLocalMedicationRepository(db),
     [DEPENDENCY_KEYS.emergencyCards]: { getByMember: async () => null, upsert: async () => null, removeByMember: async () => undefined },
-    [DEPENDENCY_KEYS.consents]: {
-      listMine: async () => [
-        { purpose: 'terms_and_privacy', version: '2026-11-v3', acceptedAt: '2026-11-01T00:00:00.000Z', revokedAt: null },
-        { purpose: 'health_data_processing', version: '2026-11-v3', acceptedAt: '2026-11-01T00:00:00.000Z', revokedAt: null },
-      ],
-    },
   });
   const renderScreen = (demo = false) =>
     render(

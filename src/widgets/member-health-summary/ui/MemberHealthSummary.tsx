@@ -30,10 +30,9 @@ import {
   type MeasurementSeries,
   type VitalCode,
 } from '@/entities/measurement';
-import { hasEmergencyCardConsent, useMyConsents } from '@/entities/consent';
 import { hasDeclaredContent, useMemberEmergencyCard } from '@/entities/emergency-card';
 import { useMemberMedications, type Medication } from '@/entities/medication';
-import { calendarDay } from '@/features/manage-emergency-card';
+import { calendarDay, resolveEmergencyEntry } from '@/features/manage-emergency-card';
 import type { Member } from '@/entities/member';
 import { doseLabelOf, useMemberVaccines, vaccineLabel, type RuleEvaluation, type VaccineStatus } from '@/entities/vaccine';
 import { useMemberHealthSummary, type SectionState } from '@/features/health-overview';
@@ -114,20 +113,15 @@ export function MemberHealthSummary({ member, onOpen }: MemberHealthSummaryProps
   const measurements = useMemberMeasurements(member.id);
   const vaccines = useMemberVaccines(member.id);
   const medications = useMemberMedications(member.id);
-  const consents = useMyConsents();
-  const needsConsent = consents.isSuccess ? !hasEmergencyCardConsent(consents.data) : consents.isError;
-  const emergencyCard = useMemberEmergencyCard(member.id, consents.isSuccess && !needsConsent);
+  const emergencyCard = useMemberEmergencyCard(member.id, resolveEmergencyEntry() === 'card');
   const updatedLabel = emergencyCard.data ? formatDate(calendarDay(emergencyCard.data.updatedAt), 'long') : '';
-  const emergencySubtitle = needsConsent
-    ? 'Aceite o termo atualizado para usar'
-    : emergencyCard.isSuccess && hasDeclaredContent(emergencyCard.data ?? null) && updatedLabel
+  const emergencySubtitle =
+    emergencyCard.isSuccess && hasDeclaredContent(emergencyCard.data ?? null) && updatedLabel
       ? `Atualizada em ${updatedLabel}`
       : emergencyCard.isSuccess
         ? 'Ainda não preenchida'
         : undefined;
-  const emergencyLabel = needsConsent
-    ? `Ficha de emergência de ${member.fullName}. Aceite o termo atualizado para usar.`
-    : `Ficha de emergência de ${member.fullName}, ${emergencySubtitle === 'Ainda não preenchida' || !emergencySubtitle ? 'ainda não preenchida' : emergencySubtitle.toLocaleLowerCase('pt-BR')}`;
+  const emergencyLabel = `Ficha de emergência de ${member.fullName}, ${emergencySubtitle === 'Ainda não preenchida' || !emergencySubtitle ? 'ainda não preenchida' : emergencySubtitle.toLocaleLowerCase('pt-BR')}`;
 
   const labs = (measurements.data ?? []).filter((m) => m.kind === 'lab');
   const allEmpty =
@@ -145,7 +139,6 @@ export function MemberHealthSummary({ member, onOpen }: MemberHealthSummaryProps
           chevron
           onPress={() => onOpen({ screen: 'emergency' })}
           accessibilityLabel={emergencyLabel}
-          accessibilityHint={needsConsent ? 'Abre o termo atualizado. A ficha só fica disponível depois do aceite.' : undefined}
           testID="summary-emergency"
         />
       </ListSection>

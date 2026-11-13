@@ -19,10 +19,9 @@ describe('analytics e entrada da ficha', () => {
 
   it('isEntitled permanece verdadeiro e a entrada consulta essa função', () => {
     expect(isEntitled('emergency_card')).toBe(true);
-    expect(resolveEmergencyEntry(true)).toBe('card');
+    expect(resolveEmergencyEntry()).toBe('card');
     expect(jest.mocked(isEntitled)).toHaveBeenCalledWith('emergency_card');
-    expect(resolveEmergencyEntry(false)).toBe('consent');
     jest.mocked(isEntitled).mockReturnValueOnce(false);
-    expect(resolveEmergencyEntry(true)).toBe('paywall');
+    expect(resolveEmergencyEntry()).toBe('paywall');
   });
 });

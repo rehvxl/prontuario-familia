@@ -24,11 +24,6 @@ function setOs(os: typeof Platform.OS) {
   Object.defineProperty(Platform, 'OS', { configurable: true, get: () => os });
 }
 
-const v3 = [
-  { purpose: 'terms_and_privacy' as const, version: '2026-11-v3', acceptedAt: '2026-11-01T00:00:00.000Z', revokedAt: null },
-  { purpose: 'health_data_processing' as const, version: '2026-11-v3', acceptedAt: '2026-11-01T00:00:00.000Z', revokedAt: null },
-];
-
 async function setup() {
   const db = createMemoryDb();
   const members = createLocalMemberRepository(db);
@@ -42,7 +37,6 @@ async function setup() {
     [DEPENDENCY_KEYS.medications]: createLocalMedicationRepository(db),
     [DEPENDENCY_KEYS.emergencyCards]: createLocalEmergencyCardRepository(db),
     [DEPENDENCY_KEYS.records]: { list: async () => [] },
-    [DEPENDENCY_KEYS.consents]: { listMine: async () => v3 },
   });
   mockParams = { memberId: member.id };
   const wrapper = ({ children }: { children?: ReactNode }) => (

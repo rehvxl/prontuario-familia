@@ -66,8 +66,6 @@ export default function MainLayout() {
       {SHEETS.map(([name, title]) => (
         <Stack.Screen key={name} name={name} options={{ title, ...SHEET_OPTIONS }} />
       ))}
-      {/* Reaceite da ficha: modal nas duas plataformas, fora do onboarding. A SessionGate não muda de etapa. */}
-      <Stack.Screen name="emergency-consent" options={{ presentation: 'modal', title: 'Termo atualizado' }} />
       <Stack.Screen name="member/[id]/emergency-present" options={{ presentation: 'fullScreenModal', headerShown: false, title: 'Ficha de emergência' }} />
     </Stack>
   );

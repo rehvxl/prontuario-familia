@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { hasEmergencyCardConsent, useMyConsents } from '@/entities/consent';
 import { emergencyCardKeys, hasDeclaredContent } from '@/entities/emergency-card';
 import { memberKeys } from '@/entities/member';
 import {
@@ -29,23 +28,21 @@ import {
 } from '@/shared/ui';
 import { useBoardStatusBar } from '@/shared/ui/navigation';
 
-/** Leitura da ficha. Sem o termo v3, não mostra dado clínico: abre o reaceite. */
+/** Leitura da ficha. */
 export function EmergencyCardScreen({ demo = false }: { demo?: boolean }) {
   const theme = useTheme();
   const router = useRouter();
   const queryClient = useQueryClient();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const memberId = typeof id === 'string' ? id : '';
-  const consents = useMyConsents();
-  const access = consents.isSuccess ? resolveEmergencyEntry(hasEmergencyCardConsent(consents.data)) : 'unknown';
+  const access = resolveEmergencyEntry();
   const state = useEmergencyCardView(memberId, access === 'card');
   const hue = theme.personBoard(categoricalIndexFor(memberId));
   useBoardStatusBar(hue.statusBar);
 
   useEffect(() => {
-    if (access === 'consent') router.replace({ pathname: '/(main)/emergency-consent', params: { memberId } });
     if (access === 'paywall') router.back();
-  }, [access, memberId, router]);
+  }, [access, router]);
 
   useEffect(() => {
     if (access === 'card' && state.status === 'ready') trackEmergencyCardEvent('emergency_card_opened');

@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { hasEmergencyCardConsent, useMyConsents } from '@/entities/consent';
 import {
   EmergencyCardSections,
   legalFooter,
@@ -25,14 +24,12 @@ export function PresentEmergencyCardScreen({ demo = false }: { demo?: boolean })
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const memberId = typeof id === 'string' ? id : '';
-  const consents = useMyConsents();
-  const access = consents.isSuccess ? resolveEmergencyEntry(hasEmergencyCardConsent(consents.data)) : 'unknown';
+  const access = resolveEmergencyEntry();
   const state = useEmergencyCardView(memberId, access === 'card');
 
   useEffect(() => {
-    if (access === 'consent') router.replace({ pathname: '/(main)/emergency-consent', params: { memberId } });
     if (access === 'paywall') router.back();
-  }, [access, memberId, router]);
+  }, [access, router]);
 
   useEffect(() => {
     if (access === 'card' && state.status === 'ready') trackEmergencyCardEvent('emergency_card_present_mode');
@@ -46,7 +43,7 @@ export function PresentEmergencyCardScreen({ demo = false }: { demo?: boolean })
     </View>
   );
   if (access !== 'card' || state.status !== 'ready') {
-    const failed = consents.isError || state.status === 'error' || state.status === 'missing';
+    const failed = state.status === 'error' || state.status === 'missing';
     return (
       <Screen testID="emergency-present-screen">
         {closeRow}

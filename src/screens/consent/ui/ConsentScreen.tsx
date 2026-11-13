@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { CURRENT_TERMS_VERSION, TERMS_V2_PARAGRAPH, TERMS_V3_ADDENDUM, TERMS_V3_HEALTH_DESCRIPTION, useMyConsents } from '@/entities/consent';
+import { CURRENT_TERMS_VERSION, TERMS_EMERGENCY_CARD_ADDENDUM, TERMS_HEALTH_DESCRIPTION, TERMS_V2_PARAGRAPH, useMyConsents } from '@/entities/consent';
 import { useCurrentUser } from '@/entities/session';
 import { Banner, Button, Card, Checkbox, ListSection, Screen, Text, errorMessage, headerOptions, useTheme } from '@/shared/ui';
 
@@ -13,8 +13,8 @@ export interface ConsentFlow {
   error: unknown;
 }
 
-/** Reexportado para os testes. O adendo v3 é rascunho para revisão do Douglas no PR. */
-export { TERMS_V2_PARAGRAPH, TERMS_V3_ADDENDUM };
+/** Reexportado para os testes. */
+export { TERMS_V2_PARAGRAPH };
 
 /**
  * Consentimento (LGPD art. 11, I): duas caixas separadas e destacadas — termos/privacidade e tratamento de dados de saúde.
@@ -65,8 +65,8 @@ export function ConsentScreen({ flow }: { flow: ConsentFlow }) {
       <Card style={{ marginBottom: theme.space[4] }} testID="terms-v2">
         <Text>{TERMS_V2_PARAGRAPH}</Text>
       </Card>
-      <Card style={{ marginBottom: theme.space[6] }} testID="terms-v3-onboarding">
-        <Text>{TERMS_V3_ADDENDUM}</Text>
+      <Card style={{ marginBottom: theme.space[6] }} testID="terms-emergency-card">
+        <Text>{TERMS_EMERGENCY_CARD_ADDENDUM}</Text>
       </Card>
       <ListSection>
         <Checkbox
@@ -79,7 +79,7 @@ export function ConsentScreen({ flow }: { flow: ConsentFlow }) {
           checked={healthData}
           onChange={setHealthData}
           label="Autorizo o tratamento dos dados de saúde da minha família"
-          description={TERMS_V3_HEALTH_DESCRIPTION}
+          description={TERMS_HEALTH_DESCRIPTION}
         />
       </ListSection>
     </Screen>

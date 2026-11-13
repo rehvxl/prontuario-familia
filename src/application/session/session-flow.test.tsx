@@ -140,8 +140,8 @@ describe('estado de sessão e próximo passo (modo demo, ponta a ponta)', () => 
     await old.families.createFamily('Família Souza');
     useDeviceConsentStore.setState({ acceptedVersion: '2026-11-v1', hydrated: true });
 
-    // "atualiza o app": mesmo armazenamento, termo atual = v3. A v1 continua exigindo aceite novo.
-    expect(CURRENT_TERMS_VERSION).toBe('2026-11-v3');
+    // "atualiza o app": mesmo armazenamento, termo atual = v2
+    expect(CURRENT_TERMS_VERSION).toBe('2026-11-v2');
     const { result } = await setup(createContainer(env));
     await waitFor(() => expect(result.current.session.status).toBe('ready'));
     expect(result.current.session.nextStep).toBe('consent');
@@ -153,35 +153,6 @@ describe('estado de sessão e próximo passo (modo demo, ponta a ponta)', () => 
     await waitFor(() => expect(result.current.session.nextStep).toBe('main'));
     const v2 = (await container.consents.listMine()).filter((c) => c.version === CURRENT_TERMS_VERSION && c.revokedAt === null);
     expect(v2.map((c) => c.purpose).sort()).toEqual(['health_data_processing', 'terms_and_privacy']);
-  });
-
-  it('termo v3: v2 no servidor e no aparelho permanece no app e não é promovida em silêncio', async () => {
-    const old = createContainer(env);
-    await old.auth.verifyEmailOtp('ana@exemplo.com', '123456');
-    await old.consents.accept('terms_and_privacy', '2026-11-v2');
-    await old.consents.accept('health_data_processing', '2026-11-v2');
-    await old.families.createFamily('Família Souza');
-    useDeviceConsentStore.setState({ acceptedVersion: '2026-11-v2', hydrated: true });
-
-    const reopened = createContainer(env);
-    const acceptSpy = jest.spyOn(reopened.consents, 'accept');
-    const { result } = await setup(reopened);
-    await waitFor(() => expect(result.current.session.status).toBe('ready'));
-    expect(result.current.session.nextStep).toBe('main');
-    expect(acceptSpy).not.toHaveBeenCalled();
-    const stored = await reopened.consents.listMine();
-    expect(stored.map((c) => c.version)).toEqual(['2026-11-v2', '2026-11-v2']);
-  });
-
-  it('termo v3: aceite da v3 no aparelho, sem nada no servidor, é gravado no login', async () => {
-    useDeviceConsentStore.setState({ acceptedVersion: '2026-11-v3', hydrated: true });
-    const { result } = await setup();
-    await act(async () => {
-      await result.current.verify.mutateAsync({ email: 'nova@exemplo.com', code: '123456' });
-    });
-    await waitFor(() => expect(result.current.session.nextStep).toBe('family'));
-    const stored = await container.consents.listMine();
-    expect(stored.filter((c) => c.revokedAt === null).map((c) => c.version)).toEqual(['2026-11-v3', '2026-11-v3']);
   });
 
   it('termo v2: aceite da v1 só no aparelho (sem conta) não vale e volta ao consentimento', async () => {

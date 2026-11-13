@@ -33,7 +33,7 @@ function setup() {
   return { auth, consents, flow, show };
 }
 
-describe('ConsentScreen (onboarding, termo 2026-11-v3)', () => {
+describe('ConsentScreen (spec P1, termo 2026-11-v2)', () => {
   it('mostra o parágrafo do termo v2 com o texto exato da spec', async () => {
     const { show } = setup();
     await show();
@@ -43,7 +43,7 @@ describe('ConsentScreen (onboarding, termo 2026-11-v3)', () => {
       ),
     ).toBeOnTheScreen();
     expect(screen.getByText(TERMS_V2_PARAGRAPH)).toBeOnTheScreen();
-    const addendum = screen.getByTestId('terms-v3-onboarding');
+    const addendum = screen.getByTestId('terms-emergency-card');
     expect(addendum).toHaveTextContent(/alergias/);
     expect(addendum).toHaveTextContent(/tipo sanguíneo/);
     expect(addendum).toHaveTextContent(/condições de saúde/);

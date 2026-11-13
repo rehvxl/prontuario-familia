@@ -24,11 +24,6 @@ function setOs(os: typeof Platform.OS) {
   Object.defineProperty(Platform, 'OS', { configurable: true, get: () => os });
 }
 
-const v3 = [
-  { purpose: 'terms_and_privacy' as const, version: '2026-11-v3', acceptedAt: '2026-11-01T00:00:00.000Z', revokedAt: null },
-  { purpose: 'health_data_processing' as const, version: '2026-11-v3', acceptedAt: '2026-11-01T00:00:00.000Z', revokedAt: null },
-];
-
 async function setup() {
   const db = createMemoryDb();
   const members = createLocalMemberRepository(db);
@@ -43,7 +38,6 @@ async function setup() {
     [DEPENDENCY_KEYS.medications]: createLocalMedicationRepository(db),
     [DEPENDENCY_KEYS.emergencyCards]: createLocalEmergencyCardRepository(db),
     [DEPENDENCY_KEYS.records]: { list: async () => [] },
-    [DEPENDENCY_KEYS.consents]: { listMine: async () => v3 },
   });
   mockParams = { id: member.id };
   const wrapper = ({ children }: { children?: ReactNode }) => (
@@ -70,16 +64,14 @@ describe('modo profissional', () => {
   });
 });
 
-describe('modo profissional sem acesso à ficha', () => {
-  it('mostra o fechar e não busca a ficha quando os consentimentos falham', async () => {
-    const getByMember = jest.fn(async () => null);
+describe('modo profissional sem a ficha', () => {
+  it('mostra o fechar quando a pessoa não é encontrada', async () => {
     const { wrapper: Deps } = renderWithDependencies({
       [DEPENDENCY_KEYS.auth]: { getCurrentUser: async () => ({ id: 'user-1', email: null, displayName: null, provider: 'email' }), onAuthStateChange: () => () => undefined },
       [DEPENDENCY_KEYS.members]: { getById: async () => null },
       [DEPENDENCY_KEYS.medications]: { listByMember: async () => [] },
-      [DEPENDENCY_KEYS.emergencyCards]: { getByMember },
+      [DEPENDENCY_KEYS.emergencyCards]: { getByMember: async () => null },
       [DEPENDENCY_KEYS.records]: { list: async () => [] },
-      [DEPENDENCY_KEYS.consents]: { listMine: async () => { throw new Error('offline'); } },
     });
     mockParams = { id: 'm-1' };
     const wrapper = ({ children }: { children?: ReactNode }) => (
@@ -90,7 +82,6 @@ describe('modo profissional sem acesso à ficha', () => {
     await render(<PresentEmergencyCardScreen />, { wrapper });
     expect(await screen.findByText('Não foi possível abrir a ficha agora.')).toBeOnTheScreen();
     expect(screen.getByLabelText('Fechar a tela para o profissional')).toBeOnTheScreen();
-    expect(getByMember).not.toHaveBeenCalled();
   });
 });
 
