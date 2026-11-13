@@ -25,6 +25,10 @@ tags:
       id: "consent-screen"
     timeout: 20000
 - takeScreenshot: 02-consentimento
+# O termo inclui o adendo da ficha: as caixas ficam abaixo da dobra.
+- scrollUntilVisible:
+    element: "Autorizo o tratamento dos dados de saúde.*"
+    direction: DOWN
 - tapOn: "Li e aceito os Termos de Uso.*"
 - tapOn: "Autorizo o tratamento dos dados de saúde.*"
 - tapOn: "Aceitar e continuar"

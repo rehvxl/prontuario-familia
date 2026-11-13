@@ -134,6 +134,8 @@ jobs:
           # A action roda cada linha num `sh -c` separado: nada de if ou variável entre linhas.
           script: |
             mkdir -p maestro-results
+            # ANR do launcher no emulador do runner cobre o app ("Quickstep isn't responding").
+            adb shell settings put global hide_error_dialogs 1
             adb install -r "$APK_PATH"
             "$HOME/.maestro/bin/maestro" --no-ansi test --format JUNIT --output maestro-results/android-junit.xml --test-output-dir maestro-results .maestro
 
