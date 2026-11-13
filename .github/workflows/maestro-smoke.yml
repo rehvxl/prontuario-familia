@@ -113,6 +113,15 @@ jobs:
             GRADLE_ARGS+=(--init-script "$GITHUB_WORKSPACE/ndk-fallback.init.gradle")
           fi
           ./gradlew :app:assembleRelease "${GRADLE_ARGS[@]}"
+          cd ..
+          APK="$(find android/app/build/outputs/apk/release -name '*.apk' -type f | head -1)"
+          if [ -z "$APK" ]; then
+            echo "APK de release não encontrado." >&2
+            find android/app/build/outputs -name '*.apk' >&2 || true
+            exit 1
+          fi
+          echo "APK: $APK"
+          echo "APK_PATH=$APK" >> "$GITHUB_ENV"
 
       - name: Emulador e fumaça
         uses: reactivecircus/android-emulator-runner@v2
@@ -122,16 +131,10 @@ jobs:
           target: default
           profile: pixel_6
           disable-animations: true
+          # A action roda cada linha num `sh -c` separado: nada de if ou variável entre linhas.
           script: |
             mkdir -p maestro-results
-            APK="$(find android/app/build/outputs/apk/release -name '*.apk' -type f | head -1)"
-            if [ -z "$APK" ]; then
-              echo "APK de release não encontrado." >&2
-              find android/app/build/outputs -name '*.apk' >&2 || true
-              exit 1
-            fi
-            echo "APK: $APK"
-            adb install -r "$APK"
+            adb install -r "$APK_PATH"
             "$HOME/.maestro/bin/maestro" --no-ansi test --format JUNIT --output maestro-results/android-junit.xml --test-output-dir maestro-results .maestro
 
       - name: Publicar prints e vídeo

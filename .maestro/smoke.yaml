@@ -38,6 +38,7 @@ tags:
     id: "email-input"
 - inputText: "ana.souza@example.com"
 - hideKeyboard
+- waitForAnimationToEnd
 - tapOn: "Enviar código"
 - extendedWaitUntil:
     visible:
@@ -55,6 +56,7 @@ tags:
     id: "family-name-input"
 - inputText: "Família Souza"
 - hideKeyboard
+- waitForAnimationToEnd
 - tapOn: "Criar família"
 - extendedWaitUntil:
     visible:
@@ -64,6 +66,7 @@ tags:
     id: "member-name"
 - inputText: "Ana Souza"
 - hideKeyboard
+- waitForAnimationToEnd
 - runFlow:
     when:
       platform: Android
