@@ -1,6 +1,6 @@
 # Backend — Supabase
 
-> v0.2 (11/11/2026: dados de acompanhamento de saúde). Ficha de emergência e termo v3 (12/11/2026). Dono: Backend Prontuário. Mudou o esquema, as políticas ou as funções? Atualize este arquivo no mesmo commit.
+> v0.2 (11/11/2026: dados de acompanhamento de saúde). Ficha de emergência (12/11/2026). Dono: Backend Prontuário. Mudou o esquema, as políticas ou as funções? Atualize este arquivo no mesmo commit.
 
 O backend é 100% Supabase (Auth, Postgres, Storage privado e duas Edge Functions). **Nada aqui depende de conta externa para rodar localmente.** O projeto real (sa-east-1) ainda não existe — ver [§9](#9-criar-o-projeto-real-sa-east-1).
 
@@ -60,7 +60,7 @@ O banco não conhece os catálogos: código existente, unidade compatível e dat
 
 `emergency_cards` segue o mesmo desenho de família desnormalizada e FK composta `(member_id, family_id) → members(id, family_id)` com `on delete cascade` (apagar o membro ou a família apaga a ficha). Também tem `unique (id, family_id)`. Não há `origin` nem `source_record_id`: a ficha é declarada pela família, não lida de um documento, e não tem arquivo no Storage. `created_by` usa default `auth.uid()` e não tem grant de escrita. A forma de cada item JSONB (nome obrigatório, tamanhos, chaves do contrato, sem máscara de telefone) é um CHECK que chama `private.emergency_card_lists_valid` — função `immutable`, `search_path` fixo, no schema `private` (fora de `[api].schemas`, então não é endpoint).
 
-**Termo de consentimento.** A versão vigente que o app passa a gravar é `2026-11-v3`, nas finalidades que já existem: `terms_and_privacy` e `health_data_processing`. Não há finalidade nova, nem CHECK com a string da versão, nem seed, nem migração: `version` continua só com comprimento de 1 a 40. A RPC `accept_consent` já troca a versão — se a linha ativa é outra, grava `revoked_at` nela e insere a nova, e o histórico permanece legível pelo titular. Aceitar de novo a mesma versão é idempotente. A v2 continua válida **para o resto do app só no cliente**; a ficha exige a v3, também só no cliente. A RLS desta ficha não consulta consentimento (o restante do app também exige o termo na guarda, não nas políticas).
+**Termo de consentimento.** O termo não é versionado por causa da ficha: continua `2026-11-v2`, com o adendo da ficha de emergência no mesmo texto (decisão do Douglas em 13/11/2026). Não há finalidade nova, migração nem CHECK com a string da versão. A RLS desta ficha não consulta consentimento (o restante do app também exige o termo na guarda, não nas políticas).
 
 Índices das tabelas novas:
 
@@ -111,7 +111,7 @@ Notas:
 - No MVP `editor` pode tudo em membros/registros/anexos e nos dados de saúde; só renomear a família e ler a auditoria é do `owner`. (Convites para outros responsáveis ainda não existem — ver [§10](#10-limitações-conhecidas-e-próximos-passos).)
 - **RPCs** (todas `authenticated`; `anon` e `public` sem execute):
   - `create_family(p_name)` — cria a família e torna o chamador `owner`. Uma família própria por conta: repetir dá `P0001 family_already_exists`; nome inválido dá `22023`.
-  - `accept_consent(p_purpose, p_version)` / `revoke_consent(p_purpose)` — gravam o histórico de consentimento. Trocar de `2026-11-v2` para `2026-11-v3` não precisa de função nova: a RPC encerra a linha ativa e insere a nova.
+  - `accept_consent(p_purpose, p_version)` / `revoke_consent(p_purpose)` — gravam o histórico de consentimento.
   - `log_data_export()` — registra a exportação na auditoria.
   - `search_health_records(...)` — busca (acima).
 - **Auditoria**: triggers `audit_row_change` em `members`, `health_records`, `attachments`, `measurements`, `vaccine_doses`, `medications`, `vaccine_rule_dismissals` e `emergency_cards` registram quem fez o quê (insert/update/delete) sem conteúdo. O evento da ficha grava só `family_id`, `actor_id`, `action`, `entity`, `entity_id` — nunca alergia, tipo sanguíneo ou telefone.
@@ -129,7 +129,7 @@ npm run db:test    # roda supabase/tests/*.test.sql
 | `01_schema.test.sql` | RLS ligada em todas as tabelas, conjunto esperado de tabelas, nenhum grant a `anon`, toda tabela tem política, bucket privado/limite/MIMEs, `search_path` das funções `security definer`, índice GIN, trigger de perfil, CHECKs, FK composta, tsvector com unaccent. |
 | `02_rls_isolation.test.sql` | Usuário A **não lê, não insere, não altera e não apaga** nada da família de B em cada tabela; owner × editor; anônimo negado em tudo; histórico de consentimentos; auditoria; integridade e cascatas. |
 | `04_health_data.test.sql` | Tabelas de saúde (39): inserção na própria família pela RLS; item lido precisa ser da mesma pessoa do documento; um analito por documento; sinal vital não vem do OCR; `value2` só em `bp`; faixa invertida e término antes do início rejeitados; dose duplicada rejeitada e doses sem data aceitas; `vaccine_name` em `other`; `context` só na glicemia capilar; "Não se aplica" único, sem update e desfeito por delete; `member_id` e `created_by` fora da API; A não lê, não altera e não apaga nada de B; anônimo negado; auditoria; apagar o documento apaga os itens ligados e mantém os manuais; apagar a família apaga tudo. |
-| `05_emergency_cards.test.sql` | Ficha de emergência (70): colunas e tipos, RLS, índice, unique, FK composta com cascata, triggers, políticas, grants (anon zero; authenticated só as colunas liberadas), ficha vazia, CHECKs (tipo sanguíneo, mutex, 4 contatos, 281 caracteres, forma do JSONB), isolamento entre famílias, anon, auditoria só com ids, cascata ao apagar membro e família. Também a passagem do termo `2026-11-v2` → `2026-11-v3` em `terms_and_privacy` e `health_data_processing` (vigente, histórico, idempotência). |
+| `05_emergency_cards.test.sql` | Ficha de emergência (50): colunas e tipos, RLS, índice, unique, FK composta com cascata, triggers, políticas, grants (anon zero; authenticated só as colunas liberadas), ficha vazia, CHECKs (tipo sanguíneo, mutex, 4 contatos, 281 caracteres, forma do JSONB), isolamento entre famílias, anon, auditoria só com ids, cascata ao apagar membro e família. |
 | `03_storage_search.test.sql` | Políticas do Storage (insert/select/update/delete na própria e em outra família, anon, caminhos inválidos) e a busca (prefixo, acento, AND, caracteres especiais, texto de injeção, filtros, ordem, RLS, anon). |
 
 ## 3. Storage

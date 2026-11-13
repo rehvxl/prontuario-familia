@@ -1,5 +1,4 @@
 -- pgTAP: ficha de emergência — esquema, CHECKs, RLS entre famílias, cascata e auditoria só com ids.
--- Também a passagem do termo 2026-11-v2 → 2026-11-v3 pela RPC accept_consent (sem migração nova).
 begin;
 create schema tests;
 grant usage on schema tests to anon, authenticated;
@@ -30,7 +29,7 @@ create table tests.ctx (k text primary key, v uuid not null);
 grant select, insert on tests.ctx to anon, authenticated;
 create function tests.id(p_key text) returns uuid language sql stable as $$ select v from tests.ctx where k = p_key $$;
 
-select plan(70);
+select plan(50);
 
 -- ===== Schema
 select is(
@@ -367,96 +366,6 @@ select is(
   (select count(*)::int from public.emergency_cards where family_id = tests.id('famB')),
   0,
   'apagar a família apaga a ficha (delete-account, sem passo de Storage)'
-);
-
--- ===== Termo v3: accept_consent já troca a versão e guarda o histórico. Sem migração.
-select tests.authenticate_as('aaaaaaaa-0000-0000-0000-00000000000a');
-select lives_ok($$select public.accept_consent('terms_and_privacy', '2026-11-v2')$$, 'aceita v2 em terms_and_privacy');
-select lives_ok($$select public.accept_consent('health_data_processing', '2026-11-v2')$$, 'aceita v2 em health_data_processing');
-select is(
-  (select count(*)::int from public.consents
-    where user_id = 'aaaaaaaa-0000-0000-0000-00000000000a' and version = '2026-11-v2' and revoked_at is null),
-  2,
-  'v2 vigente nas duas finalidades'
-);
-select is(
-  (select version from public.consents
-    where user_id = 'aaaaaaaa-0000-0000-0000-00000000000a' and purpose = 'terms_and_privacy' and revoked_at is null),
-  '2026-11-v2',
-  'versão vigente de terms_and_privacy é 2026-11-v2'
-);
-select is(
-  (select version from public.consents
-    where user_id = 'aaaaaaaa-0000-0000-0000-00000000000a' and purpose = 'health_data_processing' and revoked_at is null),
-  '2026-11-v2',
-  'versão vigente de health_data_processing é 2026-11-v2'
-);
-
-select lives_ok($$select public.accept_consent('terms_and_privacy', '2026-11-v3')$$, 'passa terms_and_privacy para 2026-11-v3');
-select lives_ok($$select public.accept_consent('health_data_processing', '2026-11-v3')$$, 'passa health_data_processing para 2026-11-v3');
-select is(
-  (select count(*)::int from public.consents
-    where user_id = 'aaaaaaaa-0000-0000-0000-00000000000a' and purpose = 'terms_and_privacy'),
-  2,
-  'histórico de terms_and_privacy tem 2 linhas'
-);
-select is(
-  (select count(*)::int from public.consents
-    where user_id = 'aaaaaaaa-0000-0000-0000-00000000000a' and purpose = 'health_data_processing'),
-  2,
-  'histórico de health_data_processing tem 2 linhas'
-);
-select is(
-  (select version from public.consents
-    where user_id = 'aaaaaaaa-0000-0000-0000-00000000000a' and purpose = 'terms_and_privacy' and revoked_at is null),
-  '2026-11-v3',
-  'versão vigente de terms_and_privacy passa a ser 2026-11-v3'
-);
-select is(
-  (select version from public.consents
-    where user_id = 'aaaaaaaa-0000-0000-0000-00000000000a' and purpose = 'health_data_processing' and revoked_at is null),
-  '2026-11-v3',
-  'versão vigente de health_data_processing passa a ser 2026-11-v3'
-);
-select ok(
-  (select accepted_at is not null from public.consents
-    where user_id = 'aaaaaaaa-0000-0000-0000-00000000000a' and purpose = 'terms_and_privacy' and version = '2026-11-v3'),
-  'accepted_at preenchido na v3 de terms_and_privacy'
-);
-select ok(
-  (select accepted_at is not null from public.consents
-    where user_id = 'aaaaaaaa-0000-0000-0000-00000000000a' and purpose = 'health_data_processing' and version = '2026-11-v3'),
-  'accepted_at preenchido na v3 de health_data_processing'
-);
-select ok(
-  (select revoked_at is not null from public.consents
-    where user_id = 'aaaaaaaa-0000-0000-0000-00000000000a' and purpose = 'terms_and_privacy' and version = '2026-11-v2'),
-  'a v2 de terms_and_privacy fica encerrada'
-);
-select ok(
-  (select revoked_at is not null from public.consents
-    where user_id = 'aaaaaaaa-0000-0000-0000-00000000000a' and purpose = 'health_data_processing' and version = '2026-11-v2'),
-  'a v2 de health_data_processing fica encerrada'
-);
-
-select lives_ok($$select public.accept_consent('terms_and_privacy', '2026-11-v3')$$, 'repetir a v3 em terms_and_privacy é idempotente');
-select lives_ok($$select public.accept_consent('health_data_processing', '2026-11-v3')$$, 'repetir a v3 em health_data_processing é idempotente');
-select is(
-  (select count(*)::int from public.consents where user_id = 'aaaaaaaa-0000-0000-0000-00000000000a'),
-  4,
-  'repetir a v3 não duplica linhas'
-);
-select is(
-  (select version from public.consents
-    where user_id = 'aaaaaaaa-0000-0000-0000-00000000000a' and purpose = 'terms_and_privacy' and revoked_at is not null),
-  '2026-11-v2',
-  'o titular ainda lê a v2 encerrada de terms_and_privacy'
-);
-select is(
-  (select version from public.consents
-    where user_id = 'aaaaaaaa-0000-0000-0000-00000000000a' and purpose = 'health_data_processing' and revoked_at is not null),
-  '2026-11-v2',
-  'o titular ainda lê a v2 encerrada de health_data_processing'
 );
 
 select * from finish();
