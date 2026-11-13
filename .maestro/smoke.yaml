@@ -1,0 +1,141 @@
+# Fumaça do modo demonstração.
+# Abre o app, passa o consentimento, vê o resumo da família, abre uma pessoa e volta.
+# Seletores: testID que já existe. Onde o controle não tem testID, o rótulo de interface
+# (consentimento, parentesco). Nenhum texto clínico: valor, laudo ou diagnóstico.
+appId: br.com.prontuariofamilia.app
+name: Fumaça do modo demonstração
+tags:
+  - smoke
+---
+- startRecording: smoke
+# O emulador às vezes não termina de abrir o app na primeira tentativa. O retry fica só aqui.
+- retry:
+    maxRetries: 2
+    commands:
+      - launchApp:
+          clearState: true
+      - extendedWaitUntil:
+          visible:
+            id: "welcome-screen"
+          timeout: 120000
+- takeScreenshot: 01-boas-vindas
+- tapOn: "Pular"
+- extendedWaitUntil:
+    visible:
+      id: "consent-screen"
+    timeout: 20000
+- takeScreenshot: 02-consentimento
+- tapOn: "Li e aceito os Termos de Uso.*"
+- tapOn: "Autorizo o tratamento dos dados de saúde.*"
+- tapOn: "Aceitar e continuar"
+- extendedWaitUntil:
+    visible:
+      id: "sign-in-screen"
+    timeout: 30000
+- assertVisible:
+    id: "demo-banner"
+- tapOn:
+    id: "email-input"
+- inputText: "ana.souza@example.com"
+- hideKeyboard
+- tapOn: "Enviar código"
+- extendedWaitUntil:
+    visible:
+      id: "otp-input"
+    timeout: 20000
+- tapOn:
+    id: "otp-input"
+# Seis dígitos disparam a confirmação (onComplete). O código de demonstração é 123456.
+- inputText: "123456"
+- extendedWaitUntil:
+    visible:
+      id: "create-family-screen"
+    timeout: 30000
+- tapOn:
+    id: "family-name-input"
+- inputText: "Família Souza"
+- hideKeyboard
+- tapOn: "Criar família"
+- extendedWaitUntil:
+    visible:
+      id: "member-name"
+    timeout: 30000
+- tapOn:
+    id: "member-name"
+- inputText: "Ana Souza"
+- hideKeyboard
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn: "Escolher parentesco"
+      - tapOn: "^Eu$"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn: "Parentesco.*"
+      - tapOn: "^Eu$"
+- tapOn: "Adicionar primeira pessoa"
+- extendedWaitUntil:
+    visible:
+      id: "finish-setup"
+    timeout: 30000
+- tapOn:
+    id: "finish-setup"
+- extendedWaitUntil:
+    visible:
+      id: "family-home-screen"
+    timeout: 30000
+- assertVisible:
+    id: "demo-badge"
+- tapOn:
+    id: "tab-settings"
+- extendedWaitUntil:
+    visible:
+      id: "load-demo-family"
+    timeout: 20000
+- tapOn:
+    id: "load-demo-family"
+- extendedWaitUntil:
+    visible: "Carregar a família de exemplo\\?"
+    timeout: 15000
+# O mesmo rótulo está na lista, acima da folha. O botão fica abaixo do título.
+- tapOn:
+    text: "^Carregar família de exemplo$"
+    below: "Carregar a família de exemplo\\?"
+- extendedWaitUntil:
+    visible:
+      id: "demo-family-done"
+    timeout: 90000
+- tapOn:
+    id: "tab-family"
+- extendedWaitUntil:
+    visible:
+      id: "family-vaccines-line"
+    timeout: 30000
+- assertVisible:
+    id: "family-home-screen"
+- takeScreenshot: 03-resumo-familia
+# Id da pessoa é UUID. Não casa com member-menu, member-header nem member-health-summary.
+- tapOn:
+    id: "member-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+- extendedWaitUntil:
+    visible:
+      id: "member-health-summary"
+    timeout: 20000
+- takeScreenshot: 04-pessoa
+# A aba Família da régua fica à direita do resumo e não está selecionada. A da barra de baixo está.
+- tapOn:
+    id: "tab-family"
+    selected: false
+    rightOf:
+      id: "member-health-summary"
+- extendedWaitUntil:
+    notVisible:
+      id: "member-health-summary"
+    timeout: 15000
+- assertVisible:
+    id: "add-member"
+- takeScreenshot: 05-voltou-familia
+- stopRecording
