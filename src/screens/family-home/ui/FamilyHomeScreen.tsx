@@ -20,7 +20,6 @@ import {
   ListSection,
   ListSkeleton,
   LoadErrorState,
-  Menu,
   Screen,
   TabMark,
   formatDate,
@@ -42,27 +41,6 @@ export function todayHeading(iso: string): string {
 export function familyTitle(name: string | undefined): string {
   if (!name) return 'Sua família';
   return /^família\b/i.test(name.trim()) ? name.trim() : `Família ${name.trim()}`;
-}
-
-/**
- * Gatilho do menu "…" da linha. Não é um `Pressable`/`IconButton`: o menu nativo (SwiftUI) precisa receber o
- * toque, e um botão RN dentro dele o intercepta (BUG-01). O nome acessível e o papel ficam nesta `View`,
- * no mesmo padrão do `Select`. "Editar pessoa" também existe na barra da linha do tempo da pessoa.
- */
-function MenuTrigger({ label, testID }: { label: string; testID: string }) {
-  const theme = useTheme();
-  return (
-    <View
-      accessible
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityHint="Abre o menu de ações"
-      testID={testID}
-      style={{ width: theme.minTouchTarget, height: theme.minTouchTarget, alignItems: 'center', justifyContent: 'center' }}
-    >
-      <Icon name="moreCircle" size={24} color="textSecondary" />
-    </View>
-  );
 }
 
 // "Documentos", como na régua de abas e no cabeçalho da pessoa.
@@ -141,16 +119,6 @@ export function FamilyHomeScreen({ demo = false }: { demo?: boolean }) {
         accessibilityLabel={[m.fullName, ...parts].join(', ')}
         onPress={() => select(m.id)}
         testID={`member-${m.id}`}
-        trailing={
-          <Menu
-            items={[
-              { label: 'Novo registro', icon: 'add', onPress: () => newRecord(m.id) },
-              { label: 'Editar pessoa', icon: 'edit', onPress: () => router.push({ pathname: '/(main)/member/[id]/edit', params: { id: m.id } }) },
-            ]}
-          >
-            <MenuTrigger label={`Mais ações para ${m.fullName}`} testID={`member-menu-${m.id}`} />
-          </Menu>
-        }
       />
     );
   };

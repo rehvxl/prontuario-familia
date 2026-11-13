@@ -137,15 +137,12 @@ describe('FamilyHomeScreen — painel da família (F7)', () => {
     expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/(main)/member/[id]/vaccines', params: { id: memberId } });
   });
 
-  it('pessoas: menu "…" acessível por pessoa (BUG-01) e FAB "Novo registro" com a única pessoa', async () => {
+  it('pessoas: a linha não tem menu "…" (abre a pessoa) e o FAB "Novo registro" usa a única pessoa', async () => {
     const s = await setup([ana]);
     const id = s.members[0]!.id;
     await s.renderScreen();
-    const trigger = await screen.findByRole('button', { name: 'Mais ações para Ana Souza' });
-    expect(trigger.props.accessibilityHint).toBe('Abre o menu de ações');
-    await fireEvent(trigger, 'layout', { nativeEvent: { layout: { x: 0, y: 0, width: 44, height: 44 } } });
-    await fireEvent(await screen.findByRole('button', { name: 'Mais ações para Ana Souza' }), 'pressAction', { nativeEvent: { event: 'Novo registro' } });
-    expect(mockRouter.push).toHaveBeenCalledWith({ pathname: '/(main)/record/new', params: { memberId: id } });
+    expect(await screen.findByTestId(`member-${id}`)).toBeOnTheScreen();
+    expect(screen.queryByRole('button', { name: 'Mais ações para Ana Souza' })).toBeNull();
 
     await activate(screen.getByRole('button', { name: 'Novo registro' }));
     expect(mockRouter.push).toHaveBeenLastCalledWith({ pathname: '/(main)/record/new', params: { memberId: id } });
