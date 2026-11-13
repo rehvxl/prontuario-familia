@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useMember } from '@/entities/member';
@@ -17,21 +17,26 @@ export function EditMemberScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const memberId = typeof id === 'string' ? id : undefined;
   const member = useMember(memberId);
+  // A divisória vem do id da rota, então carregando e erro já aparecem na cor da pessoa (sem salto de cor).
+  const hue = theme.personBoard(categoricalIndexFor(memberId ?? ''));
   const update = useUpdateMember();
   const remove = useRemoveMember();
   const [confirming, setConfirming] = useState(false);
 
-  if (member.isPending || remove.isSuccess) return <Screen scroll={false}><Spinner fill label="Carregando" /></Screen>;
-  if (member.isError) return <Screen scroll={false}><LoadErrorState onRetry={() => member.refetch()} /></Screen>;
+  // Cabeçalho opaco e barra de status na divisória também nos estados de carregamento, erro e não encontrada.
+  const frame = (children: ReactNode) => (
+    <Screen scroll={false} board={hue}>
+      <Stack.Screen options={headerOptions(theme, { board: hue })} />
+      <StatusBar style={hue.statusBar} />
+      {children}
+    </Screen>
+  );
+  if (member.isPending || remove.isSuccess) return frame(<Spinner fill label="Carregando" />);
+  if (member.isError) return frame(<LoadErrorState onRetry={() => member.refetch()} />);
   if (!member.data) {
-    return (
-      <Screen scroll={false}>
-        <EmptyState tone="error" title="Pessoa não encontrada" message="Ela pode ter sido removida da família." action={{ label: 'Voltar', onPress: () => router.back() }} />
-      </Screen>
-    );
+    return frame(<EmptyState tone="error" title="Pessoa não encontrada" message="Ela pode ter sido removida da família." action={{ label: 'Voltar', onPress: () => router.back() }} />);
   }
   const m = member.data;
-  const hue = theme.personBoard(categoricalIndexFor(m.id));
 
   return (
     <Screen testID="edit-member-screen" board={hue}>

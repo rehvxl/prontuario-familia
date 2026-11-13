@@ -66,7 +66,7 @@ beforeEach(() => jest.clearAllMocks());
 describe('Nova dose (F3.5)', () => {
   it('pede vacina, dose e data ou "Não sei a data"; lote e local são opcionais', async () => {
     await renderSheet((m) => ({ memberId: m.id }));
-    expect(await screen.findByText('Nova dose')).toBeTruthy();
+    expect(await screen.findByTestId('new-vaccine-dose-screen')).toBeTruthy();
     await save();
     expect(await screen.findByText('Escolha a vacina.')).toBeTruthy();
     expect(screen.getByText('Escolha a dose.')).toBeTruthy();
@@ -151,7 +151,7 @@ describe('Editar dose (padrão F2.9)', () => {
       doseId = created!.id;
       return { memberId: m.id, doseId };
     });
-    expect(await screen.findByText('Editar dose')).toBeTruthy();
+    expect(await screen.findByTestId('new-vaccine-dose-screen')).toBeTruthy();
     // O título aparece antes; o formulário, quando a dose carrega.
     expect(await screen.findByRole('button', { name: 'Vacina: Dupla adulto (dT)' })).toBeTruthy();
     expect(screen.getByRole('checkbox', { name: 'Não sei a data' }).props.accessibilityState).toEqual(expect.objectContaining({ checked: true }));

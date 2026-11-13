@@ -12,7 +12,7 @@ export function NewMedicationScreen() {
   const hue = theme.personBoard(categoricalIndexFor(id));
   return (
     <HueProvider hue={hue}>
-      <Screen testID="new-medication-screen" presentation="sheet" heading={{ title: 'Novo medicamento' }} contentContainerStyle={{ borderTopWidth: 4, borderTopColor: hue.tab }}>
+      <Screen testID="new-medication-screen" presentation="sheet" contentContainerStyle={{ borderTopWidth: 4, borderTopColor: hue.tab }}>
         <MedicationForm memberId={id} onSaved={() => router.back()} />
       </Screen>
     </HueProvider>

@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { View } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useMyFamily } from '@/entities/family';
 import { MemberListItem, useMembers } from '@/entities/member';
 import { useAddMember } from '@/features/manage-members';
 import { MemberForm } from '@/widgets/member-form';
-import { Button, ListSection, LoadErrorState, Screen, SectionHeader, Spinner, TabRail, Text, categoricalIndexFor, headerOptions, useTheme } from '@/shared/ui';
+import { Button, ListSection, LoadErrorState, Screen, SectionHeader, Spinner, TabRail, Text, categoricalIndexFor, useTheme } from '@/shared/ui';
+
+/** Sem cabeçalho nativo: a divisória vai até a barra de status. */
+const EDGES = ['top', 'left', 'right', 'bottom'] as const;
 
 /**
  * Segundo passo do setup: cadastrar as primeiras pessoas. Depois da primeira, dá para concluir.
@@ -24,8 +27,8 @@ export function FirstMembersScreen() {
 
   const finish = () => router.replace('/(main)/(tabs)/(family)');
 
-  if (familyQuery.isError) return <Screen scroll={false} board="ultramar"><LoadErrorState onRetry={() => familyQuery.refetch()} /></Screen>;
-  if (!family) return <Screen scroll={false} board="ultramar"><Spinner fill label="Carregando" /></Screen>;
+  if (familyQuery.isError) return <Screen scroll={false} board="ultramar" edges={EDGES}><LoadErrorState onRetry={() => familyQuery.refetch()} /></Screen>;
+  if (!family) return <Screen scroll={false} board="ultramar" edges={EDGES}><Spinner fill label="Carregando" /></Screen>;
 
   const tabs = [
     { id: 'family', label: 'Família', hue: 'ultramar' as const, selected: true },
@@ -36,6 +39,7 @@ export function FirstMembersScreen() {
     <Screen
       testID="first-members-screen"
       board="ultramar"
+      edges={EDGES}
       rail={
         <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" testID="first-members-rail">
           <TabRail items={tabs} onSelect={() => undefined} />
@@ -44,7 +48,6 @@ export function FirstMembersScreen() {
       heading={{ title: `Quem faz parte da ${family.name}?` }}
       footer={members.length > 0 ? <Button label="Concluir" onPress={finish} fullWidth testID="finish-setup" /> : undefined}
     >
-      <Stack.Screen options={headerOptions(theme, { board: 'ultramar' })} />
       <StatusBar style={theme.hues.family.statusBar} />
       <Text color="secondary" style={{ marginBottom: theme.space[6] }}>
         Adicione quem terá o histórico de saúde guardado aqui. Você pode incluir mais pessoas depois.

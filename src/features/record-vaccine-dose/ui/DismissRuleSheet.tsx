@@ -45,7 +45,7 @@ export function DismissRuleSheet({ memberId, ruleId, onDone, visible = true }: D
   const subject = rule ? `${vaccineLabel(rule.vaccineCode)} · ${rule.doseLabel ?? doseLabelOf(rule.doseKey)}. ` : '';
   return (
     <BottomSheet visible={visible} onClose={dismiss.isPending ? () => undefined : close} title="Não se aplica" message={`${subject}Escolha o motivo.`} testID="dismiss-rule-sheet">
-      {dismiss.error ? <Banner tone="danger" message={errorMessage(dismiss.error, 'Não foi possível salvar. Tente novamente.')} style={{ marginBottom: theme.space[3] }} /> : null}
+      {dismiss.error ? <Banner tone="danger" message={errorMessage(dismiss.error, 'Não foi possível salvar. Tente novamente.')} style={{ marginBottom: theme.space[4] }} /> : null}
       <View accessibilityRole="radiogroup" accessibilityLabel="Motivo">
         {REASONS.map((value) => {
           const checked = reason === value;
