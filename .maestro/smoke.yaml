@@ -1,0 +1,164 @@
+# Fumaça do modo demonstração.
+# Abre o app, passa o consentimento, vê o resumo da família, abre uma pessoa e volta.
+# Seletores: testID que já existe. Onde o controle não tem testID, o rótulo de interface
+# (consentimento, parentesco). Nenhum texto clínico: valor, laudo ou diagnóstico.
+appId: br.com.prontuariofamilia.app
+name: Fumaça do modo demonstração
+tags:
+  - smoke
+---
+- startRecording: smoke
+# O emulador às vezes não termina de abrir o app na primeira tentativa. O retry fica só aqui.
+- retry:
+    maxRetries: 3
+    commands:
+      - launchApp:
+          clearState: true
+      # ANR do launcher no emulador da CI ("Quickstep isn't responding") fica por cima do app.
+      # O diálogo persiste entre tentativas: a seguinte toca em Wait.
+      - runFlow:
+          when:
+            visible: ".*isn't responding"
+          commands:
+            - tapOn: "Wait"
+      - extendedWaitUntil:
+          visible:
+            id: "welcome-screen"
+          timeout: 60000
+- takeScreenshot: 01-boas-vindas
+- tapOn: "Pular"
+- extendedWaitUntil:
+    visible:
+      id: "consent-screen"
+    timeout: 20000
+- takeScreenshot: 02-consentimento
+# O termo inclui o adendo da ficha: as caixas ficam abaixo da dobra.
+- scrollUntilVisible:
+    element: "Autorizo o tratamento dos dados de saúde.*"
+    direction: DOWN
+- tapOn: "Li e aceito os Termos de Uso.*"
+- tapOn: "Autorizo o tratamento dos dados de saúde.*"
+- tapOn: "Aceitar e continuar"
+- extendedWaitUntil:
+    visible:
+      id: "sign-in-screen"
+    timeout: 30000
+- assertVisible:
+    id: "demo-banner"
+- tapOn:
+    id: "email-input"
+- inputText: "ana.souza@example.com"
+- hideKeyboard
+- waitForAnimationToEnd
+- tapOn: "Enviar código"
+- extendedWaitUntil:
+    visible:
+      id: "otp-input"
+    timeout: 20000
+- tapOn:
+    id: "otp-input"
+# Seis dígitos disparam a confirmação (onComplete). O código de demonstração é 123456.
+- inputText: "123456"
+- extendedWaitUntil:
+    visible:
+      id: "create-family-screen"
+    timeout: 30000
+- tapOn:
+    id: "family-name-input"
+- inputText: "Família Souza"
+# iOS envia pelo teclado (onSubmitEditing): tocar no botão derruba o driver XCTest,
+# porque o botão vira "carregando" e a tela troca no meio do toque.
+# No Android o Enter do Maestro não dispara o envio; lá o toque funciona.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - pressKey: Enter
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
+      - waitForAnimationToEnd
+      - tapOn: "Criar família"
+- extendedWaitUntil:
+    visible:
+      id: "member-name"
+    timeout: 30000
+- tapOn:
+    id: "member-name"
+- inputText: "Ana Souza"
+- hideKeyboard
+- waitForAnimationToEnd
+# Android expõe o texto do campo; iOS, o rótulo de acessibilidade do botão.
+- tapOn: "Escolher parentesco|Parentesco: nenhum selecionado"
+- tapOn: "^Eu$"
+- tapOn: "Adicionar primeira pessoa"
+- extendedWaitUntil:
+    visible:
+      id: "finish-setup"
+    timeout: 30000
+- tapOn:
+    id: "finish-setup"
+- extendedWaitUntil:
+    visible:
+      id: "family-home-screen"
+    timeout: 30000
+- assertVisible:
+    id: "demo-badge"
+- tapOn:
+    id: "tab-settings"
+- extendedWaitUntil:
+    visible:
+      id: "load-demo-family"
+    timeout: 20000
+- tapOn:
+    id: "load-demo-family"
+- extendedWaitUntil:
+    visible: "Carregar a família de exemplo\\?"
+    timeout: 15000
+# O mesmo rótulo está na lista, acima da folha. O botão fica abaixo do título.
+- tapOn:
+    text: "^Carregar família de exemplo$"
+    below: "Carregar a família de exemplo\\?"
+# O aviso aparece abaixo da lista, fora da tela.
+- scrollUntilVisible:
+    element:
+      id: "demo-family-done"
+    direction: DOWN
+    timeout: 90000
+- tapOn:
+    id: "tab-family"
+- extendedWaitUntil:
+    visible:
+      id: "family-vaccines-line"
+    timeout: 30000
+- assertVisible:
+    id: "family-home-screen"
+- takeScreenshot: 03-resumo-familia
+# Pela aba da pessoa na régua: a linha da lista fica sob o botão flutuante "Novo registro".
+- tapOn:
+    id: "tab-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "member-health-summary"
+    timeout: 20000
+- takeScreenshot: 04-pessoa
+# A aba Família da régua fica à direita do resumo e não está selecionada. A da barra de baixo está.
+- tapOn:
+    id: "tab-family"
+    selected: false
+    rightOf:
+      id: "member-health-summary"
+- extendedWaitUntil:
+    notVisible:
+      id: "member-health-summary"
+    timeout: 15000
+# Com a família de exemplo, "Adicionar pessoa" fica abaixo da lista.
+- scrollUntilVisible:
+    element:
+      id: "add-member"
+    direction: DOWN
+- takeScreenshot: 05-voltou-familia
+- stopRecording

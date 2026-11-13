@@ -4,6 +4,7 @@
 const { defineConfig, globalIgnores } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 const boundaries = require('eslint-plugin-boundaries');
+const globals = require('globals');
 
 // Camadas FSD, da mais alta para a mais baixa. Uma camada só importa das camadas abaixo dela.
 // `routes` = src/app (rotas do expo-router, finas); `app` = src/application (providers, composição/DI).
@@ -113,5 +114,23 @@ module.exports = defineConfig([
   {
     files: ['**/*.test.{ts,tsx}', 'jest.setup.ts'],
     languageOptions: { globals: { jest: 'readonly', describe: 'readonly', it: 'readonly', expect: 'readonly', beforeEach: 'readonly', afterEach: 'readonly' } },
+  },
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { sourceType: 'module', globals: globals.node },
+  },
+  {
+    files: ['scripts/**/*.test.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {
+        ...globals.node,
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+      },
+    },
   },
 ]);

@@ -1,0 +1,244 @@
+# Fumaça Maestro em modo demo. Sem EAS e sem Maestro Cloud.
+# EXPO_PUBLIC_DEMO_MODE=1 existe só neste workflow. eas.json e app.json não podem ligá-lo
+# (scripts/no-store-demo.mjs, no job check).
+name: Fumaça Maestro
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "app.json"
+      - "package*.json"
+      - ".maestro/**"
+      - ".github/workflows/maestro-smoke.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maestro-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  EXPO_PUBLIC_DEMO_MODE: "1"
+  EXPO_NO_DOTENV: "1"
+  EXPO_NO_TELEMETRY: "1"
+  # O driver XCTest demora a subir no runner macOS; o padrão estoura.
+  MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
+
+jobs:
+  android:
+    name: Android (emulador)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Habilitar KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Instalar o Maestro
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - run: npm ci
+
+      - name: SDK Android (compileSdk 37)
+        run: |
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+          SDKMANAGER="$(find "$SDK_ROOT" -type f -name sdkmanager | head -1)"
+          if [ -z "$SDKMANAGER" ]; then
+            echo "sdkmanager não encontrado em $SDK_ROOT" >&2
+            find "$SDK_ROOT" -maxdepth 3 -type d >&2 || true
+            exit 1
+          fi
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          # A imagem nomeia a plataforma como android-37.0, não android-37.
+          # O AGP com compileSdk 37 procura platforms/android-37.
+          if [ ! -e "$SDK_ROOT/platforms/android-37" ]; then
+            if [ ! -d "$SDK_ROOT/platforms/android-37.0" ]; then
+              "$SDKMANAGER" --install "platforms;android-37.0"
+            fi
+            if [ ! -d "$SDK_ROOT/platforms/android-37.0" ]; then
+              echo "Plataforma android-37.0 ausente. Conteúdo de platforms:" >&2
+              ls -1 "$SDK_ROOT/platforms" >&2 || true
+              exit 1
+            fi
+            ln -sfn android-37.0 "$SDK_ROOT/platforms/android-37" \
+              || sudo ln -sfn android-37.0 "$SDK_ROOT/platforms/android-37"
+          fi
+          if [ ! -d "$SDK_ROOT/ndk/27.1.12297006" ]; then
+            if ! "$SDKMANAGER" --install "ndk;27.1.12297006"; then
+              NDK_DIR="$(find "$SDK_ROOT/ndk" -mindepth 1 -maxdepth 1 -type d -name '27.*' | sort -V | tail -1)"
+              if [ -z "$NDK_DIR" ]; then
+                echo "Nenhum NDK 27 no SDK." >&2
+                ls -1 "$SDK_ROOT/ndk" >&2 || true
+                exit 1
+              fi
+              echo "NDK 27.1 indisponível; o build usa $(basename "$NDK_DIR")."
+              echo "NDK_FALLBACK=$(basename "$NDK_DIR")" >> "$GITHUB_ENV"
+            fi
+          fi
+
+      - name: Prebuild e APK de release
+        run: |
+          set -euo pipefail
+          # Intermediários de debug versionados no módulo não entram no build de release.
+          rm -rf modules/document-text/android/build
+          npx expo prebuild --platform android --no-install
+          cd android
+          chmod +x ./gradlew
+          GRADLE_ARGS=(--no-daemon --stacktrace -PreactNativeArchitectures=x86_64)
+          if [ -n "${NDK_FALLBACK:-}" ]; then
+            cat > "$GITHUB_WORKSPACE/ndk-fallback.init.gradle" <<EOF
+          gradle.projectsLoaded {
+              rootProject.ext.set("ndkVersion", "${NDK_FALLBACK}")
+          }
+          EOF
+            GRADLE_ARGS+=(--init-script "$GITHUB_WORKSPACE/ndk-fallback.init.gradle")
+          fi
+          ./gradlew :app:assembleRelease "${GRADLE_ARGS[@]}"
+          cd ..
+          APK="$(find android/app/build/outputs/apk/release -name '*.apk' -type f | head -1)"
+          if [ -z "$APK" ]; then
+            echo "APK de release não encontrado." >&2
+            find android/app/build/outputs -name '*.apk' >&2 || true
+            exit 1
+          fi
+          echo "APK: $APK"
+          echo "APK_PATH=$APK" >> "$GITHUB_ENV"
+
+      - name: Emulador e fumaça
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: default
+          profile: pixel_6
+          disable-animations: true
+          # A action roda cada linha num `sh -c` separado: nada de if ou variável entre linhas.
+          script: |
+            mkdir -p maestro-results
+            # ANR do launcher no emulador do runner cobre o app ("Quickstep isn't responding").
+            adb shell settings put global hide_error_dialogs 1
+            sleep 30
+            adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS
+            adb install -r "$APK_PATH"
+            "$HOME/.maestro/bin/maestro" --no-ansi test --format JUNIT --output maestro-results/android-junit.xml --test-output-dir maestro-results .maestro
+
+      - name: Publicar prints e vídeo
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maestro-android
+          retention-days: 7
+          if-no-files-found: warn
+          path: maestro-results/
+
+  ios:
+    name: iOS (simulador)
+    runs-on: macos-latest
+    timeout-minutes: 120
+    env:
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Instalar o Maestro
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - run: npm ci
+
+      - name: Xcode do runner
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          xcrun simctl list devices available
+
+      - name: Prebuild, pods e app de simulador
+        run: |
+          set -euo pipefail
+          npx expo prebuild --platform ios --no-install
+          # 5s estoura no runner e o provider sai sem expo-modules-core.
+          python3 -c 'from pathlib import Path; p = Path("node_modules/expo-modules-autolinking/build/platforms/apple/moduleScanner.js"); text = p.read_text(); old = "timeout: 5000";
+          assert old in text, "timeout do scan de módulos não encontrado"; p.write_text(text.replace(old, "timeout: 120000", 1))'
+          cd ios
+          pod install
+          cd ..
+          WORKSPACE="$(find ios -name '*.xcworkspace' -not -path '*.xcodeproj/*' | head -1)"
+          if [ -z "$WORKSPACE" ]; then
+            echo "Nenhum xcworkspace depois do pod install." >&2
+            find ios -maxdepth 2 -type d >&2
+            exit 1
+          fi
+          # O primeiro scheme da lista é um Pod (boost). O app tem o nome do workspace.
+          SCHEME="$(basename "$WORKSPACE" .xcworkspace)"
+          echo "Workspace: $WORKSPACE"
+          echo "Scheme: $SCHEME"
+          xcodebuild \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath "$GITHUB_WORKSPACE/ios-build" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            -quiet
+
+      - name: Simulador e fumaça
+        run: |
+          set -euo pipefail
+          DEVICE_UDID="$(python3 -c 'import json,subprocess,sys; data=json.loads(subprocess.check_output(["xcrun","simctl","list","devices","available","-j"])); phones=[d for ds in data.get("devices",{}).values() for d in ds if d.get("isAvailable") and str(d.get("name","")).startswith("iPhone")]; sys.exit("Nenhum simulador de iPhone disponível neste runner.") if not phones else None; sys.stderr.write(phones[-1]["name"]+" "+phones[-1]["udid"]+"\n"); print(phones[-1]["udid"])')"
+          echo "Simulador: $DEVICE_UDID"
+          xcrun simctl bootstatus "$DEVICE_UDID" -b
+          APP="$(find "$GITHUB_WORKSPACE/ios-build/Build/Products" -type d -name '*.app' -path '*iphonesimulator*' | head -1)"
+          if [ -z "$APP" ]; then
+            echo "Nenhum .app de simulador em ios-build." >&2
+            find "$GITHUB_WORKSPACE/ios-build" -name '*.app' -o -name '*.log' | head >&2 || true
+            exit 1
+          fi
+          echo "App: $APP"
+          xcrun simctl install "$DEVICE_UDID" "$APP"
+          mkdir -p maestro-results
+          "$HOME/.maestro/bin/maestro" --no-ansi test --format JUNIT --output maestro-results/ios-junit.xml --test-output-dir maestro-results .maestro
+
+      - name: Publicar prints e vídeo
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maestro-ios
+          retention-days: 7
+          if-no-files-found: warn
+          path: maestro-results/

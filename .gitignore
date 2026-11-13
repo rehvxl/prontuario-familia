@@ -40,6 +40,10 @@ yarn-error.*
 /ios
 /android
 
+# saída local da fumaça Maestro (a CI publica isto como artefato)
+/maestro-results/
+/ios-build/
+
 # briefs internos do time (não versionar)
 .team/
 
