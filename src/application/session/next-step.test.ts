@@ -2,7 +2,7 @@ import type { Consent } from '@/entities/consent';
 import { CURRENT_TERMS_VERSION } from '@/entities/consent';
 import type { Family } from '@/entities/family';
 import type { AuthUser } from '@/entities/session';
-import { hasDeviceConsent } from './device-consent';
+import { hasDeviceConsent, hasDeviceCurrentConsent } from './device-consent';
 import { STEP_ENTRY_ROUTE, STEP_ROUTE_GROUP, entryRouteFor, isRouteInStep, resolveNextStep, type NextStep } from './next-step';
 
 const user: AuthUser = { id: 'u', email: 'a@b.com', displayName: null, provider: 'email' };
@@ -36,11 +36,20 @@ describe('resolveNextStep', () => {
     expect(resolveNextStep({ user, consents: revoked, family, deviceConsent: false })).toBe('consent');
   });
 
-  it('termo v2: aceite da v1 (2026-11-v1) não vale mais, nem no repositório nem no aparelho', () => {
+  it('termo v3: aceite da v1 não vale mais, nem no repositório nem no aparelho', () => {
     const v1: Consent[] = allValid.map((c) => ({ ...c, version: '2026-11-v1' }));
     expect(resolveNextStep({ user, consents: v1, family, deviceConsent: true })).toBe('consent');
     expect(resolveNextStep({ user: null, consents: null, family: null, deviceConsent: hasDeviceConsent('2026-11-v1') })).toBe('consent');
     expect(resolveNextStep({ user: null, consents: null, family: null, deviceConsent: hasDeviceConsent(CURRENT_TERMS_VERSION) })).toBe('sign-in');
+  });
+
+  it('termo v3: quem já aceitou a v2 e tem família permanece no app (a ficha não muda a etapa)', () => {
+    const v2: Consent[] = allValid.map((c) => ({ ...c, version: '2026-11-v2' }));
+    expect(resolveNextStep({ user, consents: v2, family, deviceConsent: false })).toBe('main');
+    expect(resolveNextStep({ user, consents: v2, family: null, deviceConsent: false })).toBe('family');
+    expect(resolveNextStep({ user: null, consents: null, family: null, deviceConsent: hasDeviceConsent('2026-11-v2') })).toBe('sign-in');
+    expect(hasDeviceCurrentConsent('2026-11-v2')).toBe(false);
+    expect(hasDeviceCurrentConsent('2026-11-v3')).toBe(true);
   });
 
   it('logado e consentido: família decide entre family e main', () => {

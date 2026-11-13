@@ -1,4 +1,4 @@
-import { hasValidConsent, type Consent } from '@/entities/consent';
+import { hasValidAppConsent, type Consent } from '@/entities/consent';
 import type { Family } from '@/entities/family';
 import type { AuthUser } from '@/entities/session';
 
@@ -16,7 +16,8 @@ export interface NextStepInput {
 
 export function resolveNextStep({ user, consents, family, deviceConsent }: NextStepInput): NextStep {
   if (user === null) return deviceConsent ? 'sign-in' : 'consent';
-  if (!consents || !hasValidConsent(consents)) return 'consent';
+  // v2 ou v3: o resto do app segue. A ficha tem porta própria e não muda esta etapa.
+  if (!consents || !hasValidAppConsent(consents)) return 'consent';
   return family === null ? 'family' : 'main';
 }
 

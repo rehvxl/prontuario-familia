@@ -3,7 +3,7 @@ import { hasValidConsent, useMyConsents } from '@/entities/consent';
 import { useMyFamily, type Family } from '@/entities/family';
 import { useCurrentUser, type AuthUser } from '@/entities/session';
 import { useAcceptRequiredConsents } from '@/features/consent';
-import { hasDeviceConsent, useDeviceConsentStore } from './device-consent';
+import { hasDeviceAppConsent, hasDeviceCurrentConsent, useDeviceConsentStore } from './device-consent';
 import { resolveNextStep, type NextStep } from './next-step';
 
 export type SessionStatus = 'loading' | 'error' | 'ready';
@@ -29,7 +29,8 @@ export function useSessionState(): SessionState {
   const consentsQuery = useMyConsents({ enabled: signedIn });
   const familyQuery = useMyFamily({ enabled: signedIn });
   const hydrated = useDeviceConsentStore((s) => s.hydrated);
-  const deviceConsent = hasDeviceConsent(useDeviceConsentStore((s) => s.acceptedVersion));
+  const acceptedVersion = useDeviceConsentStore((s) => s.acceptedVersion);
+  const deviceConsent = hasDeviceAppConsent(acceptedVersion);
   const { mutate: acceptConsents, reset: resetAccept, isIdle: acceptIdle, isError: acceptFailed } = useAcceptRequiredConsents();
 
   const userId = user?.id;
@@ -37,7 +38,8 @@ export function useSessionState(): SessionState {
     resetAccept();
   }, [userId, resetAccept]);
 
-  const needsFlush = signedIn && deviceConsent && consentsQuery.isSuccess && !hasValidConsent(consentsQuery.data);
+  // Só a v3 aceita no aparelho (onboarding novo) é gravada sozinha. Aceite v2 no aparelho não vira v3.
+  const needsFlush = signedIn && hasDeviceCurrentConsent(acceptedVersion) && consentsQuery.isSuccess && !hasValidConsent(consentsQuery.data);
   useEffect(() => {
     if (needsFlush && acceptIdle) acceptConsents({ termsAndPrivacy: true, healthData: true });
   }, [needsFlush, acceptIdle, acceptConsents]);
