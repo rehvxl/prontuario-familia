@@ -77,7 +77,7 @@ Fora: o cartão `CoverLabel` de Criar família (decorativo, sem token equivalent
 
 ## Antes de começar a rodada (pré-requisitos)
 
-- [ ] Conferir no simulador as telas do PR #11 (Criar família, Primeiras pessoas, Documentos, Consentimento, Editar pessoa, folhas de medicamento/sinal vital/dose) e anotar o que sair errado aqui.
+- [x] (13/11/2026, iPhone 17 Pro simulado, iOS 26.5, modo demo, `main` em `1ce285a`) Conferir no simulador as telas do PR #11 (Criar família, Primeiras pessoas, Documentos, Consentimento, Editar pessoa, folhas de medicamento/sinal vital/dose) e anotar o que sair errado aqui.
 - [ ] Responder D7 a D11 (ou aceitar as recomendações).
 - [ ] A árvore de trabalho tem mudanças de outra tarefa (docs e `ExamSeriesScreen`, entre outros). Fazer a rodada em branch própria, a partir da `main` limpa, e não misturar.
 
@@ -86,3 +86,40 @@ Fora: o cartão `CoverLabel` de Criar família (decorativo, sem token equivalent
 - [x] PR A, padrões de interação: D7 (Vacinas com "+" na barra, sem botão flutuante), D8 e D10 (regras no doc §7.1), D9 (Pessoas sem menu "…" por linha; "Editar pessoa" e "Novo registro" ficam na tela da pessoa). Testes ajustados.
 - [x] PR B, infra de tela: hook único `useBoardStatusBar` (Ajustes, Buscar, Registro); D11 (`layout.sectionGap` 32 → 28, token sem uso nas telas); "não encontrado" padronizado (Editar pessoa sem `tone="error"`, regra no doc).
 - Decidido não fazer: tokenizar `fontWeight` (passa por `Text`, que escolhe o arquivo Archivo) nem `paddingVertical: 14`/`minHeight: 64` (3 ocorrências de anatomia de linha, sem ganho). O `{focused ? <StatusBar/> : null}` das telas da pessoa também fica: é o padrão do Expo Router e já está correto.
+
+## Conferência no simulador (13/11/2026)
+
+iOS 26.5 (simulador novo, só para isso), claro e escuro, a partir da `main` após o PR #12. Percorrido: Boas-vindas → Consentimento → Entrar → Código → Criar família → Primeiras pessoas → Família → Pessoa (Documentos) → Carteira de vacinas → folha de dose → Editar pessoa.
+
+| Item | Resultado |
+|---|---|
+| Checkbox do Consentimento e da folha de dose | Quadrado arredondado; marcado e desmarcado legíveis |
+| Criar família e Primeiras pessoas | Faixa de cor com a mesma altura de Entrar; sem cabeçalho vazio; régua ilustrativa só em Primeiras pessoas |
+| Família | Linha de pessoa com chevron, sem "…" |
+| Carteira de vacinas | Botão "+" na barra; sem botão flutuante |
+| Folha de dose | Título uma vez ("Nova dose"), filete verde da pessoa |
+| Documentos | Tile neutro de 36 pt, linhas mais baixas |
+| Editar pessoa | Cabeçalho e fundo na divisória da pessoa; menu "…" na barra |
+| Tema escuro (Pessoa/Documentos) | Sem problema visível |
+
+**Não conferido:** Android, texto grande (AX5), folhas de medicamento e sinal vital (mesmo caminho de código da folha de dose), e os estados de carregamento/erro de Editar pessoa e Primeiras pessoas (rápidos demais para capturar no modo demo).
+
+## Conferência no Android (13/11/2026)
+
+Emulador Pixel 7, Android 16 (API 36), AVD criado só para isso, modo demo, `main` em `38d8a93`. Percorrido: Boas-vindas → Consentimento → Entrar → Código → Criar família → Primeiras pessoas → Família → Carteira de vacinas → folha de dose; depois texto em 2,0× (o máximo do Android) em Pessoa e Vacinas.
+
+| Item | Resultado |
+|---|---|
+| Checkbox (Consentimento, folha de dose) | Mesmo raio do iOS |
+| Primeiras pessoas | Faixa e barra de status certas, sem cabeçalho vazio |
+| Carteira de vacinas | "+" na barra, sem botão flutuante |
+| Folha de dose (modal no Android) | Título uma vez, filete verde da pessoa |
+| Texto 2,0×: régua | Vira faixa no topo, como o doc manda |
+| Texto 2,0×: botão flutuante | Só o ícone, e nas Vacinas já não cobre conteúdo (é "+" na barra) |
+
+### Achados novos (já existiam antes das rodadas 1 e 2)
+
+1. **`StatTileGroup` quebra palavra no meio em 2,0×** ("pendênci/as", "registrad/as", "informad/as" em Carteira de vacinas). Causa: `STACK_FONT_SCALE = 2.35` (`shared/ui/lib/` do `useStackedLayout`) é o AX3 do iOS, mas o Android não passa de 2,0× e o texto do app é limitado a 2× (`maxFontSizeMultiplier`). No Android a pilha nunca liga. Correção sugerida: empilhar a partir de ~1,75× (ou medir a largura do rótulo) e conferir `StatTile`, linhas de métrica e ações, que usam o mesmo hook.
+2. **Chip de estado cortado em 2,0× no Resumo**: "Acima da faixa" aparece como "Acima da" ao lado da régua (`MeasurementRow`). O doc §7.1 manda empilhar em AX5; mesma causa do item 1.
+
+Não conferido no Android: folha de sinal vital e de medicamento, Documentos e Buscar.
