@@ -89,7 +89,7 @@ describe('Ficha de emergência', () => {
     expect(screen.queryByText('Alergias não informadas')).toBeNull();
     const texts = screen.getAllByText(/.+/).map((node) => String(node.props.children));
     expect(texts.indexOf('Dipirona')).toBeLessThan(texts.indexOf('A−'));
-    expect(screen.getByText('11999990000')).toBeOnTheScreen();
+    expect(screen.getByText('(11) 99999-0000')).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole('button', { name: /Ligar para Marina/ }));
     expect(openURL).toHaveBeenCalledWith('tel:11999990000');
     expect(screen.getByText(/Não substituem avaliação médica/)).toBeOnTheScreen();

@@ -93,3 +93,31 @@ export function emergencyPhoneUrl(phone: string): string {
   const compact = phone.trim().replace(/[^\d+]/g, '').replace(/(?!^)\+/g, '');
   return `tel:${compact}`;
 }
+
+function formatNational(d: string): string {
+  // Códigos curtos (192, 190) e 0800 ficam como digitados.
+  if (d.length <= 4 || d.startsWith('0') || d.length > 11) return d;
+  const ddd = d.slice(0, 2);
+  const rest = d.slice(2);
+  if (rest.length <= 4) return `(${ddd}) ${rest}`;
+  const split = d.length === 11 ? 5 : 4;
+  return `(${ddd}) ${rest.slice(0, split)}-${rest.slice(split)}`;
+}
+
+/** Máscara brasileira: (61) 99999-0000, (61) 3333-0000 e +55 (61) 99999-0000. Outro DDI fica só com os dígitos. */
+export function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '');
+  if (!value.trim().startsWith('+')) return formatNational(digits);
+  if (digits.startsWith('55') && digits.length > 2) return `+55 ${formatNational(digits.slice(2))}`;
+  return `+${digits}`;
+}
+
+/** Máscara ao digitar. Apagar só um caractere da máscara apaga também o dígito anterior, senão o hífen volta e trava. */
+export function typePhone(previous: string, next: string): string {
+  const digits = (text: string) => text.replace(/\D/g, '');
+  if (next.length < previous.length && digits(next) === digits(previous)) {
+    const d = digits(next).slice(0, -1);
+    return formatPhone(next.trim().startsWith('+') ? `+${d}` : d);
+  }
+  return formatPhone(next);
+}

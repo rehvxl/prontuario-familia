@@ -15,7 +15,7 @@ import {
   useTheme,
 } from '@/shared/ui';
 import { contactError, type EmergencyCardFormValues } from '../domain/form';
-import { firstName, personDetail, type AssembledMedication, type AssembleMember } from '../domain/assemble';
+import { firstName, personDetail, typePhone, type AssembledMedication, type AssembleMember } from '../domain/assemble';
 
 const BLOOD_OPTIONS = BLOOD_TYPES.map((value) => ({ value, label: BLOOD_TYPE_LABELS[value] }));
 
@@ -180,7 +180,7 @@ export function EmergencyCardForm({
               value={item.phone}
               keyboardType="phone-pad"
               error={message && !item.phone.trim() ? message : null}
-              onChangeText={(text) => set({ contacts: values.contacts.map((row, i) => (i === index ? { ...row, phone: text } : row)) })}
+              onChangeText={(text) => set({ contacts: values.contacts.map((row, i) => (i === index ? { ...row, phone: typePhone(row.phone, text) } : row)) })}
             />
             <IconButton icon="trash" accessibilityLabel="Remover contato" onPress={() => set({ contacts: values.contacts.filter((_, i) => i !== index) })} />
           </View>
