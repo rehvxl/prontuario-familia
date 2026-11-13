@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 import { AccessibilityInfo } from 'react-native';
 import { ThemeProvider, useTheme } from './ThemeProvider';
@@ -52,5 +52,20 @@ describe('ThemeProvider: reduzir transparência', () => {
 
     await waitFor(() => expect(result.current.glass.reduceTransparency).toBe(true));
     expect(result.current.glass.enabled).toBe(false);
+  });
+
+  it('se a leitura rejeita, não quebra e não reduz a transparência', async () => {
+    info.isReduceTransparencyEnabled = () => Promise.reject(new Error('indisponível'));
+
+    const { result } = await renderHook(() => useTheme(), {
+      wrapper: themeWrapper({ glassAvailable: true, reducedMotion: false }),
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(result.current.glass.reduceTransparency).toBe(false);
+    expect(result.current.glass.enabled).toBe(true);
   });
 });
