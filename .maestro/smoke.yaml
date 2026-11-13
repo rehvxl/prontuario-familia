@@ -10,14 +10,21 @@ tags:
 - startRecording: smoke
 # O emulador às vezes não termina de abrir o app na primeira tentativa. O retry fica só aqui.
 - retry:
-    maxRetries: 2
+    maxRetries: 3
     commands:
       - launchApp:
           clearState: true
+      # ANR do launcher no emulador da CI ("Quickstep isn't responding") fica por cima do app.
+      # O diálogo persiste entre tentativas: a seguinte toca em Wait.
+      - runFlow:
+          when:
+            visible: ".*isn't responding"
+          commands:
+            - tapOn: "Wait"
       - extendedWaitUntil:
           visible:
             id: "welcome-screen"
-          timeout: 120000
+          timeout: 60000
 - takeScreenshot: 01-boas-vindas
 - tapOn: "Pular"
 - extendedWaitUntil:
@@ -71,18 +78,9 @@ tags:
 - inputText: "Ana Souza"
 - hideKeyboard
 - waitForAnimationToEnd
-- runFlow:
-    when:
-      platform: Android
-    commands:
-      - tapOn: "Escolher parentesco"
-      - tapOn: "^Eu$"
-- runFlow:
-    when:
-      platform: iOS
-    commands:
-      - tapOn: "Parentesco.*"
-      - tapOn: "^Eu$"
+# O campo mostra "Escolher parentesco" nas duas plataformas; "Parentesco" sozinho é o rótulo acima.
+- tapOn: "Escolher parentesco"
+- tapOn: "^Eu$"
 - tapOn: "Adicionar primeira pessoa"
 - extendedWaitUntil:
     visible:
