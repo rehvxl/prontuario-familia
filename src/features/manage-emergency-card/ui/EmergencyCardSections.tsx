@@ -2,7 +2,7 @@ import { Linking, View } from 'react-native';
 import { MedicationRow } from '@/entities/medication';
 import { BLOOD_TYPE_LABELS, type EmergencyCard } from '@/entities/emergency-card';
 import { Button, ListItem, ListSection, SectionHeader, Text, useTheme } from '@/shared/ui';
-import { emergencyPhoneUrl, firstName, personDetail, type AssembledEmergencyCard } from '../domain/assemble';
+import { emergencyPhoneUrl, firstName, formatPhone, personDetail, type AssembledEmergencyCard } from '../domain/assemble';
 
 const LEGAL = 'Informações declaradas pela família. Não substituem avaliação médica.';
 
@@ -140,9 +140,9 @@ export function EmergencyCardSections({
                 key={`${contact.name}-${contact.phone}`}
                 title={contact.name}
                 subtitle={contact.relation ?? undefined}
-                meta={contact.phone}
+                meta={formatPhone(contact.phone)}
                 onPress={() => void Linking.openURL(emergencyPhoneUrl(contact.phone))}
-                accessibilityLabel={contactLabel(contact.name, contact.relation, contact.phone)}
+                accessibilityLabel={contactLabel(contact.name, contact.relation, formatPhone(contact.phone))}
               />
             ))}
           </ListSection>

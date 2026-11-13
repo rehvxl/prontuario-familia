@@ -1,4 +1,4 @@
-export { assembleEmergencyCard, calendarDay, emergencyPhoneUrl, firstName, personDetail } from './domain/assemble';
+export { assembleEmergencyCard, calendarDay, emergencyPhoneUrl, firstName, formatPhone, personDetail } from './domain/assemble';
 export type { AssembledEmergencyCard, AssembledMedication, AssembleMember, AssembleMedication } from './domain/assemble';
 export { trackEmergencyCardEvent } from './domain/analytics';
 export { resolveEmergencyEntry } from './domain/entry';

@@ -1,4 +1,4 @@
-import { assembleEmergencyCard, calendarDay, emergencyPhoneUrl, personDetail } from './assemble';
+import { assembleEmergencyCard, calendarDay, emergencyPhoneUrl, formatPhone, personDetail, typePhone } from './assemble';
 import { contactError, formToDraft } from './form';
 
 const member = { fullName: 'Ana Souza', birthDate: '1959-03-01', relationship: 'parent', sex: 'female' };
@@ -42,5 +42,25 @@ describe('assembleEmergencyCard', () => {
       /nome e o telefone/,
     );
     expect(calendarDay('2026-11-12T02:30:00.000Z')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});
+
+describe('máscara de telefone', () => {
+  it('formata celular, fixo, DDI 55 e deixa códigos curtos e outros DDI como estão', () => {
+    expect(formatPhone('61999990000')).toBe('(61) 99999-0000');
+    expect(formatPhone('6133330000')).toBe('(61) 3333-0000');
+    expect(formatPhone('+5561999990000')).toBe('+55 (61) 99999-0000');
+    expect(formatPhone('+351912345678')).toBe('+351912345678');
+    expect(formatPhone('192')).toBe('192');
+    expect(formatPhone('08001234567')).toBe('08001234567');
+    expect(formatPhone('(61) 99999-0000')).toBe('(61) 99999-0000');
+  });
+
+  it('mascara enquanto digita e apaga através do hífen', () => {
+    let value = '';
+    for (const d of '61999990000') value = typePhone(value, value + d);
+    expect(value).toBe('(61) 99999-0000');
+    expect(typePhone('(61) 9999-0', '(61) 9999-')).toBe('(61) 9999');
+    expect(typePhone('(61) 9999', '(61) 999')).toBe('(61) 999');
   });
 });

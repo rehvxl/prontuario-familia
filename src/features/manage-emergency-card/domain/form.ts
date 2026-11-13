@@ -1,5 +1,6 @@
 import { DomainError } from '@/shared/lib';
 import { emergencyCardFieldsSchema, type BloodType, type EmergencyCardDraft } from '@/entities/emergency-card';
+import { formatPhone } from './assemble';
 
 export interface EmergencyCardFormValues {
   bloodType: BloodType;
@@ -50,7 +51,7 @@ export function formFromCard(card: EmergencyCardDraft | null): EmergencyCardForm
     noKnownAllergies: card.noKnownAllergies,
     allergies: card.allergies.map((item) => ({ name: item.name, reaction: item.reaction ?? '' })),
     conditions: card.conditions.map((item) => ({ name: item.name })),
-    contacts: card.contacts.map((item) => ({ name: item.name, relation: item.relation ?? '', phone: item.phone })),
+    contacts: card.contacts.map((item) => ({ name: item.name, relation: item.relation ?? '', phone: formatPhone(item.phone) })),
     notes: card.notes ?? '',
   };
 }
