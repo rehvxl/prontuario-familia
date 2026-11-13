@@ -1,6 +1,6 @@
 # Backend — Supabase
 
-> v0.2 (11/11/2026: dados de acompanhamento de saúde) · dono: Backend Prontuário. Mudou o esquema, as políticas ou as funções? Atualize este arquivo no mesmo commit.
+> v0.2 (11/11/2026: dados de acompanhamento de saúde). Ficha de emergência (12/11/2026). Dono: Backend Prontuário. Mudou o esquema, as políticas ou as funções? Atualize este arquivo no mesmo commit.
 
 O backend é 100% Supabase (Auth, Postgres, Storage privado e duas Edge Functions). **Nada aqui depende de conta externa para rodar localmente.** O projeto real (sa-east-1) ainda não existe — ver [§9](#9-criar-o-projeto-real-sa-east-1).
 
@@ -12,7 +12,8 @@ supabase/
     20261111000002_rls.sql           # RLS, grants por coluna, RPCs, auditoria
     20261111000003_storage.sql       # bucket health-files + políticas de storage.objects
     20261111000004_health_data.sql   # medições, doses de vacina, "Não se aplica", medicamentos (v0.2)
-  tests/                   # pgTAP (157 testes)
+    20261112000001_emergency_cards.sql # ficha de emergência, 1:1 com members
+  tests/                   # pgTAP (227 testes)
   templates/               # e-mail do código OTP em pt-BR
   functions/               # delete-account, export-my-data (+ _shared)
 src/shared/api/            # cliente Supabase do app (anon key) + utilitários
@@ -25,12 +26,14 @@ src/entities/*/data/supabase-*.ts   # adaptadores das portas de domínio
 auth.users ──1:1── profiles
 auth.users ──1:n── consents
 families ──1:n── family_memberships ──n:1── auth.users        (role: owner | editor)
-families ──1:n── members ──1:n── health_records ──1:n── attachments
-                   │                │
-                   │                └─(source_record_id, member_id, family_id)─┐  on delete cascade
-                   ├─1:n── measurements             (kind lab | vital) ◄────────┤
-                   ├─1:n── vaccine_doses                               ◄────────┤
-                   ├─1:n── medications                                 ◄────────┘
+families ──1:n── members ──1:1── emergency_cards   (ficha declarada; sem arquivo)
+                   │        │
+                   │        └──1:n── health_records ──1:n── attachments
+                   │                     │
+                   │                     └─(source_record_id, member_id, family_id)─┐  on delete cascade
+                   ├─1:n── measurements             (kind lab | vital) ◄─────────────┤
+                   ├─1:n── vaccine_doses                               ◄─────────────┤
+                   ├─1:n── medications                                 ◄─────────────┘
                    └─1:n── vaccine_rule_dismissals  ("Não se aplica")
 audit_events  (sem FKs: o histórico sobrevive à troca de dono/membros)
 ```
@@ -49,10 +52,15 @@ audit_events  (sem FKs: o histórico sobrevive à troca de dono/membros)
 | `vaccine_doses` | `vaccine_code` do calendário ou `other` (aí `vaccine_name` é obrigatório). `dose_key` ∈ `D1`, `D2`, `D3`, `R1`, `R2`, `R`, `DU`, `ANUAL`, `PERIODICA`, `OUTRA`; `dose_label` ≤ 40 é o texto exibido. `applied_on` nulo = "Não sei a data". |
 | `vaccine_rule_dismissals` | "Não se aplica" numa regra do calendário (`rule_id`, `reason` ∈ `had_disease`, `professional_advice`, `other`, `note` ≤ 140). Única por `(member_id, rule_id)`. Sem update: desfazer apaga a linha. |
 | `medications` | `start_on` obrigatório; `end_on` nulo = uso contínuo, e `end_on >= start_on`. "Em uso" é calculado no app no dia local, nunca com `current_date` do servidor (UTC). |
+| `emergency_cards` | Uma linha por membro (`unique (member_id)`); sem linha = ficha vazia. `blood_type` ∈ `A+`, `A-`, `B+`, `B-`, `AB+`, `AB-`, `O+`, `O-`, `unknown` (padrão `unknown`; a UI mostra “Não sei”). `no_known_allergies` é mutuamente exclusivo com a lista `allergies`. Listas em JSONB: `allergies` `[{ "name", "reaction"? }]` (até 50), `conditions` `[{ "name" }]` (até 50), `contacts` `[{ "name", "relation"?, "phone" }]` (até 3). `notes` nulo ou até 280 caracteres. Identificação e remédios em uso **não** são colunas. |
 
 Nas quatro tabelas novas: `family_id` desnormalizado, FK composta `(member_id, family_id) → members` com `on delete cascade`, `origin` ∈ `ocr`, `manual`, `created_by` com default `auth.uid()` e sem grant de escrita, `updated_at` por trigger (exceto em `vaccine_rule_dismissals`, que não muda). Em medições, doses e medicamentos, `source_record_id` liga o item ao documento de origem por FK composta `(source_record_id, member_id, family_id) → health_records(id, member_id, family_id)` com `on delete cascade`: o item é sempre da mesma pessoa e família do documento, e **apagar o documento apaga todos os itens ligados a ele**, inclusive os manuais em que a pessoa escolheu o documento (a UI avisa antes, A15). Para isso `health_records` ganhou `unique (id, member_id, family_id)`; a chave é estável porque `member_id` não tem grant de update.
 
 O banco não conhece os catálogos: código existente, unidade compatível e data não futura são validados no app.
+
+`emergency_cards` segue o mesmo desenho de família desnormalizada e FK composta `(member_id, family_id) → members(id, family_id)` com `on delete cascade` (apagar o membro ou a família apaga a ficha). Também tem `unique (id, family_id)`. Não há `origin` nem `source_record_id`: a ficha é declarada pela família, não lida de um documento, e não tem arquivo no Storage. `created_by` usa default `auth.uid()` e não tem grant de escrita. A forma de cada item JSONB (nome obrigatório, tamanhos, chaves do contrato, sem máscara de telefone) é um CHECK que chama `private.emergency_card_lists_valid` — função `immutable`, `search_path` fixo, no schema `private` (fora de `[api].schemas`, então não é endpoint).
+
+**Termo de consentimento.** O termo não é versionado por causa da ficha: continua `2026-11-v2`, com o adendo da ficha de emergência no mesmo texto (decisão do Douglas em 13/11/2026). Não há finalidade nova, migração nem CHECK com a string da versão. A RLS desta ficha não consulta consentimento (o restante do app também exige o termo na guarda, não nas políticas).
 
 Índices das tabelas novas:
 
@@ -63,6 +71,7 @@ O banco não conhece os catálogos: código existente, unidade compatível e dat
 | único `measurements (source_record_id, code)` onde `source_record_id` não é nulo e `code <> 'other'` | reler o mesmo laudo não duplica um analito do catálogo; vários `other` no mesmo laudo são permitidos |
 | único `vaccine_doses (member_id, vaccine_code, dose_key, applied_on)` | mesma dose na mesma data não duplica; doses sem data não colidem (null distinto) |
 | `(source_record_id)` parcial nas três tabelas com documento de origem | cascata e "itens deste documento" |
+| `emergency_cards (family_id)`; único em `member_id` | fichas da família; uma ficha por pessoa |
 
 `updated_at` é mantido por trigger (`set_updated_at`). Todas as funções têm `search_path` fixo.
 
@@ -74,7 +83,7 @@ A RPC `search_health_records(p_family_id, p_text, p_member_id, p_types)` (`secur
 
 ## 2. Row Level Security
 
-RLS está **habilitada em todas as 12 tabelas** (teste pgTAP falha se alguma ficar sem). Princípios:
+RLS está **habilitada em todas as 13 tabelas** (teste pgTAP falha se alguma ficar sem). Princípios:
 
 - `anon` não tem **nenhum** grant. Sem login, nada é lido nem escrito (erro `42501`).
 - `authenticated` recebe **grants por coluna**: o app não consegue escrever `created_by`, `search`, `created_at`, etc.
@@ -94,6 +103,7 @@ RLS está **habilitada em todas as 12 tabelas** (teste pgTAP falha se alguma fic
 | `vaccine_doses` | membros | membros | membros (vacina, dose, data, lote, local) | membros |
 | `medications` | membros | membros | membros (nome, dosagem, instruções, início, término) | membros |
 | `vaccine_rule_dismissals` | membros | membros | — (desfazer apaga) | membros |
+| `emergency_cards` | membros | membros | membros (tipo sanguíneo, alergias, condições, contatos, observações) | membros |
 
 Notas:
 
@@ -104,7 +114,7 @@ Notas:
   - `accept_consent(p_purpose, p_version)` / `revoke_consent(p_purpose)` — gravam o histórico de consentimento.
   - `log_data_export()` — registra a exportação na auditoria.
   - `search_health_records(...)` — busca (acima).
-- **Auditoria**: triggers `audit_row_change` em `members`, `health_records`, `attachments`, `measurements`, `vaccine_doses`, `medications` e `vaccine_rule_dismissals` registram quem fez o quê (insert/update/delete) sem conteúdo.
+- **Auditoria**: triggers `audit_row_change` em `members`, `health_records`, `attachments`, `measurements`, `vaccine_doses`, `medications`, `vaccine_rule_dismissals` e `emergency_cards` registram quem fez o quê (insert/update/delete) sem conteúdo. O evento da ficha grava só `family_id`, `actor_id`, `action`, `entity`, `entity_id` — nunca alergia, tipo sanguíneo ou telefone.
 
 ### Testes (pgTAP)
 
@@ -119,6 +129,7 @@ npm run db:test    # roda supabase/tests/*.test.sql
 | `01_schema.test.sql` | RLS ligada em todas as tabelas, conjunto esperado de tabelas, nenhum grant a `anon`, toda tabela tem política, bucket privado/limite/MIMEs, `search_path` das funções `security definer`, índice GIN, trigger de perfil, CHECKs, FK composta, tsvector com unaccent. |
 | `02_rls_isolation.test.sql` | Usuário A **não lê, não insere, não altera e não apaga** nada da família de B em cada tabela; owner × editor; anônimo negado em tudo; histórico de consentimentos; auditoria; integridade e cascatas. |
 | `04_health_data.test.sql` | Tabelas de saúde (39): inserção na própria família pela RLS; item lido precisa ser da mesma pessoa do documento; um analito por documento; sinal vital não vem do OCR; `value2` só em `bp`; faixa invertida e término antes do início rejeitados; dose duplicada rejeitada e doses sem data aceitas; `vaccine_name` em `other`; `context` só na glicemia capilar; "Não se aplica" único, sem update e desfeito por delete; `member_id` e `created_by` fora da API; A não lê, não altera e não apaga nada de B; anônimo negado; auditoria; apagar o documento apaga os itens ligados e mantém os manuais; apagar a família apaga tudo. |
+| `05_emergency_cards.test.sql` | Ficha de emergência (50): colunas e tipos, RLS, índice, unique, FK composta com cascata, triggers, políticas, grants (anon zero; authenticated só as colunas liberadas), ficha vazia, CHECKs (tipo sanguíneo, mutex, 4 contatos, 281 caracteres, forma do JSONB), isolamento entre famílias, anon, auditoria só com ids, cascata ao apagar membro e família. |
 | `03_storage_search.test.sql` | Políticas do Storage (insert/select/update/delete na própria e em outra família, anon, caminhos inválidos) e a busca (prefixo, acento, AND, caracteres especiais, texto de injeção, filtros, ordem, RLS, anon). |
 
 ## 3. Storage
@@ -153,7 +164,7 @@ Ambas exigem JWT (`verify_jwt = true` no gateway **e** validação dentro da fun
 1. Identifica o usuário pelo JWT.
 2. Acha as famílias em que ele é o **único owner**.
 3. Apaga do Storage todos os arquivos dessas famílias (caminhos de `attachments` + varredura do prefixo, em lotes de 100). **Se falhar, aborta antes de tocar no banco.**
-4. Apaga as famílias (cascata: membros, registros, anexos, memberships) e a auditoria delas e do próprio usuário.
+4. Apaga as famílias (cascata: membros — inclusive a ficha de emergência, que não tem arquivo —, registros, anexos, memberships e o restante dos dados de saúde) e a auditoria delas e do próprio usuário.
 5. Apaga o usuário em `auth.users` (cascata: perfil, consentimentos, memberships restantes).
 
 Idempotente: se qualquer passo antes do 5 falhar, o usuário continua existente e pode repetir. Resposta: `{ "deleted": true, "families_deleted": n }`. Os logs só contêm o motivo técnico, nunca dados de saúde.
@@ -162,12 +173,13 @@ Idempotente: se qualquer passo antes do 5 falhar, o usuário continua existente 
 
 ### `export-my-data` — portabilidade (LGPD art. 18, II e V)
 
-Roda com o **JWT do usuário** (sem service role): a RLS decide o que sai. Devolve JSON `{ exported_at, format_version: 2, profile, families, family_memberships, members, health_records[ { ..., attachments[ { ..., download_url } ] } ], consents, measurements, vaccine_doses, medications, vaccine_rule_dismissals }`. As `download_url` são assinadas e expiram em 60 min. Registra a exportação via `log_data_export()`.
+Roda com o **JWT do usuário** (sem service role): a RLS decide o que sai. Devolve JSON `{ exported_at, format_version: 3, profile, families, family_memberships, members, health_records[ { ..., attachments[ { ..., download_url } ] } ], consents, measurements, vaccine_doses, medications, vaccine_rule_dismissals, emergency_cards }`. As `download_url` são assinadas e expiram em 60 min. Registra a exportação via `log_data_export()`.
 
 - `format_version` 2 (v0.2) acrescentou as quatro coleções de saúde no nível de cima, não aninhadas em `health_records`, porque medições e medicamentos manuais não têm documento; `source_record_id` liga ao registro quando há. O `flag` não é exportado (é derivado); a faixa e o texto da referência são.
+- `format_version` 3 acrescenta `emergency_cards` no nível de cima, com `id`, `family_id`, `member_id`, `blood_type`, `no_known_allergies`, `allergies`, `conditions`, `contacts`, `notes`, `created_at`, `updated_at` (JSONB inteiro). `created_by` fica de fora, como nas outras coleções. `consents` continua `purpose`, `version`, `accepted_at`, `revoked_at` — a troca v2 → v3 aparece nesse histórico, sem campo novo.
 - O log da função só tem a mensagem técnica do erro, nunca valor de saúde.
 
-`delete-account` não mudou na v0.2: apagar a família cascateia `members` → medições, doses, medicamentos e "Não se aplica", e o passo que apaga `audit_events` por `family_id` já cobre a auditoria das tabelas novas (testado em `04_health_data.test.sql`).
+`delete-account` não ganhou passo novo: apagar a família cascateia `members` → medições, doses, medicamentos, "Não se aplica" e a ficha de emergência. A ficha não tem arquivo, então não há varredura de Storage para ela. O passo que apaga `audit_events` por `family_id` já cobre a auditoria da ficha (cascata testada em `05_emergency_cards.test.sql`).
 
 ### Rodar localmente
 

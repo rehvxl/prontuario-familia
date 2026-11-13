@@ -4,7 +4,8 @@
 //  1. Valida o JWT e identifica o usuário (o id vem do token, nunca do corpo da requisição).
 //  2. Descobre as famílias em que ele é o ÚNICO owner.
 //  3. Apaga do Storage todos os arquivos dessas famílias (metadados em `attachments` + varredura do prefixo).
-//  4. Apaga as famílias (cascata: membros, registros, anexos, memberships) e a auditoria delas.
+//  4. Apaga as famílias (cascata: membros — e a ficha de emergência, que não tem arquivo —,
+//     registros, anexos, memberships e o restante dos dados de saúde) e a auditoria delas.
 //  5. Apaga o usuário em auth.users (cascata: profile, consents, memberships em outras famílias).
 //
 // Única função que usa a service role key (injetada pelo runtime; nunca vai para o app nem para o repositório).
@@ -82,7 +83,7 @@ Deno.serve(async (req) => {
       await removeInBatches(admin, [...paths]);
     }
 
-    // 4. Famílias (cascata) e auditoria.
+    // 4. Famílias (cascata) e auditoria. emergency_cards some com o membro; sem passo de Storage.
     if (familyIds.length > 0) {
       const { error: famError } = await admin.from('families').delete().in('id', familyIds);
       if (famError) throw new Error(`families.delete: ${famError.message}`);
