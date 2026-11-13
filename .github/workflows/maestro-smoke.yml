@@ -28,7 +28,7 @@ jobs:
   android:
     name: Android (emulador)
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v7
 
@@ -68,7 +68,32 @@ jobs:
             exit 1
           fi
           yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" --install "platforms;android-37" "build-tools;37.0.0" "ndk;27.1.12297006"
+          # A imagem nomeia a plataforma como android-37.0, não android-37.
+          # O AGP com compileSdk 37 procura platforms/android-37.
+          if [ ! -e "$SDK_ROOT/platforms/android-37" ]; then
+            if [ ! -d "$SDK_ROOT/platforms/android-37.0" ]; then
+              "$SDKMANAGER" --install "platforms;android-37.0"
+            fi
+            if [ ! -d "$SDK_ROOT/platforms/android-37.0" ]; then
+              echo "Plataforma android-37.0 ausente. Conteúdo de platforms:" >&2
+              ls -1 "$SDK_ROOT/platforms" >&2 || true
+              exit 1
+            fi
+            ln -sfn android-37.0 "$SDK_ROOT/platforms/android-37" \
+              || sudo ln -sfn android-37.0 "$SDK_ROOT/platforms/android-37"
+          fi
+          if [ ! -d "$SDK_ROOT/ndk/27.1.12297006" ]; then
+            if ! "$SDKMANAGER" --install "ndk;27.1.12297006"; then
+              NDK_DIR="$(find "$SDK_ROOT/ndk" -mindepth 1 -maxdepth 1 -type d -name '27.*' | sort -V | tail -1)"
+              if [ -z "$NDK_DIR" ]; then
+                echo "Nenhum NDK 27 no SDK." >&2
+                ls -1 "$SDK_ROOT/ndk" >&2 || true
+                exit 1
+              fi
+              echo "NDK 27.1 indisponível; o build usa $(basename "$NDK_DIR")."
+              echo "NDK_FALLBACK=$(basename "$NDK_DIR")" >> "$GITHUB_ENV"
+            fi
+          fi
 
       - name: Prebuild e APK de release
         run: |
@@ -78,7 +103,16 @@ jobs:
           npx expo prebuild --platform android --no-install
           cd android
           chmod +x ./gradlew
-          ./gradlew :app:assembleRelease --no-daemon --stacktrace -PreactNativeArchitectures=x86_64
+          GRADLE_ARGS=(--no-daemon --stacktrace -PreactNativeArchitectures=x86_64)
+          if [ -n "${NDK_FALLBACK:-}" ]; then
+            cat > "$GITHUB_WORKSPACE/ndk-fallback.init.gradle" <<EOF
+          gradle.projectsLoaded {
+              rootProject.ext.set("ndkVersion", "${NDK_FALLBACK}")
+          }
+          EOF
+            GRADLE_ARGS+=(--init-script "$GITHUB_WORKSPACE/ndk-fallback.init.gradle")
+          fi
+          ./gradlew :app:assembleRelease "${GRADLE_ARGS[@]}"
 
       - name: Emulador e fumaça
         uses: reactivecircus/android-emulator-runner@v2
@@ -90,7 +124,14 @@ jobs:
           disable-animations: true
           script: |
             mkdir -p maestro-results
-            adb install -r android/app/build/outputs/apk/release/app-release.apk
+            APK="$(find android/app/build/outputs/apk/release -name '*.apk' -type f | head -1)"
+            if [ -z "$APK" ]; then
+              echo "APK de release não encontrado." >&2
+              find android/app/build/outputs -name '*.apk' >&2 || true
+              exit 1
+            fi
+            echo "APK: $APK"
+            adb install -r "$APK"
             "$HOME/.maestro/bin/maestro" --no-ansi test --format JUNIT --output maestro-results/android-junit.xml --test-output-dir maestro-results .maestro
 
       - name: Publicar prints e vídeo
@@ -105,7 +146,7 @@ jobs:
   ios:
     name: iOS (simulador)
     runs-on: macos-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     env:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
@@ -139,6 +180,9 @@ jobs:
         run: |
           set -euo pipefail
           npx expo prebuild --platform ios --no-install
+          # 5s estoura no runner e o provider sai sem expo-modules-core.
+          python3 -c 'from pathlib import Path; p = Path("node_modules/expo-modules-autolinking/build/platforms/apple/moduleScanner.js"); text = p.read_text(); old = "timeout: 5000";
+          assert old in text, "timeout do scan de módulos não encontrado"; p.write_text(text.replace(old, "timeout: 120000", 1))'
           cd ios
           pod install
           cd ..
@@ -148,7 +192,8 @@ jobs:
             find ios -maxdepth 2 -type d >&2
             exit 1
           fi
-          SCHEME="$(xcodebuild -workspace "$WORKSPACE" -list 2>/dev/null | awk 'f { if ($0 ~ /^$/) exit; gsub(/^[[:space:]]+/, ""); print; exit } /Schemes:/{f=1}')"
+          # O primeiro scheme da lista é um Pod (boost). O app tem o nome do workspace.
+          SCHEME="$(basename "$WORKSPACE" .xcworkspace)"
           echo "Workspace: $WORKSPACE"
           echo "Scheme: $SCHEME"
           xcodebuild \
