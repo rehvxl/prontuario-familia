@@ -70,10 +70,10 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "check": "npm run typecheck && npm run lint && npm test",
-    "db:start": "npx supabase@latest start",
-    "db:stop": "npx supabase@latest stop",
-    "db:reset": "npx supabase@latest db reset",
-    "db:test": "npx supabase@latest test db"
+    "db:start": "npx supabase@3.1.0 start",
+    "db:stop": "npx supabase@3.1.0 stop",
+    "db:reset": "npx supabase@3.1.0 db reset",
+    "db:test": "npx supabase@3.1.0 test db"
   },
   "private": true,
   "jest": {

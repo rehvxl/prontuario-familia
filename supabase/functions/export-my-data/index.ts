@@ -3,6 +3,7 @@
 // Devolve JSON com perfil, famílias, membros, registros, anexos (com URLs assinadas temporárias), consentimentos e,
 // desde o format_version 2, medições, doses de vacina, medicamentos e "Não se aplica" (no nível de cima, porque
 // itens manuais não têm documento de origem; source_record_id liga ao registro quando há).
+// format_version 3 acrescenta emergency_cards no nível de cima (a ficha não tem arquivo; JSONB vai inteiro).
 // Nenhum dado exportado vai para log: o catch só registra a mensagem técnica.
 import { authenticate, corsHeaders, createUserClient, json } from '../_shared/http.ts';
 
@@ -31,6 +32,7 @@ Deno.serve(async (req) => {
       vaccineDoses,
       medications,
       vaccineRuleDismissals,
+      emergencyCards,
     ] = await Promise.all([
       db.from('profiles').select('id,email,display_name,created_at').eq('id', auth.userId).maybeSingle(),
       db.from('family_memberships').select('family_id,user_id,role,created_at'),
@@ -55,6 +57,11 @@ Deno.serve(async (req) => {
         .from('medications')
         .select('id,family_id,member_id,name,dosage,instructions,start_on,end_on,source_record_id,origin,created_at,updated_at'),
       db.from('vaccine_rule_dismissals').select('id,family_id,member_id,rule_id,reason,note,created_at'),
+      db
+        .from('emergency_cards')
+        .select(
+          'id,family_id,member_id,blood_type,no_known_allergies,allergies,conditions,contacts,notes,created_at,updated_at',
+        ),
     ]);
 
     for (const r of [
@@ -69,6 +76,7 @@ Deno.serve(async (req) => {
       vaccineDoses,
       medications,
       vaccineRuleDismissals,
+      emergencyCards,
     ]) {
       if (r.error) throw new Error(r.error.message);
     }
@@ -88,7 +96,7 @@ Deno.serve(async (req) => {
 
     const payload = {
       exported_at: new Date().toISOString(),
-      format_version: 2,
+      format_version: 3,
       note: `As URLs dos anexos expiram em ${EXPORT_URL_TTL_SECONDS / 60} minutos.`,
       profile: profile.data,
       families: families.data ?? [],
@@ -106,6 +114,7 @@ Deno.serve(async (req) => {
       vaccine_doses: vaccineDoses.data ?? [],
       medications: medications.data ?? [],
       vaccine_rule_dismissals: vaccineRuleDismissals.data ?? [],
+      emergency_cards: emergencyCards.data ?? [],
     };
     return json(payload);
   } catch (e) {
