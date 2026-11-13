@@ -78,8 +78,8 @@ tags:
 - inputText: "Ana Souza"
 - hideKeyboard
 - waitForAnimationToEnd
-# O campo mostra "Escolher parentesco" nas duas plataformas; "Parentesco" sozinho é o rótulo acima.
-- tapOn: "Escolher parentesco"
+# Android expõe o texto do campo; iOS, o rótulo de acessibilidade do botão.
+- tapOn: "Escolher parentesco|Parentesco: nenhum selecionado"
 - tapOn: "^Eu$"
 - tapOn: "Adicionar primeira pessoa"
 - extendedWaitUntil:
@@ -124,9 +124,10 @@ tags:
 - assertVisible:
     id: "family-home-screen"
 - takeScreenshot: 03-resumo-familia
-# Id da pessoa é UUID. Não casa com member-menu, member-header nem member-health-summary.
+# Pela aba da pessoa na régua: a linha da lista fica sob o botão flutuante "Novo registro".
 - tapOn:
-    id: "member-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+    id: "tab-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+    index: 0
 - extendedWaitUntil:
     visible:
       id: "member-health-summary"
